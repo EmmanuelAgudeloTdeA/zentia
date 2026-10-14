@@ -1,0 +1,18 @@
+{
+  "app": {
+    "name": "Zentia"
+  },
+  "language": {
+    "label": "Language",
+    "es": "Spanish",
+    "en": "English"
+  },
+  "home": {
+    "title": "Welcome to {{appName}}",
+    "description": "Commercial quote management for small businesses."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "goHome": "Back to home"
+  }
+}

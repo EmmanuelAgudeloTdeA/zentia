@@ -1,0 +1,18 @@
+{
+  "app": {
+    "name": "Zentia"
+  },
+  "language": {
+    "label": "Idioma",
+    "es": "Español",
+    "en": "Inglés"
+  },
+  "home": {
+    "title": "Bienvenido a {{appName}}",
+    "description": "Gestión de cotizaciones comerciales para pymes."
+  },
+  "notFound": {
+    "title": "Página no encontrada",
+    "goHome": "Volver al inicio"
+  }
+}
