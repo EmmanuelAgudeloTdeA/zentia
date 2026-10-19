@@ -1,31 +1,37 @@
+import type { AuthSession, Role, UserDto } from '@zentia/shared';
 import { create } from 'zustand';
 
-// M1 reemplaza RoleCode por el enum Role de @zentia/shared.
-export type RoleCode = string;
-
-export interface SessionUser {
-  id: string;
-  name: string;
-  email: string;
-  role: RoleCode;
-}
+export type SessionUser = UserDto;
 
 export type SessionStatus = 'anonymous' | 'loading' | 'authenticated';
+
+export type SessionNotice = 'sessionExpired';
 
 interface SessionState {
   user: SessionUser | null;
   accessToken: string | null;
   status: SessionStatus;
-  setSession: (user: SessionUser, accessToken: string) => void;
+  notice: SessionNotice | null;
+  setSession: (session: AuthSession) => void;
   setLoading: () => void;
-  clearSession: () => void;
+  markPasswordChangeRequired: () => void;
+  clearSession: (notice?: SessionNotice) => void;
+  clearNotice: () => void;
 }
 
 export const useSessionStore = create<SessionState>()((set) => ({
   user: null,
   accessToken: null,
   status: 'anonymous',
-  setSession: (user, accessToken) => set({ user, accessToken, status: 'authenticated' }),
+  notice: null,
+  setSession: ({ user, accessToken }) =>
+    set({ user, accessToken, status: 'authenticated', notice: null }),
   setLoading: () => set({ status: 'loading' }),
-  clearSession: () => set({ user: null, accessToken: null, status: 'anonymous' }),
+  markPasswordChangeRequired: () =>
+    set((state) => (state.user ? { user: { ...state.user, mustChangePassword: true } } : {})),
+  clearSession: (notice) =>
+    set({ user: null, accessToken: null, status: 'anonymous', notice: notice ?? null }),
+  clearNotice: () => set({ notice: null }),
 }));
+
+export type RoleCode = Role;

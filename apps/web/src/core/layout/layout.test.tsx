@@ -3,7 +3,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import en from '../../lang/en.json';
 import es from '../../lang/es.json';
-import { useSessionStore } from '../auth';
+import { signIn } from '../../test/session-fixture';
 import type { NavItem } from '../navigation';
 import { PrivateLayout } from './private-layout';
 import { PublicLayout } from './public-layout';
@@ -23,9 +23,7 @@ function renderPrivate() {
 
 describe('PrivateLayout', () => {
   it('renders texts from lang/ and filters navigation by role', () => {
-    useSessionStore
-      .getState()
-      .setSession({ id: '1', name: 'Ana', email: 'ana@x.co', role: 'SELLER' }, 'token');
+    signIn('SELLER');
     renderPrivate();
 
     expect(screen.getByRole('navigation', { name: es.layout.nav.label })).toBeTruthy();

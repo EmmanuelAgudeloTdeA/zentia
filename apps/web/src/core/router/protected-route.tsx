@@ -1,9 +1,7 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 import { PageLoader } from '../../shared/ui';
-import { useSessionStore, type RoleCode } from '../auth';
+import { CHANGE_PASSWORD_PATH, LOGIN_PATH, useSessionStore, type RoleCode } from '../auth';
 import { ForbiddenPage } from '../layout';
-
-export const LOGIN_PATH = '/login';
 
 interface ProtectedRouteProps {
   roles?: readonly RoleCode[];
@@ -11,13 +9,16 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({ roles }: ProtectedRouteProps) {
   const status = useSessionStore((state) => state.status);
-  const role = useSessionStore((state) => state.user?.role);
+  const user = useSessionStore((state) => state.user);
   const location = useLocation();
 
   if (status === 'loading') return <PageLoader />;
-  if (status === 'anonymous') {
+  if (status === 'anonymous' || !user) {
     return <Navigate to={LOGIN_PATH} replace state={{ from: location }} />;
   }
-  if (roles && (role === undefined || !roles.includes(role))) return <ForbiddenPage />;
+  if (user.mustChangePassword && location.pathname !== CHANGE_PASSWORD_PATH) {
+    return <Navigate to={CHANGE_PASSWORD_PATH} replace />;
+  }
+  if (roles && !roles.includes(user.role)) return <ForbiddenPage />;
   return <Outlet />;
 }

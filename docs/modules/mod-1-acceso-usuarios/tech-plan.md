@@ -187,3 +187,16 @@ model RefreshToken {
 | Respuesta de "no encontrado" en el alcance `OWN` | Un vendedor que pide una cotización ajena recibe el código de "no encontrado" del módulo, no 403, para no revelar que existe. |
 | Una consulta extra por petición (guard) | Búsqueda por PK; se mide en H10.2. |
 | Residuo de 15 min tras un restablecimiento | Aceptado (decisiones 70 y 81). |
+
+## 9. Notas de implementación (H1.1 y H1.2)
+Ajustes respecto a este plan, sin cambio de comportamiento:
+| Punto | Implementación |
+|---|---|
+| Puerto  | Se divide en / (jose),  (Prisma) y  (crypto). La rotación, la ventana de gracia y la reutilización viven en  y en , para probarlas con fakes. |
+| Dueño de  | El módulo  tiene el repositorio de  y ;  (H1.3) lo usará por el barril de , así la dependencia va en un solo sentido ( → ). |
+| Guard para otros módulos | ; el  queda en . |
+| Nombre del primer administrador | El seed usa la parte local del correo (no hay variable ); se edita en H1.3. |
+| Acciones de sesión del front |  solo guarda el estado; , ,  y  viven en , para que  no dependa de una feature. |
+| Errores en componentes |  reexporta ,  e ; los componentes no importan . |
+| Tests de  | La regla de lint de  excluye  (pueden importar ). |
+| Integración con PostgreSQL |  se omite si no existe . |

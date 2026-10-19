@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useLocation } from 'react-router';
 import { MenuIcon } from '../../shared/ui';
@@ -14,12 +14,15 @@ const GUTTER = 'px-4 md:px-6 lg:px-8';
 
 interface PrivateLayoutProps {
   navItems: readonly NavItem[];
+  headerEnd?: ReactNode;
 }
 
-export function PrivateLayout({ navItems }: PrivateLayoutProps) {
+export function PrivateLayout({ navItems, headerEnd }: PrivateLayoutProps) {
   const { t } = useTranslation();
   const role = useSessionStore((state) => state.user?.role);
-  const items = visibleNavItems(navItems, role);
+  const mustChangePassword = useSessionStore((state) => state.user?.mustChangePassword ?? false);
+  // Con el cambio de contraseña pendiente solo se permite esa pantalla y cerrar sesión (S1.1.4).
+  const items = mustChangePassword ? [] : visibleNavItems(navItems, role);
   const { pathname } = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
@@ -72,8 +75,11 @@ export function PrivateLayout({ navItems }: PrivateLayoutProps) {
                 ))}
               </ul>
             </nav>
-            <div className="ml-auto hidden items-center gap-3 lg:flex">
-              <LanguageSwitch tone="dark" />
+            <div className="ml-auto flex items-center gap-3">
+              <div className="hidden lg:block">
+                <LanguageSwitch tone="dark" />
+              </div>
+              {headerEnd}
             </div>
           </div>
           <div

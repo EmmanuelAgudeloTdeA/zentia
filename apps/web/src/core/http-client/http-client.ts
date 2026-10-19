@@ -8,12 +8,16 @@ export interface RequestOptions {
   body?: unknown;
   query?: Record<string, QueryValue>;
   signal?: AbortSignal;
+  /** Omite el token y los hooks de sesión (rutas de /auth que gestionan la sesión). */
+  skipAuth?: boolean;
 }
 
 export interface HttpClientHooks {
   getAccessToken?: () => string | null;
-  /** Se llama ante un 401; si devuelve true, la petición se reintenta una vez (refresh de M1). */
-  onUnauthorized?: () => Promise<boolean>;
+  /** Se llama ante un 401; si devuelve true, la petición se reintenta una vez. */
+  onUnauthorized?: (error: ApiError) => Promise<boolean>;
+  /** Se llama con cada error final (por ejemplo, 403 PASSWORD_CHANGE_REQUIRED). */
+  onError?: (error: ApiError) => void;
 }
 
 const BASE_PATH = '/api';
@@ -46,7 +50,7 @@ async function readBody(response: Response): Promise<unknown> {
 async function send(method: HttpMethod, path: string, options: RequestOptions): Promise<Response> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (options.body !== undefined) headers['Content-Type'] = 'application/json';
-  const token = hooks.getAccessToken?.();
+  const token = options.skipAuth ? null : hooks.getAccessToken?.();
   if (token) headers['Authorization'] = `Bearer ${token}`;
 
   const init: RequestInit = { method, headers, credentials: 'same-origin' };
@@ -67,12 +71,19 @@ export async function request<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   let response = await send(method, path, options);
+  let body = await readBody(response);
 
-  if (response.status === 401 && hooks.onUnauthorized && (await hooks.onUnauthorized())) {
-    response = await send(method, path, options);
+  if (response.status === 401 && !options.skipAuth && hooks.onUnauthorized) {
+    if (await hooks.onUnauthorized(toApiError(401, body))) {
+      response = await send(method, path, options);
+      body = await readBody(response);
+    }
   }
 
-  const body = await readBody(response);
-  if (!response.ok) throw toApiError(response.status, body);
+  if (!response.ok) {
+    const error = toApiError(response.status, body);
+    if (!options.skipAuth) hooks.onError?.(error);
+    throw error;
+  }
   return body as T;
 }

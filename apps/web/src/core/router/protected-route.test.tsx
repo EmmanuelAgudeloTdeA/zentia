@@ -1,16 +1,21 @@
+import type { Role } from '@zentia/shared';
 import { render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it } from 'vitest';
-import { useSessionStore } from '../auth';
-import { LOGIN_PATH, ProtectedRoute } from './protected-route';
+import { signIn } from '../../test/session-fixture';
+import { CHANGE_PASSWORD_PATH, LOGIN_PATH } from '../auth';
+import { ProtectedRoute } from './protected-route';
 
-function renderAt(path: string, roles?: readonly string[]) {
+function renderAt(path: string, roles?: readonly Role[]) {
   const router = createMemoryRouter(
     [
       { path: LOGIN_PATH, element: <p>login page</p> },
       {
         element: roles ? <ProtectedRoute roles={roles} /> : <ProtectedRoute />,
-        children: [{ path: '/private', element: <p>private page</p> }],
+        children: [
+          { path: '/private', element: <p>private page</p> },
+          { path: CHANGE_PASSWORD_PATH, element: <p>change password page</p> },
+        ],
       },
     ],
     { initialEntries: [path] },
@@ -28,21 +33,25 @@ describe('ProtectedRoute', () => {
   });
 
   it('renders the route when there is a session', () => {
-    useSessionStore
-      .getState()
-      .setSession({ id: '1', name: 'Ana', email: 'ana@x.co', role: 'SELLER' }, 'token');
+    signIn('SELLER');
     renderAt('/private');
 
     expect(screen.getByText('private page')).toBeTruthy();
   });
 
   it('shows the forbidden page when the role is not allowed', () => {
-    useSessionStore
-      .getState()
-      .setSession({ id: '1', name: 'Ana', email: 'ana@x.co', role: 'SELLER' }, 'token');
+    signIn('SELLER');
     renderAt('/private', ['ADMIN']);
 
     expect(screen.getByText('No tienes permiso para ver esta página.')).toBeTruthy();
     expect(screen.queryByText('private page')).toBeNull();
+  });
+
+  it('only allows the change-password page while mustChangePassword is set', () => {
+    signIn('ADMIN', { mustChangePassword: true });
+    const router = renderAt('/private');
+
+    expect(screen.getByText('change password page')).toBeTruthy();
+    expect(router.state.location.pathname).toBe(CHANGE_PASSWORD_PATH);
   });
 });

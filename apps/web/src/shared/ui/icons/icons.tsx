@@ -72,3 +72,41 @@ export const LockIcon = createIcon(
 );
 
 export const SpinnerIcon = createIcon(<path d="M12 3a9 9 0 109 9" />);
+
+export const EyeIcon = createIcon(
+  <>
+    <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z" />
+    <circle cx="12" cy="12" r="3" />
+  </>,
+);
+
+export const EyeOffIcon = createIcon(
+  <>
+    <path d="M10.6 5.6A9.7 9.7 0 0112 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 01-2.6 3.4M6.6 6.6C4 8.3 2.5 12 2.5 12S6 18.5 12 18.5a9.4 9.4 0 005.4-1.6" />
+    <path d="M9.9 9.9a3 3 0 004.2 4.2M3 3l18 18" />
+  </>,
+);
+
+export const ArrowRightIcon = createIcon(<path d="M5 12h14M13 6l6 6-6 6" />);
+
+export const ArrowLeftIcon = createIcon(<path d="M19 12H5M11 6l-6 6 6 6" />);
+
+export const ChevronDownIcon = createIcon(<path d="M6 9l6 6 6-6" />);
+
+export const KeyIcon = createIcon(
+  <>
+    <circle cx="8" cy="15" r="4" />
+    <path d="M10.8 12.2L20 3M16 7l3 3M14 9l2 2" />
+  </>,
+);
+
+export const LogOutIcon = createIcon(
+  <>
+    <path d="M15 4h3a2 2 0 012 2v12a2 2 0 01-2 2h-3" />
+    <path d="M10 17l-5-5 5-5M5 12h11" />
+  </>,
+);
+
+export const CheckIcon = createIcon(<path d="M5 12.5l4.5 4.5L19 7.5" />);
+
+export const CircleIcon = createIcon(<circle cx="12" cy="12" r="8" />);

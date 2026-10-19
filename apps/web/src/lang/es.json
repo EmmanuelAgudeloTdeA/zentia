@@ -7,7 +7,8 @@
     "slowLoading": "Esto está tardando más de lo normal.",
     "retry": "Reintentar",
     "back": "Volver",
-    "close": "Cerrar"
+    "close": "Cerrar",
+    "cancel": "Cancelar"
   },
   "layout": {
     "nav": {
@@ -46,13 +47,78 @@
     "NOT_FOUND": "No encontramos lo que buscas.",
     "PAYLOAD_TOO_LARGE": "El contenido enviado es demasiado grande.",
     "RATE_LIMITED": "Hiciste demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
-    "INTERNAL_ERROR": "Ocurrió un error en el servidor. Inténtalo de nuevo en unos minutos."
+    "INTERNAL_ERROR": "Ocurrió un error en el servidor. Inténtalo de nuevo en unos minutos.",
+    "INVALID_CREDENTIALS": "Correo o contraseña incorrectos.",
+    "UNAUTHENTICATED": "Inicia sesión para continuar.",
+    "TOKEN_EXPIRED": "Tu sesión expiró. Inicia sesión de nuevo.",
+    "TOKEN_INVALID": "Tu sesión no es válida. Inicia sesión de nuevo.",
+    "USER_INACTIVE": "Tu usuario está inactivo. Habla con el administrador.",
+    "FORBIDDEN": "No tienes permiso para hacer esta acción.",
+    "PASSWORD_CHANGE_REQUIRED": "Debes cambiar tu contraseña para continuar.",
+    "INVALID_REFRESH_TOKEN": "Tu sesión terminó. Inicia sesión de nuevo.",
+    "REFRESH_TOKEN_REUSED": "Por seguridad cerramos tu sesión. Inicia sesión de nuevo.",
+    "REFRESH_IN_PROGRESS": "Estamos renovando tu sesión. Inténtalo de nuevo.",
+    "INVALID_CURRENT_PASSWORD": "La contraseña actual no es correcta.",
+    "PASSWORD_REUSED": "La nueva contraseña debe ser distinta de la actual."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
     "invalid_format": "El formato no es válido.",
     "invalid_value": "El valor no es válido.",
     "too_small": "El valor es demasiado corto o pequeño.",
-    "too_big": "El valor es demasiado largo o grande."
+    "too_big": "El valor es demasiado largo o grande.",
+    "required": "Este campo es obligatorio.",
+    "email": "Escribe un correo válido.",
+    "password": {
+      "policy": "La contraseña no cumple los requisitos.",
+      "mismatch": "Las contraseñas no coinciden."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Cotizaciones",
+      "subtitle": "Ingresa con tu correo y contraseña.",
+      "email": "Correo electrónico",
+      "emailPlaceholder": "nombre@empresa.com",
+      "password": "Contraseña",
+      "submit": "Entrar",
+      "forgotHint": "¿Olvidaste tu contraseña? Pídele al administrador que te asigne una nueva.",
+      "sessionExpired": "Tu sesión terminó. Inicia sesión de nuevo."
+    },
+    "password": {
+      "show": "Mostrar contraseña",
+      "hide": "Ocultar contraseña"
+    },
+    "logout": "Cerrar sesión",
+    "changePassword": {
+      "title": "Cambiar contraseña",
+      "section": "Seguridad de la cuenta",
+      "forcedTitle": "Debes cambiar tu contraseña temporal para continuar.",
+      "forcedNotice": "Elige una contraseña nueva. Al guardarla se cerrarán tus otras sesiones.",
+      "current": "Contraseña actual o temporal",
+      "new": "Nueva contraseña",
+      "confirm": "Confirmar nueva contraseña",
+      "submit": "Cambiar contraseña",
+      "success": "Contraseña actualizada. Se cerraron tus otras sesiones."
+    },
+    "passwordPolicy": {
+      "hint": "De 10 a 72 caracteres, con al menos una letra y un número. Distinta de tu correo y de la actual.",
+      "length": "De 10 a 72 caracteres",
+      "letterAndNumber": "Letra y número",
+      "notEmail": "Distinta del correo",
+      "met": "cumplido",
+      "pending": "pendiente"
+    }
+  },
+  "userMenu": {
+    "label": "Menú de usuario",
+    "changePassword": "Cambiar contraseña"
+  },
+  "enums": {
+    "Role": {
+      "SELLER": "Vendedor",
+      "MANAGER": "Gerente comercial",
+      "ADMIN": "Administrador"
+    }
   }
 }
