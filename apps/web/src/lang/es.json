@@ -2,10 +2,28 @@
   "app": {
     "name": "Zentia"
   },
+  "common": {
+    "loading": "Cargando…",
+    "slowLoading": "Esto está tardando más de lo normal.",
+    "retry": "Reintentar",
+    "back": "Volver",
+    "close": "Cerrar"
+  },
+  "layout": {
+    "nav": {
+      "label": "Navegación principal",
+      "open": "Abrir menú",
+      "close": "Cerrar menú"
+    }
+  },
   "language": {
     "label": "Idioma",
     "es": "Español",
-    "en": "Inglés"
+    "en": "Inglés",
+    "short": {
+      "es": "ES",
+      "en": "EN"
+    }
   },
   "home": {
     "title": "Bienvenido a {{appName}}",
@@ -13,6 +31,28 @@
   },
   "notFound": {
     "title": "Página no encontrada",
-    "goHome": "Volver al inicio"
+    "description": "La dirección no existe o cambió.",
+    "goHome": "Ir al inicio"
+  },
+  "forbidden": {
+    "title": "No tienes permiso para ver esta página.",
+    "description": "Si necesitas acceso, pídeselo al administrador."
+  },
+  "errors": {
+    "UNKNOWN": "Ocurrió un error inesperado. Inténtalo de nuevo.",
+    "NETWORK_ERROR": "No hay conexión con el servidor. Revisa tu conexión e inténtalo de nuevo.",
+    "VALIDATION_ERROR": "Revisa los datos marcados e inténtalo de nuevo.",
+    "MALFORMED_JSON": "La solicitud no es válida. Recarga la página e inténtalo de nuevo.",
+    "NOT_FOUND": "No encontramos lo que buscas.",
+    "PAYLOAD_TOO_LARGE": "El contenido enviado es demasiado grande.",
+    "RATE_LIMITED": "Hiciste demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
+    "INTERNAL_ERROR": "Ocurrió un error en el servidor. Inténtalo de nuevo en unos minutos."
+  },
+  "validation": {
+    "invalid_type": "El valor no es válido.",
+    "invalid_format": "El formato no es válido.",
+    "invalid_value": "El valor no es válido.",
+    "too_small": "El valor es demasiado corto o pequeño.",
+    "too_big": "El valor es demasiado largo o grande."
   }
 }

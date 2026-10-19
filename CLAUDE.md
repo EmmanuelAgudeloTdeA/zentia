@@ -30,7 +30,7 @@ Ante una contradicción prevalece la fuente de mayor jerarquía, pero se avisa a
 | IA | `@google/genai` detrás del puerto `LLMProvider` |
 | i18n | `i18next`, `react-i18next` |
 | Front | `react-router`, `react-hook-form`, `@hookform/resolvers`, `recharts` (carga diferida) |
-| Tests | `vitest`, `supertest`, `@testing-library/react` |
+| Tests | `vitest`, `supertest`, `@testing-library/react`, `jsdom` |
 
 ## Estructura
 ```
@@ -45,7 +45,8 @@ zentia/
 │   ├── brief.md
 │   ├── prd.md
 │   ├── architecture.md
-│   └── modules/mod-<N>-<nombre>/{epics.md, tech-plan.md}
+│   ├── design/design-system.md
+│   └── modules/mod-<N>-<nombre>/{epics.md, tech-plan.md, ui-brief.md}
 ├── CLAUDE.md
 └── README.md
 ```
@@ -83,6 +84,7 @@ features/<modulo>/
 ```
 - Estado global solo en Zustand; estado local con hooks.
 - Los componentes no llaman a la API directamente; usan `services`.
+- Componentes base en `shared/ui/` según `docs/design/design-system.md`; solo tokens del tema, sin colores arbitrarios.
 
 ## Reglas de dominio (críticas)
 **Glosario:** `fechaVencimiento` (documentos) = `expiresAt` (código).
@@ -169,6 +171,7 @@ Portal del cliente, envío automático por SMTP o WhatsApp API, flujo de solicit
 - Commits con gitmoji (`:tada:` para el inicial), también cuando los haga la IA.
 - La IA nunca se agrega como autor, coautor ni ayudante: sin `Co-Authored-By`, sin "Generated with" ni ninguna otra atribución en commits, PRs, código o documentos.
 - Repositorio: https://github.com/EmmanuelAgudeloTdeA/zentia (rama principal `main`).
+- Una rama por módulo con el nombre de su carpeta (`mod-<N>-<nombre>`), creada desde la rama del módulo del que depende mientras esa no esté en `main`.
 
 ## i18n
 - Idiomas: `es` (defecto) y `en`. Carpeta `lang/` con un JSON por idioma.

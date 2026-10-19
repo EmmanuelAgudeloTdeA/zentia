@@ -184,6 +184,13 @@ Fuente: `ppi-zentia.md` (v1.7). 11 módulos, 27 hitos, ~89 stories.
 176. `TRUST_PROXY=1` en producción (un proxy HTTPS delante).
 177. Criterio de RNF-01: se cumple si al menos el 80 % de los participantes completa las tres tareas sin ayuda. La evidencia de RNF-01, RNF-05 y RNF-06 queda en `docs/qa/`.
 178. Para producción real se recomienda un plan sin suspensión por inactividad; cerrar RNF-06 requiere un equipo con Safari (macOS o iOS).
+179. Navegación del layout privado: horizontal en el encabezado desde 1024 px y panel lateral (drawer) en pantallas menores (design system D1). Reemplaza "navegación lateral" de S0.3.3.
+180. En la interfaz, la moneda se muestra como `$5.375.000` (sin decimales) y las fechas como `DD/MM/AAAA`, en ambos idiomas (design system D2 y D3).
+181. Fuente Inter autoalojada en `apps/web/public/fonts/` (sin `@fontsource/inter`) e iconos SVG propios en `apps/web/src/shared/ui/icons/` (sin librería de iconos) (design system D4 y D5).
+182. El estado de una cotización no se cambia desde la tabla del listado; las transiciones se hacen desde el detalle con su diálogo (design system D6).
+183. El sistema de diseño vive en `docs/design/design-system.md` y cada módulo con interfaz tiene `ui-brief.md`; los componentes base del front viven en `apps/web/src/shared/ui/`.
+184. Se aprueba `jsdom` (devDependency de `apps/web`) como entorno de Vitest para los tests con `@testing-library/react`.
+185. M0 incluye una página "sin permiso" (`forbidden.*` en `lang/`) y un selector de idioma en el layout público.
 
 ## Entidades previstas
 User, RefreshToken, CompanySettings, Customer, Product, Quote, QuoteItem, QuoteVersion, QuoteEvent, QuoteSequence, Interaction, Notification, Order, OrderItem.
