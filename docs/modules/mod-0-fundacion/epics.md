@@ -157,10 +157,10 @@ Como usuario de la aplicación, quiero ver la interfaz en español por defecto y
 Como usuario de la aplicación, quiero un layout con navegación y que las pantallas privadas me pidan iniciar sesión, para moverme por la aplicación con una estructura coherente.
 - **RF de origen:** — (base para RF-10)
 - **Criterios de aceptación:**
-  1. Existe un layout privado (encabezado, navegación lateral, área de contenido y selector de idioma) y uno público (para el login de M1).
+  1. Existe un layout privado (encabezado con navegación horizontal que pasa a un panel lateral por debajo de 1024 px, área de contenido y selector de idioma) y uno público (para el login de M1, con selector de idioma) (decisiones 179 y 185).
   2. La navegación se construye con entradas que cada feature registra; un rol puede filtrar las entradas (el filtrado real lo implementa M1).
   3. El componente `ProtectedRoute` lee el estado de sesión de `core/auth` (store Zustand con la forma de sesión) y redirige a `/login` si no hay sesión; mientras M1 no exista, la sesión siempre está vacía.
-  4. Hay una página 404 y un estado de carga común.
+  4. Hay una página 404, una página "sin permiso" y un estado de carga común.
   5. El layout funciona desde 360 px de ancho sin scroll horizontal.
 - **Depende de:** S0.3.2
 - **Tamaño:** M

@@ -63,8 +63,9 @@ Los puertos de negocio (`Clock`, `UnitOfWork`, `LLMProvider`, `PasswordHasher`, 
 | Tipo | Elemento | Responsabilidad |
 |---|---|---|
 | Pantalla | `NotFoundPage` | 404 de rutas del front |
-| Componente | `PrivateLayout` | Encabezado, navegación lateral, área de contenido, selector de idioma |
-| Componente | `PublicLayout` | Contenedor centrado para el login (M1) |
+| Pantalla | `ForbiddenPage` | Ruta no permitida para el rol (decisión 185) |
+| Componente | `PrivateLayout` | Encabezado con navegación horizontal y panel lateral por debajo de 1024 px (decisión 179), área de contenido, selector de idioma |
+| Componente | `PublicLayout` | Contenedor centrado para el login (M1), con selector de idioma |
 | Componente | `ProtectedRoute` | Redirige a `/login` si no hay sesión; acepta `roles?` (el filtrado real lo implementa M1) |
 | Componente | `LanguageSwitcher` | Cambia entre `es` y `en` |
 | Componente | `PageLoader`, `ErrorMessage` | Estado de carga y error traducido desde `ApiError` |
@@ -88,6 +89,7 @@ apps/web/src/
 - `layout.nav.toggle`, `layout.language.label`, `layout.language.es`, `layout.language.en`
 - `common.loading`, `common.retry`, `common.back`
 - `notFound.title`, `notFound.description`, `notFound.goHome`
+- `forbidden.title`, `forbidden.description`
 - `errors.UNKNOWN`, `errors.NETWORK_ERROR`, `errors.VALIDATION_ERROR`, `errors.MALFORMED_JSON`, `errors.NOT_FOUND`, `errors.PAYLOAD_TOO_LARGE`, `errors.RATE_LIMITED`, `errors.INTERNAL_ERROR`
 - `validation.<zodCode>` para los códigos genéricos de Zod que muestre la UI (por ejemplo, `validation.too_small`, `validation.invalid_type`)
 
