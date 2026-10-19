@@ -187,3 +187,16 @@ model RefreshToken {
 | Respuesta de "no encontrado" en el alcance `OWN` | Un vendedor que pide una cotización ajena recibe el código de "no encontrado" del módulo, no 403, para no revelar que existe. |
 | Una consulta extra por petición (guard) | Búsqueda por PK; se mide en H10.2. |
 | Residuo de 15 min tras un restablecimiento | Aceptado (decisiones 70 y 81). |
+
+## 9. Notas de implementación (H1.1 y H1.2)
+Ajustes respecto a este plan, sin cambio de comportamiento:
+| Punto | Implementación |
+|---|---|
+| Puerto `TokenService` | Se divide en `AccessTokenSigner`/`AccessTokenVerifier` (jose), `RefreshTokenRepository` (Prisma) y `SecureTokenGenerator` (crypto). La rotación, la ventana de gracia y la reutilización viven en `domain/refresh-token.ts` y en `RefreshSessionUseCase`, para probarlas con fakes. |
+| Dueño de `User` | El módulo `auth` tiene el repositorio de `User` y `RefreshToken`; `users` (H1.3) lo usará por el barril de `auth`, así la dependencia va en un solo sentido (`users` → `auth`). |
+| Guard para otros módulos | `ModuleDependencies.requireAuth({ roles?, allowPasswordChangeRequired? })`; el `Actor` queda en `req.actor`. |
+| Nombre del primer administrador | El seed usa la parte local del correo (no hay variable `ADMIN_NAME`); se edita en H1.3. |
+| Acciones de sesión del front | `core/auth/session.store.ts` solo guarda el estado; `login`, `logout`, `refresh` y `bootstrap` viven en `features/auth/services/session.service.ts`, para que `core` no dependa de una feature. |
+| Errores en componentes | `core/errors` reexporta `ApiError`, `errorKey` e `isApiError`; los componentes no importan `core/http-client`. |
+| Tests de `domain` | La regla de lint de `domain` excluye `*.test.ts` (pueden importar `vitest`). |
+| Integración con PostgreSQL | `prisma-auth.integration.test.ts` se omite si no existe `TEST_DATABASE_URL`. |

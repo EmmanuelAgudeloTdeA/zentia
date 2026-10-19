@@ -1,3 +1,4 @@
+export { AppToaster } from './app-toaster';
 export { BrandLogo, BrandMark } from './brand-mark';
 export { ForbiddenPage } from './forbidden-page';
 export { NotFoundPage } from './not-found-page';

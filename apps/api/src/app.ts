@@ -4,6 +4,7 @@ import express, { Router, type Express } from 'express';
 import helmet from 'helmet';
 import type { Logger } from 'pino';
 import { pinoHttp } from 'pino-http';
+import { SystemClock, type Clock } from './core/clock/index.js';
 import type { Env } from './core/env/index.js';
 import { createGeneralLimiter, errorHandler, notFoundHandler } from './core/http/index.js';
 import {
@@ -11,14 +12,21 @@ import {
   createCoreRegistry,
   createDocsRouter,
 } from './core/openapi/index.js';
-import { createModules } from './modules/index.js';
+import { createModules, type InfrastructureOverrides } from './modules/index.js';
 
 export interface AppOptions {
   env: Env;
   logger: Logger;
+  clock?: Clock;
+  overrides?: InfrastructureOverrides;
 }
 
-export function createApp({ env, logger }: AppOptions): Express {
+export function createApp({
+  env,
+  logger,
+  clock = new SystemClock(),
+  overrides,
+}: AppOptions): Express {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', env.TRUST_PROXY);
@@ -43,7 +51,12 @@ export function createApp({ env, logger }: AppOptions): Express {
   );
   app.use(express.json({ limit: '100kb' }));
 
-  const modules = createModules({ publicLimiter: createGeneralLimiter() });
+  const modules = createModules({
+    env,
+    clock,
+    publicLimiter: createGeneralLimiter(),
+    ...(overrides ? { overrides } : {}),
+  });
   const api = Router();
   for (const module of modules) {
     api.use(module.basePath, module.router);

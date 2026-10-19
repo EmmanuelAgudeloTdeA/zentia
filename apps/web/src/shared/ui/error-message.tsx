@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { errorKey } from '../../core/http-client';
+import { errorKey } from '../../core/errors';
 import { Alert } from './alert';
 import { Button } from './button';
 

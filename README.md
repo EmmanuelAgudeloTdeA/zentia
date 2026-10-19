@@ -18,22 +18,33 @@ La documentación del proyecto (brief, PRD, arquitectura, módulos y decisiones)
 pnpm install
 cp apps/api/.env.example apps/api/.env
 pnpm db:up
+pnpm --filter @zentia/api prisma:migrate   # aplica las migraciones
+pnpm --filter @zentia/api db:seed          # crea el primer administrador (ADMIN_EMAIL / ADMIN_PASSWORD)
 ```
+
+El primer administrador entra con `mustChangePassword` y debe cambiar la contraseña al iniciar sesión.
 
 ## Variables de entorno (`apps/api/.env`)
 
-| Variable       | Descripción                             | Valor por defecto                |
-| -------------- | --------------------------------------- | -------------------------------- |
-| `NODE_ENV`     | `development`, `test` o `production`    | `development`                    |
-| `PORT`         | Puerto de la API                        | `3000`                           |
-| `DATABASE_URL` | Conexión a PostgreSQL                   | — (obligatoria)                  |
-| `TZ`           | Zona horaria del proceso                | `America/Bogota`                 |
-| `LOG_LEVEL`    | Nivel de log de pino                    | `info`                           |
-| `CORS_ORIGIN`  | Orígenes permitidos, separados por coma | `http://localhost:5173`          |
-| `DOCS_ENABLED` | Swagger en `/api/docs`                  | `true` (`false` en `production`) |
-| `TRUST_PROXY`  | `false`, `true` o número de proxies     | `false`                          |
+| Variable                        | Descripción                                      | Valor por defecto                |
+| ------------------------------- | ------------------------------------------------ | -------------------------------- |
+| `NODE_ENV`                      | `development`, `test` o `production`             | `development`                    |
+| `PORT`                          | Puerto de la API                                 | `3000`                           |
+| `DATABASE_URL`                  | Conexión a PostgreSQL                            | — (obligatoria)                  |
+| `TZ`                            | Zona horaria del proceso                         | `America/Bogota`                 |
+| `LOG_LEVEL`                     | Nivel de log de pino                             | `info`                           |
+| `CORS_ORIGIN`                   | Orígenes permitidos, separados por coma          | `http://localhost:5173`          |
+| `DOCS_ENABLED`                  | Swagger en `/api/docs`                           | `true` (`false` en `production`) |
+| `TRUST_PROXY`                   | `false`, `true` o número de proxies              | `false`                          |
+| `JWT_ACCESS_SECRET`             | Secreto HS256 del access token (≥ 32 caracteres) | — (obligatoria)                  |
+| `ACCESS_TOKEN_TTL`              | Duración del access token                        | `15m`                            |
+| `REFRESH_TOKEN_TTL`             | Duración del refresh token                       | `7d`                             |
+| `BCRYPT_COST`                   | Costo de bcrypt (4–15)                           | `12`                             |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Solo para el seed del primer administrador       | —                                |
 
 La API valida las variables al arrancar y se detiene si alguna falta o es inválida.
+
+Los tests de integración con PostgreSQL solo corren si se define `TEST_DATABASE_URL` apuntando a una base migrada (por ejemplo, `zentia_test`).
 
 ## Levantar el proyecto
 

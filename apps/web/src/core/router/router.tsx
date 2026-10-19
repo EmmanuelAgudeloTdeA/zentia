@@ -1,8 +1,9 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
+import * as auth from '../../features/auth';
 import * as home from '../../features/home';
 import { NotFoundPage, PrivateLayout, PublicLayout, SessionLayout } from '../layout';
 import type { NavItem } from '../navigation';
-import { LOGIN_PATH, ProtectedRoute } from './protected-route';
+import { ProtectedRoute } from './protected-route';
 
 interface FeatureModule {
   routes: RouteObject[];
@@ -10,29 +11,27 @@ interface FeatureModule {
   publicRoutes?: RouteObject[];
 }
 
-const FEATURES: readonly FeatureModule[] = [home];
+const FEATURES: readonly FeatureModule[] = [home, auth];
 
 const navItems = FEATURES.flatMap((feature) => feature.navItems);
+const headerEnd = <auth.UserMenu />;
 
 export const routes: RouteObject[] = [
   {
     element: <PublicLayout />,
-    children: [
-      { path: LOGIN_PATH, element: null },
-      ...FEATURES.flatMap((feature) => feature.publicRoutes ?? []),
-    ],
+    children: FEATURES.flatMap((feature) => feature.publicRoutes ?? []),
   },
   {
     element: <ProtectedRoute />,
     children: [
       {
-        element: <PrivateLayout navItems={navItems} />,
+        element: <PrivateLayout navItems={navItems} headerEnd={headerEnd} />,
         children: FEATURES.flatMap((feature) => feature.routes),
       },
     ],
   },
   {
-    element: <SessionLayout navItems={navItems} />,
+    element: <SessionLayout navItems={navItems} headerEnd={headerEnd} />,
     children: [{ path: '*', element: <NotFoundPage /> }],
   },
 ];

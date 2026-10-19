@@ -7,7 +7,8 @@
     "slowLoading": "This is taking longer than usual.",
     "retry": "Retry",
     "back": "Back",
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel"
   },
   "layout": {
     "nav": {
@@ -46,13 +47,78 @@
     "NOT_FOUND": "We couldn't find what you're looking for.",
     "PAYLOAD_TOO_LARGE": "The submitted content is too large.",
     "RATE_LIMITED": "Too many attempts. Wait a few minutes and try again.",
-    "INTERNAL_ERROR": "A server error occurred. Try again in a few minutes."
+    "INTERNAL_ERROR": "A server error occurred. Try again in a few minutes.",
+    "INVALID_CREDENTIALS": "Incorrect email or password.",
+    "UNAUTHENTICATED": "Sign in to continue.",
+    "TOKEN_EXPIRED": "Your session expired. Sign in again.",
+    "TOKEN_INVALID": "Your session is not valid. Sign in again.",
+    "USER_INACTIVE": "Your user is inactive. Contact the administrator.",
+    "FORBIDDEN": "You don't have permission to do this.",
+    "PASSWORD_CHANGE_REQUIRED": "You must change your password to continue.",
+    "INVALID_REFRESH_TOKEN": "Your session ended. Sign in again.",
+    "REFRESH_TOKEN_REUSED": "For security, we closed your session. Sign in again.",
+    "REFRESH_IN_PROGRESS": "We are renewing your session. Try again.",
+    "INVALID_CURRENT_PASSWORD": "The current password is not correct.",
+    "PASSWORD_REUSED": "The new password must be different from the current one."
   },
   "validation": {
     "invalid_type": "The value is not valid.",
     "invalid_format": "The format is not valid.",
     "invalid_value": "The value is not valid.",
     "too_small": "The value is too short or too small.",
-    "too_big": "The value is too long or too large."
+    "too_big": "The value is too long or too large.",
+    "required": "This field is required.",
+    "email": "Enter a valid email.",
+    "password": {
+      "policy": "The password does not meet the requirements.",
+      "mismatch": "The passwords do not match."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Quotes",
+      "subtitle": "Sign in with your email and password.",
+      "email": "Email",
+      "emailPlaceholder": "name@company.com",
+      "password": "Password",
+      "submit": "Sign in",
+      "forgotHint": "Forgot your password? Ask the administrator to assign you a new one.",
+      "sessionExpired": "Your session ended. Sign in again."
+    },
+    "password": {
+      "show": "Show password",
+      "hide": "Hide password"
+    },
+    "logout": "Sign out",
+    "changePassword": {
+      "title": "Change password",
+      "section": "Account security",
+      "forcedTitle": "You must change your temporary password to continue.",
+      "forcedNotice": "Choose a new password. Saving it will close your other sessions.",
+      "current": "Current or temporary password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Change password",
+      "success": "Password updated. Your other sessions were closed."
+    },
+    "passwordPolicy": {
+      "hint": "10 to 72 characters, with at least one letter and one number. Different from your email and your current password.",
+      "length": "10 to 72 characters",
+      "letterAndNumber": "Letter and number",
+      "notEmail": "Not your email",
+      "met": "met",
+      "pending": "pending"
+    }
+  },
+  "userMenu": {
+    "label": "User menu",
+    "changePassword": "Change password"
+  },
+  "enums": {
+    "Role": {
+      "SELLER": "Sales rep",
+      "MANAGER": "Sales manager",
+      "ADMIN": "Administrator"
+    }
   }
 }
