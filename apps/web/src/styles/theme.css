@@ -1,0 +1,175 @@
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/Inter-Regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/Inter-Medium.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url('/fonts/Inter-SemiBold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/Inter-Bold.woff2') format('woff2');
+}
+
+/* Tokens de docs/design/design-system.md; se reinicia la paleta para usar solo colores del sistema. */
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-primary-50: #eef4fb;
+  --color-primary-100: #d9e6f6;
+  --color-primary-200: #b3ccec;
+  --color-primary-300: #84aadd;
+  --color-primary-400: #5584c8;
+  --color-primary-500: #2f64ae;
+  --color-primary-600: #1f4f94;
+  --color-primary-700: #1a4079;
+  --color-primary-800: #163463;
+  --color-primary-900: #0f2648;
+  --color-primary-950: #0a1a33;
+
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f7f9fc;
+  --color-neutral-100: #eef2f6;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  --color-success-fg: #166534;
+  --color-success-bg: #eaf7ee;
+  --color-success-border: #a7ddb8;
+  --color-warning-fg: #92400e;
+  --color-warning-bg: #fef4e2;
+  --color-warning-border: #f6cf8e;
+  --color-danger-fg: #b42318;
+  --color-danger-bg: #fdeeec;
+  --color-danger-border: #f5bdb6;
+  --color-danger-solid: #c7291c;
+  --color-info-fg: #1f4f94;
+  --color-info-bg: #eaf1fb;
+  --color-info-border: #b3ccec;
+
+  --color-status-draft-fg: #475569;
+  --color-status-draft-bg: #f1f5f9;
+  --color-status-draft-border: #cbd5e1;
+  --color-status-sent-fg: #1f4f94;
+  --color-status-sent-bg: #eaf1fb;
+  --color-status-sent-border: #b3ccec;
+  --color-status-approved-fg: #166534;
+  --color-status-approved-bg: #eaf7ee;
+  --color-status-approved-border: #a7ddb8;
+  --color-status-rejected-fg: #b42318;
+  --color-status-rejected-bg: #fdeeec;
+  --color-status-rejected-border: #f5bdb6;
+  --color-status-expired-fg: #92400e;
+  --color-status-expired-bg: #fef4e2;
+  --color-status-expired-border: #f6cf8e;
+  --color-status-voided-fg: #57534e;
+  --color-status-voided-bg: #f5f5f4;
+  --color-status-voided-border: #a8a29e;
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --text-display: 1.75rem;
+  --text-display--line-height: 2.25rem;
+  --text-display--font-weight: 700;
+  --text-h1: 1.5rem;
+  --text-h1--line-height: 2rem;
+  --text-h1--font-weight: 700;
+  --text-h2: 1.125rem;
+  --text-h2--line-height: 1.75rem;
+  --text-h2--font-weight: 600;
+  --text-h3: 0.9375rem;
+  --text-h3--line-height: 1.375rem;
+  --text-h3--font-weight: 600;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.25rem;
+  --text-body-sm: 0.8125rem;
+  --text-body-sm--line-height: 1.125rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-overline: 0.6875rem;
+  --text-overline--line-height: 1rem;
+  --text-overline--letter-spacing: 0.06em;
+  --text-overline--font-weight: 600;
+  --text-kpi: 2rem;
+  --text-kpi--line-height: 2.5rem;
+  --text-kpi--letter-spacing: -0.02em;
+  --text-kpi--font-weight: 700;
+  --text-button: 0.8125rem;
+  --text-button--line-height: 1rem;
+  --text-button--letter-spacing: 0.04em;
+  --text-button--font-weight: 600;
+
+  --spacing: 0.25rem;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  --shadow-xs: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-sm: 0 1px 3px rgb(15 23 42 / 0.08), 0 1px 2px rgb(15 23 42 / 0.04);
+  --shadow-md: 0 8px 24px -6px rgb(15 23 42 / 0.16);
+  --shadow-lg: 0 24px 48px -12px rgb(15 23 42 / 0.28);
+  --shadow-focus: 0 0 0 3px rgb(47 100 174 / 0.35);
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --container-content: 80rem;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    font-size: 100%;
+    color: var(--color-neutral-900);
+    background: var(--color-neutral-100);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+  }
+
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-focus);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

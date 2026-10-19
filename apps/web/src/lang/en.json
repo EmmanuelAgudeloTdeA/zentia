@@ -2,10 +2,28 @@
   "app": {
     "name": "Zentia"
   },
+  "common": {
+    "loading": "Loading…",
+    "slowLoading": "This is taking longer than usual.",
+    "retry": "Retry",
+    "back": "Back",
+    "close": "Close"
+  },
+  "layout": {
+    "nav": {
+      "label": "Main navigation",
+      "open": "Open menu",
+      "close": "Close menu"
+    }
+  },
   "language": {
     "label": "Language",
     "es": "Spanish",
-    "en": "English"
+    "en": "English",
+    "short": {
+      "es": "ES",
+      "en": "EN"
+    }
   },
   "home": {
     "title": "Welcome to {{appName}}",
@@ -13,6 +31,28 @@
   },
   "notFound": {
     "title": "Page not found",
-    "goHome": "Back to home"
+    "description": "The address does not exist or has changed.",
+    "goHome": "Go to home"
+  },
+  "forbidden": {
+    "title": "You don't have permission to view this page.",
+    "description": "If you need access, ask the administrator."
+  },
+  "errors": {
+    "UNKNOWN": "An unexpected error occurred. Try again.",
+    "NETWORK_ERROR": "Can't connect to the server. Check your connection and try again.",
+    "VALIDATION_ERROR": "Check the highlighted fields and try again.",
+    "MALFORMED_JSON": "The request is not valid. Reload the page and try again.",
+    "NOT_FOUND": "We couldn't find what you're looking for.",
+    "PAYLOAD_TOO_LARGE": "The submitted content is too large.",
+    "RATE_LIMITED": "Too many attempts. Wait a few minutes and try again.",
+    "INTERNAL_ERROR": "A server error occurred. Try again in a few minutes."
+  },
+  "validation": {
+    "invalid_type": "The value is not valid.",
+    "invalid_format": "The format is not valid.",
+    "invalid_value": "The value is not valid.",
+    "too_small": "The value is too short or too small.",
+    "too_big": "The value is too long or too large."
   }
 }

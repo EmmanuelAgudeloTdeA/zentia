@@ -1,0 +1,91 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { NavLink, Outlet, useLocation } from 'react-router';
+import { MenuIcon } from '../../shared/ui';
+import { useSessionStore } from '../auth';
+import { LanguageSwitch } from '../i18n';
+import { visibleNavItems, type NavItem } from '../navigation';
+import { BrandMark } from './brand-mark';
+import { NavDrawer } from './nav-drawer';
+import { PageHeaderSlotContext } from './page-header';
+
+const DRAWER_ID = 'main-nav-drawer';
+const GUTTER = 'px-4 md:px-6 lg:px-8';
+
+interface PrivateLayoutProps {
+  navItems: readonly NavItem[];
+}
+
+export function PrivateLayout({ navItems }: PrivateLayoutProps) {
+  const { t } = useTranslation();
+  const role = useSessionStore((state) => state.user?.role);
+  const items = visibleNavItems(navItems, role);
+  const { pathname } = useLocation();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+
+  const closeDrawer = useCallback(() => {
+    setDrawerOpen(false);
+    toggleRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
+
+  return (
+    <PageHeaderSlotContext.Provider value={headerSlot}>
+      <div className="min-h-screen bg-neutral-100 text-neutral-900">
+        <header className="bg-linear-120 from-primary-950 via-primary-800 to-primary-600 text-white">
+          <div className={`mx-auto flex h-18 max-w-content items-center gap-3 ${GUTTER}`}>
+            <button
+              ref={toggleRef}
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              aria-label={t('layout.nav.open')}
+              aria-expanded={drawerOpen}
+              aria-controls={DRAWER_ID}
+              className="-ml-2 inline-flex size-10 items-center justify-center rounded-md hover:bg-white/10 lg:hidden"
+            >
+              <MenuIcon />
+            </button>
+            <BrandMark />
+            <nav aria-label={t('layout.nav.label')} className="ml-6 hidden lg:block">
+              <ul className="flex items-center gap-1">
+                {items.map((item) => (
+                  <li key={item.to}>
+                    <NavLink
+                      to={item.to}
+                      end={item.to === '/'}
+                      className={({ isActive }) =>
+                        `block whitespace-nowrap rounded-md px-3 py-2 text-body font-medium transition-colors duration-150 ${
+                          isActive
+                            ? 'bg-white/15 text-white'
+                            : 'text-white/80 hover:bg-white/10 hover:text-white'
+                        }`
+                      }
+                    >
+                      {t(item.labelKey)}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            <div className="ml-auto hidden items-center gap-3 lg:flex">
+              <LanguageSwitch tone="dark" />
+            </div>
+          </div>
+          <div
+            ref={setHeaderSlot}
+            className={`mx-auto max-w-content pb-6 empty:hidden ${GUTTER}`}
+          />
+        </header>
+        <main className={`mx-auto max-w-content py-6 ${GUTTER}`}>
+          <Outlet />
+        </main>
+        {drawerOpen ? <NavDrawer id={DRAWER_ID} items={items} onClose={closeDrawer} /> : null}
+      </div>
+    </PageHeaderSlotContext.Provider>
+  );
+}
