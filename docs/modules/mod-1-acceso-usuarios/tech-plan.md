@@ -192,11 +192,11 @@ model RefreshToken {
 Ajustes respecto a este plan, sin cambio de comportamiento:
 | Punto | Implementación |
 |---|---|
-| Puerto  | Se divide en / (jose),  (Prisma) y  (crypto). La rotación, la ventana de gracia y la reutilización viven en  y en , para probarlas con fakes. |
-| Dueño de  | El módulo  tiene el repositorio de  y ;  (H1.3) lo usará por el barril de , así la dependencia va en un solo sentido ( → ). |
-| Guard para otros módulos | ; el  queda en . |
-| Nombre del primer administrador | El seed usa la parte local del correo (no hay variable ); se edita en H1.3. |
-| Acciones de sesión del front |  solo guarda el estado; , ,  y  viven en , para que  no dependa de una feature. |
-| Errores en componentes |  reexporta ,  e ; los componentes no importan . |
-| Tests de  | La regla de lint de  excluye  (pueden importar ). |
-| Integración con PostgreSQL |  se omite si no existe . |
+| Puerto `TokenService` | Se divide en `AccessTokenSigner`/`AccessTokenVerifier` (jose), `RefreshTokenRepository` (Prisma) y `SecureTokenGenerator` (crypto). La rotación, la ventana de gracia y la reutilización viven en `domain/refresh-token.ts` y en `RefreshSessionUseCase`, para probarlas con fakes. |
+| Dueño de `User` | El módulo `auth` tiene el repositorio de `User` y `RefreshToken`; `users` (H1.3) lo usará por el barril de `auth`, así la dependencia va en un solo sentido (`users` → `auth`). |
+| Guard para otros módulos | `ModuleDependencies.requireAuth({ roles?, allowPasswordChangeRequired? })`; el `Actor` queda en `req.actor`. |
+| Nombre del primer administrador | El seed usa la parte local del correo (no hay variable `ADMIN_NAME`); se edita en H1.3. |
+| Acciones de sesión del front | `core/auth/session.store.ts` solo guarda el estado; `login`, `logout`, `refresh` y `bootstrap` viven en `features/auth/services/session.service.ts`, para que `core` no dependa de una feature. |
+| Errores en componentes | `core/errors` reexporta `ApiError`, `errorKey` e `isApiError`; los componentes no importan `core/http-client`. |
+| Tests de `domain` | La regla de lint de `domain` excluye `*.test.ts` (pueden importar `vitest`). |
+| Integración con PostgreSQL | `prisma-auth.integration.test.ts` se omite si no existe `TEST_DATABASE_URL`. |
