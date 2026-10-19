@@ -1,1 +1,6 @@
-export type { ModuleDefinition, ModuleDependencies } from './module-definition.js';
+export type {
+  ModuleDefinition,
+  ModuleDependencies,
+  RequireAuth,
+  RequireAuthOptions,
+} from './module-definition.js';

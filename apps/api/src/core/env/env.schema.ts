@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { parseDurationSeconds } from './duration.js';
 
 const booleanString = z.enum(['true', 'false']).transform((value) => value === 'true');
 
@@ -13,6 +14,17 @@ const trustProxy = z
     ctx.addIssue({ code: 'custom', message: 'TRUST_PROXY must be true, false or a hop count' });
     return z.NEVER;
   });
+
+const durationSeconds = (fallback: string) =>
+  z
+    .string()
+    .default(fallback)
+    .transform((value, ctx) => {
+      const seconds = parseDurationSeconds(value);
+      if (seconds !== null) return seconds;
+      ctx.addIssue({ code: 'custom', message: 'Expected a duration like 15m or 7d' });
+      return z.NEVER;
+    });
 
 export const envSchema = z
   .object({
@@ -34,6 +46,10 @@ export const envSchema = z
       ),
     DOCS_ENABLED: booleanString.optional(),
     TRUST_PROXY: trustProxy,
+    JWT_ACCESS_SECRET: z.string().min(32),
+    ACCESS_TOKEN_TTL: durationSeconds('15m'),
+    REFRESH_TOKEN_TTL: durationSeconds('7d'),
+    BCRYPT_COST: z.coerce.number().int().min(4).max(15).default(12),
   })
   .transform((env) => ({
     ...env,

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { EnvValidationError, loadEnv } from './load-env.js';
 
-const base = { DATABASE_URL: 'postgresql://zentia:zentia@localhost:5432/zentia' };
+const base = {
+  DATABASE_URL: 'postgresql://zentia:zentia@localhost:5432/zentia',
+  JWT_ACCESS_SECRET: 'x'.repeat(32),
+};
 
 describe('loadEnv', () => {
   it('applies defaults', () => {
@@ -10,6 +13,13 @@ describe('loadEnv', () => {
     expect(env.TZ).toBe('America/Bogota');
     expect(env.DOCS_ENABLED).toBe(true);
     expect(env.TRUST_PROXY).toBe(false);
+    expect(env.ACCESS_TOKEN_TTL).toBe(900);
+    expect(env.REFRESH_TOKEN_TTL).toBe(604_800);
+    expect(env.BCRYPT_COST).toBe(12);
+  });
+
+  it('requires a JWT secret of at least 32 characters', () => {
+    expect(() => loadEnv({ ...base, JWT_ACCESS_SECRET: 'short' })).toThrow(EnvValidationError);
   });
 
   it('disables docs by default in production', () => {

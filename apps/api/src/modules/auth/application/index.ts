@@ -1,0 +1,10 @@
+export { assertCanAccess } from './access-scope.js';
+export type { AuthDependencies, AuthInfrastructure } from './auth-dependencies.js';
+export { AuthenticateRequestUseCase } from './authenticate-request.use-case.js';
+export { ChangeOwnPasswordUseCase } from './change-own-password.use-case.js';
+export { LoginUseCase } from './login.use-case.js';
+export { LogoutUseCase } from './logout.use-case.js';
+export type * from './ports/index.js';
+export { RefreshSessionUseCase } from './refresh-session.use-case.js';
+export { SeedFirstAdminUseCase, type SeedFirstAdminResult } from './seed-first-admin.use-case.js';
+export { issueSession, toUserDto, type IssuedSession } from './session.js';

@@ -31,7 +31,7 @@ describe('API base', () => {
   });
 
   it('hides the docs when DOCS_ENABLED is false', async () => {
-    const response = await request(createTestApp({ DOCS_ENABLED: 'false' })).get(
+    const response = await request(createTestApp({ env: { DOCS_ENABLED: 'false' } })).get(
       '/api/docs/openapi.json',
     );
     expect(response.status).toBe(404);
