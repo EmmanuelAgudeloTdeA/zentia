@@ -17,12 +17,23 @@ La documentación del proyecto (brief, PRD, arquitectura, módulos y decisiones)
 ```bash
 pnpm install
 cp apps/api/.env.example apps/api/.env
+# Completa en apps/api/.env antes de seguir:
+#   JWT_ACCESS_SECRET → genérala con el comando de abajo
+#   ADMIN_EMAIL / ADMIN_PASSWORD → la contraseña necesita mínimo 10 caracteres, con letras y números
 pnpm db:up
 pnpm --filter @zentia/api prisma:migrate   # aplica las migraciones
 pnpm --filter @zentia/api db:seed          # crea el primer administrador (ADMIN_EMAIL / ADMIN_PASSWORD)
 ```
 
 El primer administrador entra con `mustChangePassword` y debe cambiar la contraseña al iniciar sesión.
+
+`JWT_ACCESS_SECRET` es la clave con la que la API firma los access tokens. Cada `.env` necesita una propia, aleatoria y de al menos 32 caracteres; nunca se sube al repositorio. Para generarla:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Si falta, la API se detiene al arrancar con `Invalid environment variables` y el login no responde.
 
 ## Variables de entorno (`apps/api/.env`)
 
