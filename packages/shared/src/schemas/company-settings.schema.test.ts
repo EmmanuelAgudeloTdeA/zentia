@@ -85,5 +85,9 @@ describe('updateCompanyProfileSchema', () => {
     expect(updateCompanyProfileSchema.safeParse({ email: 'no-es-correo' }).success).toBe(false);
     expect(updateCompanyProfileSchema.safeParse({ name: 'x'.repeat(151) }).success).toBe(false);
     expect(updateCompanyProfileSchema.safeParse({ documentLocale: 'fr' }).success).toBe(false);
+    expect(updateCompanyProfileSchema.safeParse({ city: 'x'.repeat(101) }).success).toBe(false);
+    expect(updateCompanyProfileSchema.safeParse({ bankAccounts: 'x'.repeat(1001) }).success).toBe(
+      false,
+    );
   });
 });

@@ -12,8 +12,11 @@ model CompanySettings {
   name                 String?        @db.VarChar(150)
   taxId                String?        @db.VarChar(30)
   address              String?        @db.VarChar(250)
+  city                 String?        @db.VarChar(100)
   phone                String?        @db.VarChar(30)
   email                String?        @db.VarChar(150)
+  website              String?        @db.VarChar(150)
+  bankAccounts         String?        @db.Text
   commercialTerms      String?        @db.Text
   documentLocale       DocumentLocale @default(es)
   logoDataUrl          String?        @db.Text
@@ -46,7 +49,7 @@ model CompanySettings {
 | GET | `/api/company/branding` | Público (rate limit general) | — | 200 `{ name, hasLogo, logoVersion }` | 429 |
 | GET | `/api/company/logo` | Público (rate limit general) | — | 200 binario (`image/png` \| `image/jpeg`), `Cache-Control: public, max-age=300`, `ETag: "logo-<logoVersion>"`; 304 si coincide `If-None-Match` | 404 `LOGO_NOT_FOUND`, 429 |
 | GET | `/api/company/settings` | Autenticado | — | 200 `CompanySettingsDto` | guard |
-| PATCH | `/api/company/profile` | `ADMIN` | `{ name?, taxId?, address?, phone?, email?, commercialTerms?, documentLocale? }` | 200 `CompanySettingsDto` | 400 `VALIDATION_ERROR` |
+| PATCH | `/api/company/profile` | `ADMIN` | `{ name?, taxId?, address?, city?, phone?, email?, website?, bankAccounts?, commercialTerms?, documentLocale? }` | 200 `CompanySettingsDto` | 400 `VALIDATION_ERROR` |
 | PATCH | `/api/company/parameters` | `ADMIN` | `{ defaultVatRate?, validityDays?, discountLimitSeller?, discountLimitManager?, discountLimitAdmin?, shippingTaxable?, expiringAlertDays?, followUpDays?, coldStartThreshold? }` | 200 `CompanySettingsDto` | 400 `VALIDATION_ERROR` |
 | PUT | `/api/company/logo` | `ADMIN` | `{ mimeType: 'image/png' \| 'image/jpeg', data: base64 }` (parser propio, 1 MB) | 200 `{ hasLogo: true, logoVersion }` | 400 `LOGO_INVALID_TYPE`, 400 `LOGO_TOO_LARGE`, 413 `PAYLOAD_TOO_LARGE` |
 | DELETE | `/api/company/logo` | `ADMIN` | — | 204 | — |
@@ -73,7 +76,7 @@ model CompanySettings {
 | `SettingsReader` (público, barril) | `getCommercialParameters(): CommercialParametersDto`, `getDocumentProfile(): DocumentProfileDto` | Implementado sobre `CompanySettingsRepository` |
 
 `CommercialParametersDto = { defaultVatRate, validityDays, discountLimits: { SELLER, MANAGER, ADMIN }, shippingTaxable, expiringAlertDays, followUpDays, coldStartThreshold }`. Los límites usan `Decimal`.
-`DocumentProfileDto = { name, taxId, address, phone, email, commercialTerms, documentLocale, logoDataUrl }`.
+`DocumentProfileDto = { name, taxId, address, city, phone, email, website, bankAccounts, commercialTerms, documentLocale, logoDataUrl }`.
 
 ## 4. Front
 | Tipo | Elemento | Responsabilidad |
@@ -89,7 +92,7 @@ model CompanySettings {
 ## 5. Claves de `lang/` (front)
 - `nav.settings`
 - `settings.title`, `settings.tabs.profile`, `settings.tabs.parameters`, `settings.saved`
-- `settings.profile.name`, `settings.profile.taxId`, `settings.profile.address`, `settings.profile.phone`, `settings.profile.email`, `settings.profile.commercialTerms`, `settings.profile.documentLocale`
+- `settings.profile.name`, `settings.profile.taxId`, `settings.profile.address`, `settings.profile.city`, `settings.profile.phone`, `settings.profile.email`, `settings.profile.website`, `settings.profile.bankAccounts`, `settings.profile.commercialTerms`, `settings.profile.documentLocale`
 - `settings.logo.title`, `settings.logo.upload`, `settings.logo.remove`, `settings.logo.confirmRemove`, `settings.logo.hint`, `settings.logo.preview`
 - `settings.parameters.defaultVatRate`, `settings.parameters.validityDays`, `settings.parameters.discountLimitSeller`, `settings.parameters.discountLimitManager`, `settings.parameters.discountLimitAdmin`, `settings.parameters.shippingTaxable`, `settings.parameters.expiringAlertDays`, `settings.parameters.followUpDays`, `settings.parameters.coldStartThreshold`, `settings.parameters.futureOnlyNotice`
 - `enums.VatRate.GENERAL_19`, `enums.VatRate.REDUCED_5`, `enums.VatRate.EXEMPT`
@@ -173,3 +176,4 @@ Ajustes respecto a este plan, sin cambio de comportamiento:
 | Branding en el front | `core/branding/branding.store.ts` guarda `{ name, hasLogo, logoVersion, status }`; `loadBranding()` vive en `features/company-settings/services` (igual que la sesión en M1) y se llama desde `main.tsx`. `BrandLogo`, `BrandMark`, `PublicLayout` y `NavDrawer` usan `useBrandName()`. |
 | Componentes base nuevos | `Select`, `TextArea`, `Switch`, `SectionCard`, `Tabs` y `ConfirmDialog` en `shared/ui`, según el design system. |
 | Integración con PostgreSQL | `prisma-company-settings.integration.test.ts` se omite si no existe `TEST_DATABASE_URL`. |
+| Ciudad, sitio web y cuentas bancarias | Agregados a pedido de la responsable del módulo, tomando como referencia un cotizador real: `city` (100), `website` (150, texto libre) y `bankAccounts` (texto de hasta 1000 caracteres, una cuenta por línea con el número después de `\|`). Migración aparte `m2_company_contact_and_bank`. Se exponen en `DocumentProfileDto` para que M5 los muestre en el PDF. |

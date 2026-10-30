@@ -5,8 +5,11 @@ export interface CompanySettings {
   name: string | null;
   taxId: string | null;
   address: string | null;
+  city: string | null;
   phone: string | null;
   email: string | null;
+  website: string | null;
+  bankAccounts: string | null;
   commercialTerms: string | null;
   documentLocale: DocumentLocale;
   logoDataUrl: string | null;
@@ -25,15 +28,27 @@ export interface CompanySettings {
 
 export type CompanyProfile = Pick<
   CompanySettings,
-  'name' | 'taxId' | 'address' | 'phone' | 'email' | 'commercialTerms' | 'documentLocale'
+  | 'name'
+  | 'taxId'
+  | 'address'
+  | 'city'
+  | 'phone'
+  | 'email'
+  | 'website'
+  | 'bankAccounts'
+  | 'commercialTerms'
+  | 'documentLocale'
 >;
 
 export const DEFAULT_COMPANY_SETTINGS: Omit<CompanySettings, 'updatedAt'> = {
   name: null,
   taxId: null,
   address: null,
+  city: null,
   phone: null,
   email: null,
+  website: null,
+  bankAccounts: null,
   commercialTerms: null,
   documentLocale: 'es',
   logoDataUrl: null,

@@ -17,8 +17,11 @@ function settingsFixture(overrides: Partial<CompanySettingsDto> = {}): CompanySe
     name: 'Acme SAS',
     taxId: null,
     address: null,
+    city: null,
     phone: null,
     email: null,
+    website: null,
+    bankAccounts: null,
     commercialTerms: null,
     documentLocale: 'es',
     hasLogo: false,
@@ -90,8 +93,28 @@ describe('Company profile tab', () => {
     fireEvent.click(screen.getByRole('button', { name: es.settings.profile.submit }));
 
     await waitFor(() => expect(update).toHaveBeenCalled());
-    expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Nueva SAS', email: null });
+    expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Nueva SAS', email: null, city: null });
     expect(await screen.findByRole('link', { name: /Nueva SAS/ })).toBeTruthy();
+  });
+
+  it('sends city, website and bank accounts', async () => {
+    signIn('ADMIN');
+    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
+    const update = vi.spyOn(companyService, 'updateProfile').mockResolvedValue(settingsFixture());
+    renderSettings();
+
+    await screen.findByDisplayValue('Acme SAS');
+    fill(es.settings.profile.city, 'Medellín');
+    fill(es.settings.profile.website, 'www.acme.co');
+    fill(es.settings.profile.bankAccounts, 'Ahorros Bancolombia | 236 279 66075');
+    fireEvent.click(screen.getByRole('button', { name: es.settings.profile.submit }));
+
+    await waitFor(() => expect(update).toHaveBeenCalled());
+    expect(update.mock.calls[0]?.[0]).toMatchObject({
+      city: 'Medellín',
+      website: 'www.acme.co',
+      bankAccounts: 'Ahorros Bancolombia | 236 279 66075',
+    });
   });
 
   it('validates the email format before calling the API', async () => {

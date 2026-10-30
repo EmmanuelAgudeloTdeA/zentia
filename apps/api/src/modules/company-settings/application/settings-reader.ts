@@ -15,8 +15,11 @@ export interface DocumentProfileDto {
   readonly name: string | null;
   readonly taxId: string | null;
   readonly address: string | null;
+  readonly city: string | null;
   readonly phone: string | null;
   readonly email: string | null;
+  readonly website: string | null;
+  readonly bankAccounts: string | null;
   readonly commercialTerms: string | null;
   readonly documentLocale: DocumentLocale;
   readonly logoDataUrl: string | null;
@@ -55,8 +58,11 @@ export class CompanySettingsReader implements SettingsReader {
       name: settings.name,
       taxId: settings.taxId,
       address: settings.address,
+      city: settings.city,
       phone: settings.phone,
       email: settings.email,
+      website: settings.website,
+      bankAccounts: settings.bankAccounts,
       commercialTerms: settings.commercialTerms,
       documentLocale: settings.documentLocale,
       logoDataUrl: settings.logoDataUrl,

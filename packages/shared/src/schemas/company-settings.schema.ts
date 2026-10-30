@@ -14,6 +14,9 @@ export const COMMERCIAL_PARAMETER_RANGES = {
 
 export const COMMERCIAL_TERMS_MAX_LENGTH = 2000;
 
+/** Cuentas bancarias: una por línea, con el número después de una barra. */
+export const BANK_ACCOUNTS_MAX_LENGTH = 1000;
+
 /** Clave de `lang/` del issue cuando X no es menor que N. */
 export const EXPIRING_ALERT_DAYS_LT_VALIDITY = 'validation.parameters.expiringAlertDaysLtValidity';
 
@@ -75,8 +78,11 @@ export const updateCompanyProfileSchema = z
     name: optionalText(150),
     taxId: optionalText(30),
     address: optionalText(250),
+    city: optionalText(100),
     phone: optionalText(30),
     email: companyEmailSchema,
+    website: optionalText(150),
+    bankAccounts: optionalText(BANK_ACCOUNTS_MAX_LENGTH),
     commercialTerms: optionalText(COMMERCIAL_TERMS_MAX_LENGTH),
     documentLocale: documentLocaleSchema,
   })
@@ -90,8 +96,11 @@ export const companySettingsDtoSchema = z.object({
   name: z.string().nullable(),
   taxId: z.string().nullable(),
   address: z.string().nullable(),
+  city: z.string().nullable(),
   phone: z.string().nullable(),
   email: z.string().nullable(),
+  website: z.string().nullable(),
+  bankAccounts: z.string().nullable(),
   commercialTerms: z.string().nullable(),
   documentLocale: documentLocaleSchema,
   hasLogo: z.boolean(),

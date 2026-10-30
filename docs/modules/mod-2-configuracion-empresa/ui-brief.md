@@ -30,8 +30,11 @@ Al elegir un archivo se valida tipo y tamaño en el navegador y se muestra la vi
 | Nombre de la empresa | No (si está vacío se usa el nombre de la app) | Máx. 150 caracteres |
 | NIT | No | Máx. 30 caracteres |
 | Dirección | No | Máx. 250 caracteres |
+| Ciudad | No | Máx. 100 caracteres |
 | Teléfono | No | Máx. 30 caracteres |
 | Correo | No | Formato de correo, máx. 150 |
+| Sitio web | No | Máx. 150 caracteres |
+| Cuentas bancarias | No | `TextArea`, máx. 1000; una cuenta por línea con el número después de una barra; ayuda: "Aparecen en el PDF de cada cotización." |
 | Condiciones comerciales | No | `TextArea`; ayuda: "Aparecen en el PDF de cada cotización." |
 | Idioma de los documentos | Sí | `Select` Español / Inglés; ayuda: "Idioma del PDF y del mensaje sugerido por la IA. No cambia el idioma de la interfaz." |
 

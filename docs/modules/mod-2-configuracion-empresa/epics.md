@@ -35,7 +35,7 @@ Centralizar en una sola fila (`CompanySettings`) los datos, el logo y los parám
 Como administrador, quiero editar los datos de la empresa, las condiciones comerciales y el idioma de los documentos, para que las cotizaciones y los PDF los muestren correctos.
 - **RF de origen:** RF-03 (parámetros)
 - **Criterios de aceptación:**
-  1. `PATCH /api/company/profile` (solo `ADMIN`) actualiza `name`, `taxId`, `address`, `phone`, `email`, `commercialTerms` y `documentLocale` (`es` | `en`); los campos no enviados no cambian.
+  1. `PATCH /api/company/profile` (solo `ADMIN`) actualiza `name`, `taxId`, `address`, `city`, `phone`, `email`, `website`, `bankAccounts`, `commercialTerms` y `documentLocale` (`es` | `en`); los campos no enviados no cambian.
   2. Las validaciones de formato (correo, longitudes) responden 400 `VALIDATION_ERROR`.
   3. `GET /api/company/settings` (cualquier usuario autenticado) devuelve todos los datos y parámetros con `hasLogo`, nunca el logo.
   4. En el front, la pantalla "Configuración" (solo `ADMIN`) tiene la pestaña "Datos de la empresa" con el formulario validado con los schemas de `shared`.

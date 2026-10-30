@@ -81,6 +81,26 @@ describe('PATCH /api/company/profile', () => {
     });
   });
 
+  it('saves city, website and bank accounts and clears them with an empty string', async () => {
+    const admin = await tokenFor('ADMIN');
+    const bankAccounts = 'Cuenta corriente Bancolombia | 557 000 10172\nAhorros | 236 279 66075';
+    const saved = await request(app())
+      .patch('/api/company/profile')
+      .set('Authorization', admin)
+      .send({ city: 'Medellín - Antioquia', website: 'www.acme.co', bankAccounts });
+    expect(saved.body).toMatchObject({
+      city: 'Medellín - Antioquia',
+      website: 'www.acme.co',
+      bankAccounts,
+    });
+
+    const cleared = await request(app())
+      .patch('/api/company/profile')
+      .set('Authorization', admin)
+      .send({ website: '' });
+    expect(cleared.body).toMatchObject({ website: null, city: 'Medellín - Antioquia' });
+  });
+
   it('answers VALIDATION_ERROR for bad formats', async () => {
     const response = await request(app())
       .patch('/api/company/profile')

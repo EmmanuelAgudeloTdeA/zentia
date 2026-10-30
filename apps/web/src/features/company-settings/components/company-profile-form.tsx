@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
+  BANK_ACCOUNTS_MAX_LENGTH,
   COMMERCIAL_TERMS_MAX_LENGTH,
   DOCUMENT_LOCALES,
   updateCompanyProfileSchema,
@@ -21,8 +22,11 @@ const PROFILE_FIELDS = [
   'name',
   'taxId',
   'address',
+  'city',
   'phone',
   'email',
+  'website',
+  'bankAccounts',
   'commercialTerms',
   'documentLocale',
 ] as const;
@@ -31,8 +35,11 @@ interface ProfileFormValues {
   name: string;
   taxId: string;
   address: string;
+  city: string;
   phone: string;
   email: string;
+  website: string;
+  bankAccounts: string;
   commercialTerms: string;
   documentLocale: CompanySettingsDto['documentLocale'];
 }
@@ -42,8 +49,11 @@ function toFormValues(settings: CompanySettingsDto): ProfileFormValues {
     name: settings.name ?? '',
     taxId: settings.taxId ?? '',
     address: settings.address ?? '',
+    city: settings.city ?? '',
     phone: settings.phone ?? '',
     email: settings.email ?? '',
+    website: settings.website ?? '',
+    bankAccounts: settings.bankAccounts ?? '',
     commercialTerms: settings.commercialTerms ?? '',
     documentLocale: settings.documentLocale,
   };
@@ -129,12 +139,35 @@ export function CompanyProfileForm({ settings, onSaved, onDirtyChange }: Company
             {...register('address')}
           />
           <TextField
+            label={t('settings.profile.city')}
+            maxLength={100}
+            error={fieldError('city')}
+            {...register('city')}
+          />
+          <TextField
             label={t('settings.profile.email')}
             maxLength={150}
             type="email"
             inputMode="email"
             error={fieldError('email')}
             {...register('email')}
+          />
+          <TextField
+            label={t('settings.profile.website')}
+            maxLength={150}
+            inputMode="url"
+            placeholder={t('settings.profile.websitePlaceholder')}
+            error={fieldError('website')}
+            {...register('website')}
+          />
+          <TextArea
+            label={t('settings.profile.bankAccounts')}
+            maxLength={BANK_ACCOUNTS_MAX_LENGTH}
+            placeholder={t('settings.profile.bankAccountsPlaceholder')}
+            hint={t('settings.profile.bankAccountsHint')}
+            error={fieldError('bankAccounts')}
+            className="md:col-span-2"
+            {...register('bankAccounts')}
           />
           <TextArea
             label={t('settings.profile.commercialTerms')}

@@ -62,8 +62,11 @@ model CompanySettings {
   name                 String?        @db.VarChar(150)
   taxId                String?        @db.VarChar(30)
   address              String?        @db.VarChar(250)
+  city                 String?        @db.VarChar(100)
   phone                String?        @db.VarChar(30)
   email                String?        @db.VarChar(150)
+  website              String?        @db.VarChar(150)
+  bankAccounts         String?        @db.Text
   commercialTerms      String?        @db.Text
   documentLocale       DocumentLocale @default(es)
   logoDataUrl          String?        @db.Text
