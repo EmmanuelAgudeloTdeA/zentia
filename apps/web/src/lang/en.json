@@ -142,6 +142,7 @@
   "settings": {
     "title": "Settings",
     "saved": "Settings saved.",
+    "errorSummary": "{{count}} fields have errors. Review them and try again.",
     "tabs": {
       "profile": "Company details",
       "parameters": "Commercial parameters"

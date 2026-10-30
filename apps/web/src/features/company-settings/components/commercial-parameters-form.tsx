@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { errorKey } from '../../../core/errors';
 import { Alert, Button, SectionCard, Select, Switch, TextField, toast } from '../../../shared/ui';
 import { companyService } from '../services/company.service';
+import { ErrorSummary } from './error-summary';
 import { applyServerIssues, fieldErrorKey } from './field-errors';
 
 type ParameterField = keyof CommercialParameters;
@@ -115,6 +116,7 @@ export function CommercialParametersForm({
     <form noValidate onSubmit={onSubmit} className="space-y-5">
       <Alert tone="info">{t('settings.parameters.futureOnlyNotice')}</Alert>
       {serverError ? <Alert tone="danger">{t(serverError)}</Alert> : null}
+      <ErrorSummary errors={errors} />
 
       <SectionCard title={t('settings.parameters.sections.quotes')}>
         <div className="grid gap-5 md:grid-cols-2">

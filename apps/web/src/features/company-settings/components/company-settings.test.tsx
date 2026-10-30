@@ -265,3 +265,20 @@ describe('BrandMark and branding', () => {
     expect(useBrandingStore.getState()).toMatchObject({ status: 'ready', name: null });
   });
 });
+
+describe('Error summary', () => {
+  it('summarizes more than 3 invalid fields at the top of the form', async () => {
+    signIn('ADMIN');
+    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
+    renderSettings();
+    fireEvent.click(await screen.findByRole('tab', { name: es.settings.tabs.parameters }));
+
+    fill(es.settings.parameters.validityDays, '0');
+    fill(es.settings.parameters.followUpDays, '200');
+    fill(es.settings.parameters.coldStartThreshold, '10');
+    fill(es.settings.parameters.discountLimitSeller, '150');
+    fireEvent.click(screen.getByRole('button', { name: es.settings.parameters.submit }));
+
+    expect(await screen.findByText(/^Hay \d+ campos con errores/)).toBeTruthy();
+  });
+});

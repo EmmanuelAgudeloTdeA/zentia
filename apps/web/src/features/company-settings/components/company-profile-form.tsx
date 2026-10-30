@@ -14,6 +14,7 @@ import { useBrandingStore } from '../../../core/branding';
 import { errorKey } from '../../../core/errors';
 import { Alert, Button, SectionCard, Select, TextArea, TextField, toast } from '../../../shared/ui';
 import { companyService } from '../services/company.service';
+import { ErrorSummary } from './error-summary';
 import { applyServerIssues, fieldErrorKey } from './field-errors';
 
 const PROFILE_FIELDS = [
@@ -98,6 +99,7 @@ export function CompanyProfileForm({ settings, onSaved, onDirtyChange }: Company
     <SectionCard title={t('settings.profile.section')}>
       <form noValidate onSubmit={onSubmit} className="space-y-5">
         {serverError ? <Alert tone="danger">{t(serverError)}</Alert> : null}
+        <ErrorSummary errors={errors} />
         <div className="grid gap-5 md:grid-cols-2">
           <TextField
             label={t('settings.profile.name')}

@@ -142,6 +142,7 @@
   "settings": {
     "title": "Configuración",
     "saved": "Configuración guardada.",
+    "errorSummary": "Hay {{count}} campos con errores. Revísalos e inténtalo de nuevo.",
     "tabs": {
       "profile": "Datos de la empresa",
       "parameters": "Parámetros comerciales"
