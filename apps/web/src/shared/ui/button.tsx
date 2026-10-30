@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import { SpinnerIcon } from './icons';
 
 export type ButtonVariant =
@@ -38,6 +38,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   icon?: ReactNode;
   loading?: boolean;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 export function Button({
