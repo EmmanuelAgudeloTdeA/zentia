@@ -75,6 +75,7 @@ export function LoginPage() {
         ) : null}
 
         <TextField
+          variant="filled"
           label={t('auth.login.email')}
           type="email"
           autoComplete="username"
@@ -85,6 +86,7 @@ export function LoginPage() {
           {...register('email')}
         />
         <PasswordField
+          variant="filled"
           label={t('auth.login.password')}
           autoComplete="current-password"
           required

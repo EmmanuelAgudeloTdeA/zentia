@@ -50,8 +50,25 @@ export function FieldShell({
   );
 }
 
-export function controlClasses(error: string | undefined): string {
-  return `w-full rounded-md border bg-neutral-0 px-3 text-body text-neutral-900 shadow-xs transition-colors duration-150 placeholder:text-neutral-500 hover:border-neutral-400 focus:border-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500 ${
-    error ? 'border-danger-fg' : 'border-neutral-300'
+export type FieldVariant = 'outline' | 'filled';
+
+const VARIANT_CLASSES: Record<FieldVariant, { base: string; idle: string }> = {
+  outline: {
+    base: 'bg-neutral-0 shadow-xs placeholder:text-neutral-500 hover:border-neutral-400 disabled:bg-neutral-100',
+    idle: 'border-neutral-300',
+  },
+  filled: {
+    base: 'bg-neutral-100 placeholder:text-neutral-400 hover:bg-neutral-50 focus:bg-neutral-0',
+    idle: 'border-transparent',
+  },
+};
+
+export function controlClasses(
+  error: string | undefined,
+  variant: FieldVariant = 'outline',
+): string {
+  const { base, idle } = VARIANT_CLASSES[variant];
+  return `w-full rounded-md border px-3 text-body text-neutral-900 transition-colors duration-150 focus:border-primary-500 disabled:text-neutral-500 ${base} ${
+    error ? 'border-danger-fg' : idle
   }`;
 }

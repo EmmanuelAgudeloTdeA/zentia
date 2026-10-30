@@ -140,21 +140,33 @@
     "settings": "Settings"
   },
   "settings": {
-    "title": "Settings",
+    "title": "Company settings",
+    "description": "These values apply to new quotes; existing quotes are not recalculated.",
+    "save": "Save settings",
+    "discardChanges": "Discard",
     "saved": "Settings saved.",
     "errorSummary": "{{count}} fields have errors. Review them and try again.",
-    "tabs": {
-      "profile": "Company details",
-      "parameters": "Commercial parameters"
+    "status": {
+      "saved": "All saved",
+      "dirty": "Unsaved changes",
+      "saving": "Saving…"
     },
     "discard": {
       "title": "Discard changes?",
-      "description": "You have unsaved changes in this tab. If you leave, they will be lost.",
+      "description": "You have unsaved changes. If you leave, they will be lost.",
       "confirm": "Discard",
       "keepEditing": "Keep editing"
     },
+    "sections": {
+      "company": "Company",
+      "brand": "Logo and brand",
+      "bankAccounts": "Bank accounts",
+      "documents": "Documents",
+      "validity": "Validity and follow-up",
+      "discounts": "Discount limits",
+      "taxes": "Taxes and shipping"
+    },
     "profile": {
-      "section": "Company details",
       "name": "Company name",
       "nameHint": "If left empty, the app name is shown.",
       "taxId": "Tax ID (NIT)",
@@ -166,36 +178,33 @@
       "websitePlaceholder": "www.company.com",
       "bankAccounts": "Bank accounts",
       "bankAccountsPlaceholder": "Bancolombia checking account | 557 000 10172",
-      "bankAccountsHint": "One account per line, with the number after a bar. Shown on every quote PDF.",
+      "bankAccountsHint": "One account per line, with the number after a bar: Checking account Bancolombia | 557 000 10172",
       "commercialTerms": "Commercial terms",
       "commercialTermsHint": "Shown on every quote PDF. {{count}}/{{max}} characters.",
       "documentLocale": "Document language",
       "documentLocaleHint": "Language of the PDF and of the AI suggested message. It does not change the interface language.",
-      "submit": "Save changes"
+      "bankAccountsPreview": "How they will appear on quotes",
+      "bankAccountsMissingNumber": "Number missing (after |)"
     },
     "logo": {
       "title": "Logo",
       "hint": "PNG or JPG, up to 512 KB.",
-      "empty": "No logo",
+      "empty": "Zentia logo",
       "current": "Company logo",
       "preview": "Logo preview",
       "upload": "Upload logo",
       "change": "Change logo",
-      "save": "Save logo",
       "remove": "Remove logo",
       "confirmRemoveTitle": "Remove the logo?",
       "confirmRemove": "The login, the header and the PDFs will have no logo.",
       "confirmRemoveAction": "Remove",
-      "uploaded": "Logo updated.",
-      "removed": "Logo removed."
+      "removed": "Logo removed.",
+      "pending": "Unsaved",
+      "cancelPending": "Discard new logo",
+      "dropzone": "Choose or drop a logo",
+      "brandPreview": "How your brand looks"
     },
     "parameters": {
-      "futureOnlyNotice": "Changes apply to future operations. Existing quotes are not recalculated.",
-      "sections": {
-        "quotes": "Quotes",
-        "discounts": "Discount limits",
-        "followUp": "Follow-up and AI"
-      },
       "validityDays": "Validity days",
       "validityDaysHint": "Whole number from 1 to 365.",
       "defaultVatRate": "Default VAT for new products",
@@ -206,14 +215,20 @@
       "discountLimitManager": "Sales manager (%)",
       "discountLimitAdmin": "Administrator (%)",
       "discountHint": "From 0 to 100, up to 2 decimals.",
-      "expiringAlertDays": "Warn before expiry (days)",
-      "expiringAlertDaysHint": "Whole number of at least 1 and less than the validity days ({{validityDays}}).",
+      "expiringAlertDays": "Advance alert (days)",
+      "expiringAlertDaysHint": "Less than the validity ({{validityDays}}).",
       "followUpDays": "Days without follow-up",
       "followUpDaysHint": "Whole number from 1 to 90.",
       "coldStartThreshold": "Threshold to calibrate the probability",
-      "coldStartThresholdHint": "Number of closed quotes, from 30 to 50, after which the estimate can be calibrated.",
-      "submit": "Save parameters",
-      "saved": "Parameters saved."
+      "coldStartThresholdHint": "Number of closed quotes, from 30 to 50, after which the estimate can be calibrated."
+    },
+    "timeline": {
+      "summary": "If you send a quote today, it is valid until {{expires}}. With no contact in {{followUpDays}} days ({{followUp}}) it is flagged as needing follow-up, and the expiry alert arrives on {{expiring}}.",
+      "summaryNoFollowUp": "If you send a quote today, it is valid until {{expires}} and the expiry alert arrives on {{expiring}}. With {{followUpDays}} days for follow-up, it will expire before being flagged.",
+      "sent": "Today: sent",
+      "followUp": "Follow-up",
+      "expiring": "Alert: {{date}}",
+      "expires": "Expires: {{date}}"
     }
   }
 }

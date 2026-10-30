@@ -1,5 +1,5 @@
 import { useId, type ReactNode, type Ref, type SelectHTMLAttributes } from 'react';
-import { controlClasses, describedById, FieldShell } from './field-shell';
+import { controlClasses, describedById, FieldShell, type FieldVariant } from './field-shell';
 import { ChevronDownIcon } from './icons';
 
 export interface SelectOption {
@@ -12,6 +12,7 @@ interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement>, 'siz
   options: readonly SelectOption[];
   error?: string | undefined;
   hint?: ReactNode;
+  variant?: FieldVariant;
   ref?: Ref<HTMLSelectElement>;
 }
 
@@ -23,6 +24,7 @@ export function Select({
   required,
   id,
   className,
+  variant,
   ref,
   ...selectProps
 }: SelectProps) {
@@ -46,7 +48,7 @@ export function Select({
           aria-required={required}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedById(selectId, error, hint)}
-          className={`h-10 appearance-none pr-10 ${controlClasses(error)}`}
+          className={`h-10 appearance-none pr-10 ${controlClasses(error, variant)}`}
           {...selectProps}
         >
           {options.map((option) => (

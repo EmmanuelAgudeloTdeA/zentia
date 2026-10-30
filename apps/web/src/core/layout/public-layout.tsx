@@ -1,19 +1,23 @@
 import { Outlet } from 'react-router';
 import { LanguageSwitch } from '../i18n';
+import { BrandBackdrop } from './brand-backdrop';
 import { BrandLogo, useBrandName } from './brand-mark';
 
 export function PublicLayout() {
   const brandName = useBrandName();
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-linear-120 from-primary-950 via-primary-800 to-primary-600 px-4 py-16">
+    <div className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden bg-linear-120 from-primary-950 via-primary-800 to-primary-500 px-4 py-16">
+      <BrandBackdrop />
       <div className="absolute top-4 right-4">
         <LanguageSwitch tone="dark" />
       </div>
-      <main className="w-full max-w-100 rounded-xl border-t-4 border-primary-600 bg-neutral-0 px-6 py-8 shadow-lg sm:px-8">
-        <div className="flex flex-col items-center gap-2">
-          <BrandLogo size="lg" />
-          <p className="text-h3 text-neutral-700">{brandName}</p>
+      <main className="w-full max-w-100 rounded-2xl bg-neutral-0 px-6 pt-8 pb-7 shadow-lg sm:px-9">
+        <div className="flex flex-col items-center gap-3">
+          <span className="rounded-full p-1 shadow-md">
+            <BrandLogo size="xl" />
+          </span>
+          <p className="text-h3 font-semibold text-neutral-700">{brandName}</p>
         </div>
         <Outlet />
       </main>

@@ -7,6 +7,7 @@ import { ApiError } from '../../../core/errors';
 import { BrandMark, PrivateLayout, PublicLayout } from '../../../core/layout';
 import { ProtectedRoute } from '../../../core/router';
 import es from '../../../lang/es.json';
+import { toast } from '../../../shared/ui';
 import { signIn } from '../../../test/session-fixture';
 import { routes as settingsRoutes, SETTINGS_PATH } from '../routes';
 import { loadBranding } from '../services/branding.service';
@@ -45,12 +46,28 @@ function renderSettings() {
     [
       {
         element: <ProtectedRoute />,
-        children: [{ element: <PrivateLayout navItems={[]} />, children: settingsRoutes }],
+        children: [
+          {
+            element: <PrivateLayout navItems={[]} />,
+            children: [...settingsRoutes, { path: '/other', element: <p>other page</p> }],
+          },
+        ],
       },
     ],
     { initialEntries: [SETTINGS_PATH] },
   );
   render(<RouterProvider router={router} />);
+  return router;
+}
+
+const saveButton = () => screen.getByRole('button', { name: es.settings.save });
+
+async function openSettings(overrides: Partial<CompanySettingsDto> = {}) {
+  signIn('ADMIN');
+  vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture(overrides));
+  const router = renderSettings();
+  await screen.findByDisplayValue('Acme SAS');
+  return router;
 }
 
 function fill(label: string, value: string) {
@@ -78,36 +95,39 @@ describe('CompanySettingsPage access', () => {
   });
 });
 
-describe('Company profile tab', () => {
-  it('saves the profile and updates the brand name in the header', async () => {
-    signIn('ADMIN');
+describe('Settings page: company data', () => {
+  it('saves only the changed part and updates the brand name in the header', async () => {
     useBrandingStore.getState().setBranding({ name: 'Acme SAS', hasLogo: false, logoVersion: 0 });
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
     const update = vi
       .spyOn(companyService, 'updateProfile')
       .mockResolvedValue(settingsFixture({ name: 'Nueva SAS' }));
-    renderSettings();
+    const parameters = vi.spyOn(companyService, 'updateParameters');
+    const success = vi.spyOn(toast, 'success');
+    await openSettings();
 
-    await screen.findByDisplayValue('Acme SAS');
+    expect(screen.getByRole('status').textContent).toContain(es.settings.status.saved);
+    expect(saveButton()).toHaveProperty('disabled', true);
     fill(es.settings.profile.name, 'Nueva SAS');
-    fireEvent.click(screen.getByRole('button', { name: es.settings.profile.submit }));
+    expect(screen.getByRole('status').textContent).toContain(es.settings.status.dirty);
+    fireEvent.click(saveButton());
 
     await waitFor(() => expect(update).toHaveBeenCalled());
     expect(update.mock.calls[0]?.[0]).toMatchObject({ name: 'Nueva SAS', email: null, city: null });
+    expect(parameters).not.toHaveBeenCalled();
     expect(await screen.findByRole('link', { name: /Nueva SAS/ })).toBeTruthy();
+    await waitFor(() => expect(success).toHaveBeenCalledWith(es.settings.saved));
   });
 
-  it('sends city, website and bank accounts', async () => {
-    signIn('ADMIN');
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
+  it('sends city, website and bank accounts and previews the accounts live', async () => {
     const update = vi.spyOn(companyService, 'updateProfile').mockResolvedValue(settingsFixture());
-    renderSettings();
+    await openSettings();
 
-    await screen.findByDisplayValue('Acme SAS');
     fill(es.settings.profile.city, 'Medellín');
     fill(es.settings.profile.website, 'www.acme.co');
     fill(es.settings.profile.bankAccounts, 'Ahorros Bancolombia | 236 279 66075');
-    fireEvent.click(screen.getByRole('button', { name: es.settings.profile.submit }));
+    const preview = screen.getByRole('list', { name: es.settings.profile.bankAccountsPreview });
+    expect(within(preview).getByText('236 279 66075')).toBeTruthy();
+    fireEvent.click(saveButton());
 
     await waitFor(() => expect(update).toHaveBeenCalled());
     expect(update.mock.calls[0]?.[0]).toMatchObject({
@@ -118,42 +138,45 @@ describe('Company profile tab', () => {
   });
 
   it('validates the email format before calling the API', async () => {
-    signIn('ADMIN');
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
     const update = vi.spyOn(companyService, 'updateProfile');
-    renderSettings();
+    await openSettings();
 
-    await screen.findByDisplayValue('Acme SAS');
     fill(es.settings.profile.email, 'no-es-correo');
-    fireEvent.click(screen.getByRole('button', { name: es.settings.profile.submit }));
+    fireEvent.click(saveButton());
 
     expect(await screen.findByText(es.validation.invalid_format)).toBeTruthy();
     expect(update).not.toHaveBeenCalled();
   });
 
-  it('asks before leaving a tab with unsaved changes', async () => {
-    signIn('ADMIN');
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
-    renderSettings();
+  it('discards the changes from the header', async () => {
+    await openSettings();
 
-    await screen.findByDisplayValue('Acme SAS');
     fill(es.settings.profile.name, 'Otra');
-    fireEvent.click(screen.getByRole('tab', { name: es.settings.tabs.parameters }));
+    fireEvent.click(screen.getByRole('button', { name: es.settings.discardChanges }));
+    expect(await screen.findByDisplayValue('Acme SAS')).toBeTruthy();
+    expect(saveButton()).toHaveProperty('disabled', true);
+  });
+
+  it('asks before leaving the page with unsaved changes', async () => {
+    const router = await openSettings();
+
+    fill(es.settings.profile.name, 'Otra');
+    await act(async () => {
+      await router.navigate('/other');
+    });
 
     const dialog = await screen.findByRole('dialog', { name: es.settings.discard.title });
     fireEvent.click(within(dialog).getByRole('button', { name: es.settings.discard.confirm }));
-    expect(await screen.findByText(es.settings.parameters.futureOnlyNotice)).toBeTruthy();
+    expect(await screen.findByText('other page')).toBeTruthy();
   });
 });
 
-describe('LogoUploader', () => {
+describe('Settings page: logo', () => {
   it('rejects unsupported types and files over 512 KB in the browser', async () => {
-    signIn('ADMIN');
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
     const upload = vi.spyOn(companyService, 'uploadLogo');
-    renderSettings();
+    await openSettings();
 
-    const input = await screen.findByLabelText(es.settings.logo.upload);
+    const input = screen.getByLabelText(es.settings.logo.upload);
     fireEvent.change(input, {
       target: { files: [new File(['GIF89a'], 'logo.gif', { type: 'image/gif' })] },
     });
@@ -164,35 +187,35 @@ describe('LogoUploader', () => {
     expect(upload).not.toHaveBeenCalled();
   });
 
-  it('previews, uploads and refreshes the branding without reloading', async () => {
-    signIn('ADMIN');
+  it('previews the new logo and uploads it with the save button', async () => {
     useBrandingStore.getState().setBranding({ name: 'Acme SAS', hasLogo: false, logoVersion: 0 });
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
     const upload = vi
       .spyOn(companyService, 'uploadLogo')
       .mockResolvedValue({ hasLogo: true, logoVersion: 1 });
-    renderSettings();
+    const profile = vi.spyOn(companyService, 'updateProfile');
+    await openSettings();
 
-    fireEvent.change(await screen.findByLabelText(es.settings.logo.upload), {
+    fireEvent.change(screen.getByLabelText(es.settings.logo.upload), {
       target: { files: [pngFile()] },
     });
-    expect(await screen.findByRole('img', { name: es.settings.logo.preview })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: es.settings.logo.save }));
+    expect(await screen.findByText(es.settings.logo.pending)).toBeTruthy();
+    expect(screen.getByRole('button', { name: es.settings.logo.preview })).toBeTruthy();
+    expect(upload).not.toHaveBeenCalled();
+    fireEvent.click(saveButton());
 
     await waitFor(() => expect(upload).toHaveBeenCalled());
     expect(upload.mock.calls[0]?.[0].mimeType).toBe('image/png');
+    expect(profile).not.toHaveBeenCalled();
     expect(useBrandingStore.getState()).toMatchObject({ hasLogo: true, logoVersion: 1 });
     expect(document.querySelector('header img')?.getAttribute('src')).toBe('/api/company/logo?v=1');
   });
 
   it('confirms before removing the logo', async () => {
-    signIn('ADMIN');
     useBrandingStore.getState().setBranding({ name: 'Acme SAS', hasLogo: true, logoVersion: 3 });
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture({ hasLogo: true }));
     const remove = vi.spyOn(companyService, 'deleteLogo').mockResolvedValue(undefined);
-    renderSettings();
+    await openSettings({ hasLogo: true });
 
-    fireEvent.click(await screen.findByRole('button', { name: es.settings.logo.remove }));
+    fireEvent.click(screen.getByRole('button', { name: es.settings.logo.remove }));
     const dialog = screen.getByRole('dialog', { name: es.settings.logo.confirmRemoveTitle });
     expect(remove).not.toHaveBeenCalled();
     fireEvent.click(
@@ -204,23 +227,18 @@ describe('LogoUploader', () => {
   });
 });
 
-describe('CommercialParametersForm', () => {
-  async function openParameters() {
-    signIn('ADMIN');
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
-    renderSettings();
-    fireEvent.click(await screen.findByRole('tab', { name: es.settings.tabs.parameters }));
-  }
-
-  it('shows the future-only notice and validates X < N live', async () => {
+describe('Settings page: commercial parameters', () => {
+  it('explains that changes apply to future quotes and validates X < N live', async () => {
     const update = vi.spyOn(companyService, 'updateParameters');
-    await openParameters();
+    await openSettings();
 
-    expect(screen.getByText(es.settings.parameters.futureOnlyNotice)).toBeTruthy();
+    expect(screen.getByText(es.settings.description)).toBeTruthy();
+    expect(screen.getByText(/vale hasta el/)).toBeTruthy();
     fill(es.settings.parameters.validityDays, '3');
-    fireEvent.click(screen.getByRole('button', { name: es.settings.parameters.submit }));
+    fireEvent.click(saveButton());
 
     expect(await screen.findByText('Debe ser menor que los días de vigencia (3).')).toBeTruthy();
+    expect(screen.queryByText(/vale hasta el/)).toBeNull();
     expect(update).not.toHaveBeenCalled();
   });
 
@@ -232,16 +250,34 @@ describe('CommercialParametersForm', () => {
           { path: 'followUpDays', code: 'too_big' },
         ]),
       );
-    await openParameters();
+    await openSettings();
 
     fill(es.settings.parameters.discountLimitSeller, '12,5');
     await act(async () => {
-      fireEvent.click(screen.getByRole('button', { name: es.settings.parameters.submit }));
+      fireEvent.click(saveButton());
     });
 
     await waitFor(() => expect(update).toHaveBeenCalled());
     expect(update.mock.calls[0]?.[0]).toMatchObject({ discountLimitSeller: '12.5' });
     expect(await screen.findByText(es.validation.too_big)).toBeTruthy();
+  });
+
+  it('saves company data and parameters together', async () => {
+    const profile = vi.spyOn(companyService, 'updateProfile').mockResolvedValue(settingsFixture());
+    const parameters = vi
+      .spyOn(companyService, 'updateParameters')
+      .mockResolvedValue(settingsFixture({ followUpDays: 7 }));
+    const success = vi.spyOn(toast, 'success');
+    await openSettings();
+
+    fill(es.settings.profile.phone, '6046071235');
+    fill(es.settings.parameters.followUpDays, '7');
+    fireEvent.click(saveButton());
+
+    await waitFor(() => expect(parameters).toHaveBeenCalled());
+    expect(profile).toHaveBeenCalled();
+    expect(parameters.mock.calls[0]?.[0]).toMatchObject({ followUpDays: 7 });
+    await waitFor(() => expect(success).toHaveBeenCalledWith(es.settings.saved));
   });
 });
 
@@ -290,17 +326,14 @@ describe('BrandMark and branding', () => {
 });
 
 describe('Error summary', () => {
-  it('summarizes more than 3 invalid fields at the top of the form', async () => {
-    signIn('ADMIN');
-    vi.spyOn(companyService, 'getSettings').mockResolvedValue(settingsFixture());
-    renderSettings();
-    fireEvent.click(await screen.findByRole('tab', { name: es.settings.tabs.parameters }));
+  it('summarizes more than 3 invalid fields at the top of the page', async () => {
+    await openSettings();
 
     fill(es.settings.parameters.validityDays, '0');
     fill(es.settings.parameters.followUpDays, '200');
     fill(es.settings.parameters.coldStartThreshold, '10');
     fill(es.settings.parameters.discountLimitSeller, '150');
-    fireEvent.click(screen.getByRole('button', { name: es.settings.parameters.submit }));
+    fireEvent.click(saveButton());
 
     expect(await screen.findByText(/^Hay \d+ campos con errores/)).toBeTruthy();
   });

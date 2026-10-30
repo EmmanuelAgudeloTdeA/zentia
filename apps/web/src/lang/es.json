@@ -140,21 +140,33 @@
     "settings": "Ajustes"
   },
   "settings": {
-    "title": "Configuración",
-    "saved": "Configuración guardada.",
+    "title": "Ajustes de la empresa",
+    "description": "Estos valores se usan en las cotizaciones nuevas; las que ya existen no se recalculan.",
+    "save": "Guardar ajustes",
+    "discardChanges": "Descartar",
+    "saved": "Ajustes guardados.",
     "errorSummary": "Hay {{count}} campos con errores. Revísalos e inténtalo de nuevo.",
-    "tabs": {
-      "profile": "Datos de la empresa",
-      "parameters": "Parámetros comerciales"
+    "status": {
+      "saved": "Todo guardado",
+      "dirty": "Cambios sin guardar",
+      "saving": "Guardando…"
     },
     "discard": {
       "title": "¿Descartar cambios?",
-      "description": "Tienes cambios sin guardar en esta pestaña. Si sales, se perderán.",
+      "description": "Tienes cambios sin guardar. Si sales, se perderán.",
       "confirm": "Descartar",
       "keepEditing": "Seguir editando"
     },
+    "sections": {
+      "company": "Empresa",
+      "brand": "Logo y marca",
+      "bankAccounts": "Cuentas bancarias",
+      "documents": "Documentos",
+      "validity": "Vigencia y seguimiento",
+      "discounts": "Límites de descuento",
+      "taxes": "Impuestos y envío"
+    },
     "profile": {
-      "section": "Datos de la empresa",
       "name": "Nombre de la empresa",
       "nameHint": "Si lo dejas vacío se muestra el nombre de la aplicación.",
       "taxId": "NIT",
@@ -166,36 +178,33 @@
       "websitePlaceholder": "www.empresa.com",
       "bankAccounts": "Cuentas bancarias",
       "bankAccountsPlaceholder": "Cuenta corriente Bancolombia | 557 000 10172",
-      "bankAccountsHint": "Una cuenta por línea, con el número después de una barra. Aparecen en el PDF de cada cotización.",
+      "bankAccountsHint": "Una cuenta por línea, con el número después de una barra: Cuenta corriente Bancolombia | 557 000 10172",
       "commercialTerms": "Condiciones comerciales",
       "commercialTermsHint": "Aparecen en el PDF de cada cotización. {{count}}/{{max}} caracteres.",
       "documentLocale": "Idioma de los documentos",
       "documentLocaleHint": "Idioma del PDF y del mensaje sugerido por la IA. No cambia el idioma de la interfaz.",
-      "submit": "Guardar cambios"
+      "bankAccountsPreview": "Así aparecerán en las cotizaciones",
+      "bankAccountsMissingNumber": "Falta el número (después de |)"
     },
     "logo": {
       "title": "Logo",
       "hint": "PNG o JPG, máximo 512 KB.",
-      "empty": "Sin logo",
+      "empty": "Logo de Zentia",
       "current": "Logo de la empresa",
       "preview": "Vista previa del logo",
       "upload": "Subir logo",
       "change": "Cambiar logo",
-      "save": "Guardar logo",
       "remove": "Quitar logo",
       "confirmRemoveTitle": "¿Quitar el logo?",
       "confirmRemove": "El login, el encabezado y los PDF quedarán sin logo.",
       "confirmRemoveAction": "Quitar",
-      "uploaded": "Logo actualizado.",
-      "removed": "Logo eliminado."
+      "removed": "Logo eliminado.",
+      "pending": "Sin guardar",
+      "cancelPending": "Descartar logo nuevo",
+      "dropzone": "Elegir o arrastrar un logo",
+      "brandPreview": "Así se ve tu marca"
     },
     "parameters": {
-      "futureOnlyNotice": "Los cambios aplican a las operaciones futuras. No recalculan las cotizaciones existentes.",
-      "sections": {
-        "quotes": "Cotizaciones",
-        "discounts": "Límites de descuento",
-        "followUp": "Seguimiento e IA"
-      },
       "validityDays": "Días de vigencia",
       "validityDaysHint": "Entero de 1 a 365.",
       "defaultVatRate": "IVA por defecto de productos nuevos",
@@ -206,14 +215,20 @@
       "discountLimitManager": "Gerente comercial (%)",
       "discountLimitAdmin": "Administrador (%)",
       "discountHint": "De 0 a 100, hasta 2 decimales.",
-      "expiringAlertDays": "Avisar antes del vencimiento (días)",
-      "expiringAlertDaysHint": "Entero mayor o igual a 1 y menor que los días de vigencia ({{validityDays}}).",
+      "expiringAlertDays": "Aviso previo (días)",
+      "expiringAlertDaysHint": "Menor que la vigencia ({{validityDays}}).",
       "followUpDays": "Días sin seguimiento",
       "followUpDaysHint": "Entero de 1 a 90.",
       "coldStartThreshold": "Umbral para calibrar la probabilidad",
-      "coldStartThresholdHint": "Número de cotizaciones cerradas, de 30 a 50, a partir del cual se podrá calibrar la estimación.",
-      "submit": "Guardar parámetros",
-      "saved": "Parámetros guardados."
+      "coldStartThresholdHint": "Número de cotizaciones cerradas, de 30 a 50, a partir del cual se podrá calibrar la estimación."
+    },
+    "timeline": {
+      "summary": "Si envías una cotización hoy, vale hasta el {{expires}}. Si no hay contacto en {{followUpDays}} días ({{followUp}}) se marca sin seguimiento, y el aviso de vencimiento llega el {{expiring}}.",
+      "summaryNoFollowUp": "Si envías una cotización hoy, vale hasta el {{expires}} y el aviso de vencimiento llega el {{expiring}}. Con {{followUpDays}} días sin seguimiento, vencerá antes de marcarse sin seguimiento.",
+      "sent": "Hoy: envío",
+      "followUp": "Sin seguimiento",
+      "expiring": "Aviso: {{date}}",
+      "expires": "Vence: {{date}}"
     }
   }
 }
