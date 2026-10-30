@@ -4,6 +4,7 @@ import { NavLink } from 'react-router';
 import { CloseIcon } from '../../shared/ui';
 import { LanguageSwitch } from '../i18n';
 import type { NavItem } from '../navigation';
+import { useBrandName } from './brand-mark';
 
 interface NavDrawerProps {
   id: string;
@@ -14,6 +15,7 @@ interface NavDrawerProps {
 export function NavDrawer({ id, items, onClose }: NavDrawerProps) {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLElement>(null);
+  const brandName = useBrandName();
 
   useEffect(() => {
     panelRef.current?.querySelector<HTMLElement>('a, button')?.focus();
@@ -36,7 +38,7 @@ export function NavDrawer({ id, items, onClose }: NavDrawerProps) {
         className="absolute inset-y-0 left-0 flex w-72 max-w-full flex-col bg-neutral-0 shadow-lg"
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
-          <span className="text-h3 text-neutral-900">{t('app.name')}</span>
+          <span className="truncate text-h3 text-neutral-900">{brandName}</span>
           <button
             type="button"
             onClick={onClose}

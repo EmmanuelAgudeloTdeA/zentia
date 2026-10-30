@@ -8,11 +8,17 @@ import {
   createPrismaAuthInfrastructure,
   type AuthInfrastructure,
 } from './auth/index.js';
+import {
+  createCompanySettingsModule,
+  createPrismaCompanySettingsInfrastructure,
+  type CompanySettingsInfrastructure,
+} from './company-settings/index.js';
 import { createHealthModule } from './health/index.js';
 
 /** Adaptadores que las pruebas pueden reemplazar; por defecto se usan los de Prisma. */
 export interface InfrastructureOverrides {
   auth?: AuthInfrastructure;
+  companySettings?: CompanySettingsInfrastructure;
 }
 
 export interface CreateModulesOptions {
@@ -41,5 +47,10 @@ export function createModules({
     publicLimiter,
   });
   const dependencies: ModuleDependencies = { publicLimiter, requireAuth: auth.requireAuth };
-  return [createHealthModule(dependencies), auth.module];
+  const companySettings = createCompanySettingsModule({
+    ...dependencies,
+    infrastructure:
+      overrides.companySettings ?? createPrismaCompanySettingsInfrastructure(getPrisma()),
+  });
+  return [createHealthModule(dependencies), auth.module, companySettings.module];
 }

@@ -59,7 +59,10 @@
     "REFRESH_TOKEN_REUSED": "Por seguridad cerramos tu sesión. Inicia sesión de nuevo.",
     "REFRESH_IN_PROGRESS": "Estamos renovando tu sesión. Inténtalo de nuevo.",
     "INVALID_CURRENT_PASSWORD": "La contraseña actual no es correcta.",
-    "PASSWORD_REUSED": "La nueva contraseña debe ser distinta de la actual."
+    "PASSWORD_REUSED": "La nueva contraseña debe ser distinta de la actual.",
+    "LOGO_INVALID_TYPE": "El logo debe ser una imagen PNG o JPG.",
+    "LOGO_TOO_LARGE": "El logo no puede superar 512 KB.",
+    "LOGO_NOT_FOUND": "La empresa no tiene logo."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
@@ -72,6 +75,9 @@
     "password": {
       "policy": "La contraseña no cumple los requisitos.",
       "mismatch": "Las contraseñas no coinciden."
+    },
+    "parameters": {
+      "expiringAlertDaysLtValidity": "Debe ser menor que los días de vigencia ({{validityDays}})."
     }
   },
   "auth": {
@@ -119,6 +125,109 @@
       "SELLER": "Vendedor",
       "MANAGER": "Gerente comercial",
       "ADMIN": "Administrador"
+    },
+    "VatRate": {
+      "GENERAL_19": "19 %",
+      "REDUCED_5": "5 %",
+      "EXEMPT": "Exento"
+    },
+    "DocumentLocale": {
+      "es": "Español",
+      "en": "Inglés"
+    }
+  },
+  "nav": {
+    "settings": "Ajustes"
+  },
+  "settings": {
+    "title": "Ajustes de la empresa",
+    "description": "Estos valores se usan en las cotizaciones nuevas; las que ya existen no se recalculan.",
+    "save": "Guardar ajustes",
+    "discardChanges": "Descartar",
+    "saved": "Ajustes guardados.",
+    "errorSummary": "Hay {{count}} campos con errores. Revísalos e inténtalo de nuevo.",
+    "status": {
+      "saved": "Todo guardado",
+      "dirty": "Cambios sin guardar",
+      "saving": "Guardando…"
+    },
+    "discard": {
+      "title": "¿Descartar cambios?",
+      "description": "Tienes cambios sin guardar. Si sales, se perderán.",
+      "confirm": "Descartar",
+      "keepEditing": "Seguir editando"
+    },
+    "sections": {
+      "company": "Empresa",
+      "brand": "Logo y marca",
+      "bankAccounts": "Cuentas bancarias",
+      "documents": "Documentos",
+      "validity": "Vigencia y seguimiento",
+      "discounts": "Límites de descuento",
+      "taxes": "Impuestos y envío"
+    },
+    "profile": {
+      "name": "Nombre de la empresa",
+      "nameHint": "Si lo dejas vacío se muestra el nombre de la aplicación.",
+      "taxId": "NIT",
+      "taxIdPlaceholder": "900.000.000-1",
+      "address": "Dirección",
+      "city": "Ciudad",
+      "phone": "Teléfono",
+      "email": "Correo",
+      "website": "Sitio web",
+      "websitePlaceholder": "www.empresa.com",
+      "bankAccounts": "Cuentas bancarias",
+      "bankAccountsPlaceholder": "Cuenta corriente Banco Ejemplo | 000 123 45678",
+      "bankAccountsHint": "Una cuenta por línea, con el número después de una barra (|).",
+      "commercialTerms": "Condiciones comerciales",
+      "commercialTermsHint": "Aparecen en el PDF de cada cotización. {{count}}/{{max}} caracteres.",
+      "documentLocale": "Idioma de los documentos",
+      "documentLocaleHint": "Idioma del PDF y del mensaje sugerido por la IA. No cambia el idioma de la interfaz.",
+      "bankAccountsPreview": "Así aparecerán en las cotizaciones",
+      "bankAccountsMissingNumber": "Falta el número (después de |)"
+    },
+    "logo": {
+      "title": "Logo",
+      "hint": "PNG o JPG, máximo 512 KB.",
+      "current": "Logo de la empresa",
+      "preview": "Vista previa del logo",
+      "upload": "Subir logo",
+      "change": "Cambiar logo",
+      "remove": "Quitar logo",
+      "confirmRemoveTitle": "¿Quitar el logo?",
+      "confirmRemove": "El login, el encabezado y los PDF quedarán sin logo.",
+      "confirmRemoveAction": "Quitar",
+      "removed": "Logo eliminado.",
+      "pending": "Sin guardar",
+      "cancelPending": "Descartar logo nuevo",
+      "dropzone": "Elegir o arrastrar un logo"
+    },
+    "parameters": {
+      "validityDays": "Días de vigencia",
+      "validityDaysHint": "Entero de 1 a 365.",
+      "defaultVatRate": "IVA por defecto de productos nuevos",
+      "defaultVatRateHint": "Solo preselecciona la tarifa al crear un producto.",
+      "shippingTaxable": "El envío grava IVA (19 %)",
+      "shippingTaxableHint": "Si está activo, al envío se le suma el IVA del 19 %.",
+      "discountLimitSeller": "Vendedor (%)",
+      "discountLimitManager": "Gerente comercial (%)",
+      "discountLimitAdmin": "Administrador (%)",
+      "discountHint": "De 0 a 100, hasta 2 decimales.",
+      "expiringAlertDays": "Aviso previo (días)",
+      "expiringAlertDaysHint": "Menor que la vigencia ({{validityDays}}).",
+      "followUpDays": "Días sin seguimiento",
+      "followUpDaysHint": "Entero de 1 a 90.",
+      "coldStartThreshold": "Umbral para calibrar la probabilidad",
+      "coldStartThresholdHint": "Número de cotizaciones cerradas, de 30 a 50, a partir del cual se podrá calibrar la estimación."
+    },
+    "timeline": {
+      "summary": "Si envías una cotización hoy, vale hasta el {{expires}}. Si no hay contacto en {{followUpDays}} días ({{followUp}}) se marca sin seguimiento, y el aviso de vencimiento llega el {{expiring}}.",
+      "summaryNoFollowUp": "Si envías una cotización hoy, vale hasta el {{expires}} y el aviso de vencimiento llega el {{expiring}}. Con {{followUpDays}} días sin seguimiento, vencerá antes de marcarse sin seguimiento.",
+      "sent": "Hoy: envío",
+      "followUp": "Sin seguimiento",
+      "expiring": "Aviso: {{date}}",
+      "expires": "Vence: {{date}}"
     }
   }
 }

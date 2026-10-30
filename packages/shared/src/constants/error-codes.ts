@@ -17,6 +17,9 @@ export const ERROR_CODES = [
   'REFRESH_IN_PROGRESS',
   'INVALID_CURRENT_PASSWORD',
   'PASSWORD_REUSED',
+  'LOGO_INVALID_TYPE',
+  'LOGO_TOO_LARGE',
+  'LOGO_NOT_FOUND',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

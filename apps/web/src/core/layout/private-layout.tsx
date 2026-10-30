@@ -5,6 +5,7 @@ import { MenuIcon } from '../../shared/ui';
 import { useSessionStore } from '../auth';
 import { LanguageSwitch } from '../i18n';
 import { visibleNavItems, type NavItem } from '../navigation';
+import { BrandBackdrop } from './brand-backdrop';
 import { BrandMark } from './brand-mark';
 import { NavDrawer } from './nav-drawer';
 import { PageHeaderSlotContext } from './page-header';
@@ -40,51 +41,54 @@ export function PrivateLayout({ navItems, headerEnd }: PrivateLayoutProps) {
   return (
     <PageHeaderSlotContext.Provider value={headerSlot}>
       <div className="min-h-screen bg-neutral-100 text-neutral-900">
-        <header className="bg-linear-120 from-primary-950 via-primary-800 to-primary-600 text-white">
-          <div className={`mx-auto flex h-18 max-w-content items-center gap-3 ${GUTTER}`}>
-            <button
-              ref={toggleRef}
-              type="button"
-              onClick={() => setDrawerOpen(true)}
-              aria-label={t('layout.nav.open')}
-              aria-expanded={drawerOpen}
-              aria-controls={DRAWER_ID}
-              className="-ml-2 inline-flex size-10 items-center justify-center rounded-md hover:bg-white/10 lg:hidden"
-            >
-              <MenuIcon />
-            </button>
-            <BrandMark />
-            <nav aria-label={t('layout.nav.label')} className="ml-6 hidden lg:block">
-              <ul className="flex items-center gap-1">
-                {items.map((item) => (
-                  <li key={item.to}>
-                    <NavLink
-                      to={item.to}
-                      end={item.to === '/'}
-                      className={({ isActive }) =>
-                        `block whitespace-nowrap rounded-md px-3 py-2 text-body font-medium transition-colors duration-150 ${
-                          isActive
-                            ? 'bg-white/15 text-white'
-                            : 'text-white/80 hover:bg-white/10 hover:text-white'
-                        }`
-                      }
-                    >
-                      {t(item.labelKey)}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-            <div className="ml-auto flex items-center gap-3">
-              <div className="hidden lg:block">
-                <LanguageSwitch tone="dark" />
+        <header className="relative isolate overflow-hidden bg-linear-120 from-brand-ink via-brand-indigo to-brand-periwinkle text-white">
+          <BrandBackdrop />
+          <div className="border-b border-white/10">
+            <div className={`mx-auto flex h-18 max-w-content items-center gap-3 ${GUTTER}`}>
+              <button
+                ref={toggleRef}
+                type="button"
+                onClick={() => setDrawerOpen(true)}
+                aria-label={t('layout.nav.open')}
+                aria-expanded={drawerOpen}
+                aria-controls={DRAWER_ID}
+                className="-ml-2 inline-flex size-10 items-center justify-center rounded-md hover:bg-white/10 lg:hidden"
+              >
+                <MenuIcon />
+              </button>
+              <BrandMark />
+              <nav aria-label={t('layout.nav.label')} className="ml-6 hidden lg:block">
+                <ul className="flex items-center gap-1">
+                  {items.map((item) => (
+                    <li key={item.to}>
+                      <NavLink
+                        to={item.to}
+                        end={item.to === '/'}
+                        className={({ isActive }) =>
+                          `block whitespace-nowrap rounded-md px-3 py-2 text-body font-medium transition-colors duration-150 ${
+                            isActive
+                              ? 'bg-white/15 text-white'
+                              : 'text-white/80 hover:bg-white/10 hover:text-white'
+                          }`
+                        }
+                      >
+                        {t(item.labelKey)}
+                      </NavLink>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+              <div className="ml-auto flex items-center gap-3">
+                <div className="hidden lg:block">
+                  <LanguageSwitch tone="dark" />
+                </div>
+                {headerEnd}
               </div>
-              {headerEnd}
             </div>
           </div>
           <div
             ref={setHeaderSlot}
-            className={`mx-auto max-w-content pb-6 empty:hidden ${GUTTER}`}
+            className={`mx-auto max-w-content pt-5 pb-7 empty:hidden ${GUTTER}`}
           />
         </header>
         <main className={`mx-auto max-w-content py-6 ${GUTTER}`}>

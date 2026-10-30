@@ -1,10 +1,17 @@
 export { Alert, type AlertTone } from './alert';
 export { Avatar } from './avatar';
 export { Button, buttonClasses, type ButtonSize, type ButtonVariant } from './button';
+export { ConfirmDialog } from './confirm-dialog';
 export { EmptyState } from './empty-state';
 export { ErrorMessage } from './error-message';
 export * from './icons';
 export { PageLoader } from './page-loader';
+export { SectionCard } from './section-card';
+export { Select, type SelectOption } from './select';
 export { Skeleton } from './skeleton';
+export { Switch } from './switch';
+export { TextArea } from './text-area';
 export { PasswordField, TextField } from './text-field';
 export { toast, Toaster, useToastStore, type ToastTone } from './toast';
+export type { FieldVariant } from './field-shell';
+export { ZentiaMark } from './zentia-mark';
