@@ -41,7 +41,7 @@ export function PrivateLayout({ navItems, headerEnd }: PrivateLayoutProps) {
   return (
     <PageHeaderSlotContext.Provider value={headerSlot}>
       <div className="min-h-screen bg-neutral-100 text-neutral-900">
-        <header className="relative isolate overflow-hidden bg-linear-120 from-primary-950 via-primary-800 to-primary-500 text-white">
+        <header className="relative isolate overflow-hidden bg-linear-120 from-brand-ink via-brand-indigo to-brand-periwinkle text-white">
           <BrandBackdrop />
           <div className="border-b border-white/10">
             <div className={`mx-auto flex h-18 max-w-content items-center gap-3 ${GUTTER}`}>

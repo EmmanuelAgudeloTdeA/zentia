@@ -298,7 +298,7 @@ describe('BrandMark and branding', () => {
     expect(screen.getByRole('link', { name: new RegExp(es.app.name) })).toBeTruthy();
   });
 
-  it('shows the logo and name on the login and hides a broken image', async () => {
+  it('shows the logo and name on the login and falls back to the Zentia mark if it breaks', async () => {
     vi.spyOn(companyService, 'getBranding').mockResolvedValue({
       name: 'Acme SAS',
       hasLogo: true,
@@ -315,7 +315,7 @@ describe('BrandMark and branding', () => {
     const image = document.querySelector('img');
     expect(image?.getAttribute('src')).toBe('/api/company/logo?v=2');
     fireEvent.error(image as HTMLImageElement);
-    expect(document.querySelector('img')).toBeNull();
+    expect(document.querySelector('img')?.getAttribute('src')).toBe('/brand/zentia-mark.png');
   });
 
   it('keeps the app name if the branding request fails', async () => {

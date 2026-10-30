@@ -7,7 +7,7 @@ export function PublicLayout() {
   const brandName = useBrandName();
 
   return (
-    <div className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden bg-linear-120 from-primary-950 via-primary-800 to-primary-500 px-4 py-16">
+    <div className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden bg-linear-120 from-brand-ink via-brand-indigo to-brand-periwinkle px-4 py-16">
       <BrandBackdrop />
       <div className="absolute top-4 right-4">
         <LanguageSwitch tone="dark" />

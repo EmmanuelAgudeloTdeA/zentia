@@ -143,7 +143,7 @@ export function BrandCard({
             />
           ) : (
             <span className="flex flex-col items-center gap-1 text-caption text-neutral-500">
-              <ZentiaMark className="size-11 opacity-60 grayscale-[35%]" />
+              <ZentiaMark className="size-11" />
               {t('settings.logo.empty')}
             </span>
           )}
@@ -209,7 +209,7 @@ export function BrandCard({
         <p className="text-caption font-semibold text-neutral-500 uppercase">
           {t('settings.logo.brandPreview')}
         </p>
-        <div className="mt-2 flex items-center gap-3 rounded-lg bg-linear-120 from-primary-950 via-primary-800 to-primary-600 p-4 text-white">
+        <div className="mt-2 flex items-center gap-3 rounded-lg bg-linear-120 from-brand-ink via-brand-indigo to-brand-periwinkle p-4 text-white">
           <span className="inline-flex size-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-0 ring-4 ring-white/20">
             {previewSrc ? (
               <img src={previewSrc} alt="" className="size-full object-contain p-1" />
