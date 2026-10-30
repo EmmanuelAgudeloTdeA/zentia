@@ -9,14 +9,12 @@ const ZOD_ISSUE_KEYS = new Set([
   'too_big',
 ]);
 
-/** Clave de `lang/` para un error de campo: el mensaje propio o `validation.<código de Zod>`. */
 export function fieldErrorKey(error: FieldError | undefined): string | undefined {
   if (!error) return undefined;
   if (error.message?.startsWith('validation.')) return error.message;
   return ZOD_ISSUE_KEYS.has(error.type) ? `validation.${error.type}` : 'validation.invalid_value';
 }
 
-/** Ubica los issues del servidor en sus campos; devuelve false si no había ninguno. */
 export function applyServerIssues<T extends FieldValues>(
   error: unknown,
   setError: UseFormSetError<T>,

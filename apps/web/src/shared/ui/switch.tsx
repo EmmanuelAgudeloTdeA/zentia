@@ -6,7 +6,6 @@ interface SwitchProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'
   ref?: Ref<HTMLInputElement>;
 }
 
-/** Interruptor accesible sobre un checkbox nativo (`role="switch"`). */
 export function Switch({ label, hint, id, className, ref, ...inputProps }: SwitchProps) {
   const generatedId = useId();
   const inputId = id ?? generatedId;

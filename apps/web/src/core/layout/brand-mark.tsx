@@ -8,7 +8,6 @@ interface BrandLogoProps {
   size?: 'md' | 'lg' | 'xl';
 }
 
-/** Nombre de la empresa o, mientras esté vacío, el de la app. */
 export function useBrandName(): string {
   const { t } = useTranslation();
   const name = useBrandingStore((state) => state.name);

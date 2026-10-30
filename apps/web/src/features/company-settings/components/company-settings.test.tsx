@@ -124,16 +124,16 @@ describe('Settings page: company data', () => {
 
     fill(es.settings.profile.city, 'Medellín');
     fill(es.settings.profile.website, 'www.acme.co');
-    fill(es.settings.profile.bankAccounts, 'Ahorros Bancolombia | 236 279 66075');
+    fill(es.settings.profile.bankAccounts, 'Ahorros Banco Ejemplo | 000 987 65432');
     const preview = screen.getByRole('list', { name: es.settings.profile.bankAccountsPreview });
-    expect(within(preview).getByText('236 279 66075')).toBeTruthy();
+    expect(within(preview).getByText('000 987 65432')).toBeTruthy();
     fireEvent.click(saveButton());
 
     await waitFor(() => expect(update).toHaveBeenCalled());
     expect(update.mock.calls[0]?.[0]).toMatchObject({
       city: 'Medellín',
       website: 'www.acme.co',
-      bankAccounts: 'Ahorros Bancolombia | 236 279 66075',
+      bankAccounts: 'Ahorros Banco Ejemplo | 000 987 65432',
     });
   });
 

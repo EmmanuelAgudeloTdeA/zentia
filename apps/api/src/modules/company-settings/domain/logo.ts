@@ -12,7 +12,6 @@ export function isLogoMimeType(value: string): value is LogoMimeType {
   return (LOGO_MIME_TYPES as readonly string[]).includes(value);
 }
 
-/** El tipo declarado debe coincidir con la firma real de los bytes. */
 export function validateLogo(
   declared: string,
   detected: LogoMimeType | null,

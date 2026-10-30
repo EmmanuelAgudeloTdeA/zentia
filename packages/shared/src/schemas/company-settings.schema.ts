@@ -14,10 +14,8 @@ export const COMMERCIAL_PARAMETER_RANGES = {
 
 export const COMMERCIAL_TERMS_MAX_LENGTH = 2000;
 
-/** Cuentas bancarias: una por línea, con el número después de una barra. */
 export const BANK_ACCOUNTS_MAX_LENGTH = 1000;
 
-/** Clave de `lang/` del issue cuando X no es menor que N. */
 export const EXPIRING_ALERT_DAYS_LT_VALIDITY = 'validation.parameters.expiringAlertDaysLtValidity';
 
 const { validityDays, expiringAlertDays, followUpDays, coldStartThreshold } =
@@ -35,7 +33,6 @@ const commercialParametersShape = {
   coldStartThreshold: z.int().min(coldStartThreshold.min).max(coldStartThreshold.max),
 };
 
-/** Parámetros completos con la validación cruzada X < N; se aplica sobre actual ⊕ cambios. */
 export const commercialParametersSchema = z
   .object(commercialParametersShape)
   .superRefine((values, ctx) => {
@@ -131,7 +128,6 @@ export const LOGO_MIME_TYPES = ['image/png', 'image/jpeg'] as const;
 
 export type LogoMimeType = (typeof LOGO_MIME_TYPES)[number];
 
-/** Tamaño máximo del logo decodificado. */
 export const LOGO_MAX_BYTES = 512 * 1024;
 
 export const uploadLogoRequestSchema = z.object({

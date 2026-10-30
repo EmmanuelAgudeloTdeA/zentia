@@ -13,7 +13,6 @@ interface ConfirmDialogProps {
   error?: ReactNode;
 }
 
-/** Confirmación modal; el foco empieza en el botón seguro y vuelve al disparador al cerrar. */
 export function ConfirmDialog({
   title,
   description,

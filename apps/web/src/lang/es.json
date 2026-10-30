@@ -170,6 +170,7 @@
       "name": "Nombre de la empresa",
       "nameHint": "Si lo dejas vacío se muestra el nombre de la aplicación.",
       "taxId": "NIT",
+      "taxIdPlaceholder": "900.000.000-1",
       "address": "Dirección",
       "city": "Ciudad",
       "phone": "Teléfono",
@@ -177,8 +178,8 @@
       "website": "Sitio web",
       "websitePlaceholder": "www.empresa.com",
       "bankAccounts": "Cuentas bancarias",
-      "bankAccountsPlaceholder": "Cuenta corriente Bancolombia | 557 000 10172",
-      "bankAccountsHint": "Una cuenta por línea, con el número después de una barra: Cuenta corriente Bancolombia | 557 000 10172",
+      "bankAccountsPlaceholder": "Cuenta corriente Banco Ejemplo | 000 123 45678",
+      "bankAccountsHint": "Una cuenta por línea, con el número después de una barra (|).",
       "commercialTerms": "Condiciones comerciales",
       "commercialTermsHint": "Aparecen en el PDF de cada cotización. {{count}}/{{max}} caracteres.",
       "documentLocale": "Idioma de los documentos",
@@ -189,7 +190,6 @@
     "logo": {
       "title": "Logo",
       "hint": "PNG o JPG, máximo 512 KB.",
-      "empty": "Logo de Zentia",
       "current": "Logo de la empresa",
       "preview": "Vista previa del logo",
       "upload": "Subir logo",
@@ -201,8 +201,7 @@
       "removed": "Logo eliminado.",
       "pending": "Sin guardar",
       "cancelPending": "Descartar logo nuevo",
-      "dropzone": "Elegir o arrastrar un logo",
-      "brandPreview": "Así se ve tu marca"
+      "dropzone": "Elegir o arrastrar un logo"
     },
     "parameters": {
       "validityDays": "Días de vigencia",

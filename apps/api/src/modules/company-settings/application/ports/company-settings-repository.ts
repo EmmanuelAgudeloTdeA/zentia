@@ -6,9 +6,7 @@ export type CompanySettingsPatch = Partial<Omit<CompanySettings, 'logoVersion' |
 };
 
 export interface CompanySettingsRepository {
-  /** Lee la fila id = 1; si aún no existe, la crea con los valores por defecto. */
   get(): Promise<CompanySettings>;
   update(patch: CompanySettingsPatch): Promise<CompanySettings>;
-  /** Crea la fila id = 1 con los valores por defecto; devuelve false si ya existía. */
   createIfMissing(): Promise<boolean>;
 }

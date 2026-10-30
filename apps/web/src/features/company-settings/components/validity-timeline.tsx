@@ -18,7 +18,6 @@ function isPositiveInteger(value: number): boolean {
 
 const percent = (value: number) => `${Math.min(Math.max(value, 0), 1) * 100}%`;
 
-/** Ejemplo en vivo de una cotización enviada hoy con los parámetros que se están editando. */
 export function ValidityTimeline({
   validityDays,
   expiringAlertDays,

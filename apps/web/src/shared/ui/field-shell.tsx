@@ -15,7 +15,6 @@ export function describedById(id: string, error?: string, hint?: ReactNode): str
   return error ? `${id}-error` : hint ? `${id}-hint` : undefined;
 }
 
-/** Etiqueta, ayuda y error comunes a los campos de formulario. */
 export function FieldShell({
   id,
   label,

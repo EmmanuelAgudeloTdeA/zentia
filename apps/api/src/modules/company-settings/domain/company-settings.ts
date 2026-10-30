@@ -1,6 +1,5 @@
 import type { DocumentLocale, VatRate } from '@zentia/shared';
 
-/** Fila única de configuración; los porcentajes viajan como string decimal. */
 export interface CompanySettings {
   name: string | null;
   taxId: string | null;

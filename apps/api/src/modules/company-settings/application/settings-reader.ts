@@ -25,7 +25,6 @@ export interface DocumentProfileDto {
   readonly logoDataUrl: string | null;
 }
 
-/** Puerto público de lectura de la configuración para los demás módulos. */
 export interface SettingsReader {
   getCommercialParameters(): Promise<CommercialParametersDto>;
   getDocumentProfile(): Promise<DocumentProfileDto>;

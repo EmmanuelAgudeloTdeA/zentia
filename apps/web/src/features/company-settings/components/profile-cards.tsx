@@ -32,6 +32,7 @@ export function CompanyCard({ form: { register }, fieldError }: ProfileCardProps
           variant="filled"
           label={t('settings.profile.taxId')}
           maxLength={30}
+          placeholder={t('settings.profile.taxIdPlaceholder')}
           error={fieldError('taxId')}
           {...register('taxId')}
         />

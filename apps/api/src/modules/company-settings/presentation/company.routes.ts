@@ -29,7 +29,6 @@ export interface CompanyRouterDependencies {
   requireAuth: RequireAuth;
 }
 
-/** Parser propio del logo (1 MB); se monta antes del `express.json()` global de 100 KB. */
 export function createCompanyBodyParsers(): Router {
   const router = Router();
   router.put('/logo', express.json({ limit: LOGO_BODY_LIMIT }));

@@ -170,6 +170,7 @@
       "name": "Company name",
       "nameHint": "If left empty, the app name is shown.",
       "taxId": "Tax ID (NIT)",
+      "taxIdPlaceholder": "900.000.000-1",
       "address": "Address",
       "city": "City",
       "phone": "Phone",
@@ -177,8 +178,8 @@
       "website": "Website",
       "websitePlaceholder": "www.company.com",
       "bankAccounts": "Bank accounts",
-      "bankAccountsPlaceholder": "Bancolombia checking account | 557 000 10172",
-      "bankAccountsHint": "One account per line, with the number after a bar: Checking account Bancolombia | 557 000 10172",
+      "bankAccountsPlaceholder": "Checking account Example Bank | 000 123 45678",
+      "bankAccountsHint": "One account per line, with the number after a bar (|).",
       "commercialTerms": "Commercial terms",
       "commercialTermsHint": "Shown on every quote PDF. {{count}}/{{max}} characters.",
       "documentLocale": "Document language",
@@ -189,7 +190,6 @@
     "logo": {
       "title": "Logo",
       "hint": "PNG or JPG, up to 512 KB.",
-      "empty": "Zentia logo",
       "current": "Company logo",
       "preview": "Logo preview",
       "upload": "Upload logo",
@@ -201,8 +201,7 @@
       "removed": "Logo removed.",
       "pending": "Unsaved",
       "cancelPending": "Discard new logo",
-      "dropzone": "Choose or drop a logo",
-      "brandPreview": "How your brand looks"
+      "dropzone": "Choose or drop a logo"
     },
     "parameters": {
       "validityDays": "Validity days",

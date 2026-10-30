@@ -5,7 +5,6 @@ import type { CompanySettingsPatch, CompanySettingsRepository } from './ports/in
 export class UpdateProfileUseCase {
   constructor(private readonly deps: { settings: CompanySettingsRepository }) {}
 
-  /** Actualización parcial: los campos no enviados no cambian. */
   async execute(changes: CompanyProfileChanges): Promise<CompanySettingsDto> {
     const patch = Object.fromEntries(
       Object.entries(changes).filter(([, value]) => value !== undefined),

@@ -83,7 +83,7 @@ describe('PATCH /api/company/profile', () => {
 
   it('saves city, website and bank accounts and clears them with an empty string', async () => {
     const admin = await tokenFor('ADMIN');
-    const bankAccounts = 'Cuenta corriente Bancolombia | 557 000 10172\nAhorros | 236 279 66075';
+    const bankAccounts = 'Cuenta corriente Banco Ejemplo | 000 123 45678\nAhorros | 000 987 65432';
     const saved = await request(app())
       .patch('/api/company/profile')
       .set('Authorization', admin)

@@ -27,7 +27,6 @@ type HandleSubmit<T> = (
   onValid: (values: T) => void,
 ) => (event?: BaseSyntheticEvent) => Promise<void>;
 
-/** Valida un formulario y devuelve sus valores transformados, o null si hay errores. */
 function validated<T>(handleSubmit: HandleSubmit<T>): Promise<T | null> {
   return new Promise((resolve) => {
     void handleSubmit(resolve)().then(() => resolve(null));
@@ -94,7 +93,6 @@ export function SettingsEditor({ settings, onSaved }: SettingsEditorProps) {
     ),
   );
 
-  // La barra flotante aparece cuando el botón del encabezado sale de la pantalla.
   useEffect(() => {
     if (!headerActions || typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver(([entry]) =>
