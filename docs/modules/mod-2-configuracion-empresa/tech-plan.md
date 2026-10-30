@@ -157,3 +157,19 @@ model CompanySettings {
 | Edición concurrente por dos administradores | Gana la última escritura; el impacto es bajo (una fila, pocos administradores). |
 | Lectura sin caché | `SettingsReader` lee la fila en cada llamada; es una consulta por PK. Si se mide un problema en H10.2, se agrega caché con invalidación al actualizar. |
 | Lectura de `GET /company/settings` por todos los roles | Necesaria para que el front de M4 conozca límites y vigencia en la vista previa; no expone datos sensibles. |
+
+## 9. Notas de implementación (H2.1 y H2.2)
+Ajustes respecto a este plan, sin cambio de comportamiento:
+| Punto | Implementación |
+|---|---|
+| Parser propio del logo | `ModuleDefinition.bodyParsers` (opcional): `app.ts` lo monta bajo `/api<basePath>` antes del `express.json({ limit: '100kb' })` global. M2 registra ahí `PUT /logo` con `express.json({ limit: '1mb' })`; el resto de rutas conserva el límite de 100 KB. |
+| `percentString` | Nace en `shared/src/schemas/decimal.schema.ts` (pieza de M0 aún pendiente); `moneyString` y `quantityString` los agregará el módulo que los use primero. |
+| `Decimal` | `shared/src/calc/decimal.ts` exporta `Decimal.clone({ rounding: ROUND_HALF_UP })` (`decimal.js`); `SettingsReader.getCommercialParameters()` devuelve los límites como `Decimal`. En el dominio y en la API viajan como `string`. |
+| Validación de parámetros | `commercialParametersSchema` (shared) tiene los rangos y la regla X < N con el issue en `expiringAlertDays` y la clave `validation.parameters.expiringAlertDaysLtValidity`. El dominio la aplica sobre `actual ⊕ cambios`; el front usa el mismo schema. |
+| Perfil | Un texto vacío equivale a `null` (borra el valor). `commercialTerms` máximo 2000 caracteres (vacío detectado en el ui-brief). |
+| Fila ausente | `PrismaCompanySettingsRepository.get()` crea la fila `id = 1` con los valores por defecto si no existe, para que la API no falle si el seed no se ha corrido; el seed sigue siendo el responsable de crearla (S2.2.2). |
+| `GET /company/branding` | Responde con `Cache-Control: no-cache` para que un cambio de nombre o logo se vea en el siguiente login. |
+| Tipo del logo | `mimeType` llega como texto libre para responder `LOGO_INVALID_TYPE` (y no `VALIDATION_ERROR`) ante un tipo no soportado. |
+| Branding en el front | `core/branding/branding.store.ts` guarda `{ name, hasLogo, logoVersion, status }`; `loadBranding()` vive en `features/company-settings/services` (igual que la sesión en M1) y se llama desde `main.tsx`. `BrandLogo`, `BrandMark`, `PublicLayout` y `NavDrawer` usan `useBrandName()`. |
+| Componentes base nuevos | `Select`, `TextArea`, `Switch`, `SectionCard`, `Tabs` y `ConfirmDialog` en `shared/ui`, según el design system. |
+| Integración con PostgreSQL | `prisma-company-settings.integration.test.ts` se omite si no existe `TEST_DATABASE_URL`. |
