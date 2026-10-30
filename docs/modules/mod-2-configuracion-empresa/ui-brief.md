@@ -21,7 +21,7 @@
 | | Límites de descuento | Vendedor, gerente comercial y administrador (%), cada uno con una barra que muestra el valor |
 | | Impuestos y envío | IVA por defecto de productos nuevos e interruptor "El envío grava IVA (19 %)" |
 | | Documentos | Condiciones comerciales (con contador y barra de uso) e idioma de los documentos |
-| Derecha | Logo y marca | Círculo con el logo (clic o arrastrar para elegir otro) y vista previa del encabezado con logo, nombre, NIT, ciudad, teléfono y sitio web |
+| Derecha | Logo y marca | Franja con el fondo de marca: logo en círculo (clic o arrastrar para elegir otro), nombre, NIT, ciudad, teléfono y sitio web; el logo aparece una sola vez |
 | | Vigencia y seguimiento | Días de vigencia, aviso previo, días sin seguimiento, línea de tiempo de ejemplo y umbral para calibrar la probabilidad |
 | | Cuentas bancarias | Texto, una cuenta por línea, y vista previa de cómo aparecerán en las cotizaciones |
 
