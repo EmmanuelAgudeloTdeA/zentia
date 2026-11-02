@@ -44,3 +44,41 @@ model RefreshToken {
   @@index([userId])
   @@index([familyId])
 }
+
+enum VatRate {
+  GENERAL_19
+  REDUCED_5
+  EXEMPT
+}
+
+enum DocumentLocale {
+  es
+  en
+}
+
+/// Fila única (id = 1); los CHECK de rango viven en la migración.
+model CompanySettings {
+  id                   Int            @id @default(1)
+  name                 String?        @db.VarChar(150)
+  taxId                String?        @db.VarChar(30)
+  address              String?        @db.VarChar(250)
+  city                 String?        @db.VarChar(100)
+  phone                String?        @db.VarChar(30)
+  email                String?        @db.VarChar(150)
+  website              String?        @db.VarChar(150)
+  bankAccounts         String?        @db.Text
+  commercialTerms      String?        @db.Text
+  documentLocale       DocumentLocale @default(es)
+  logoDataUrl          String?        @db.Text
+  logoVersion          Int            @default(0)
+  defaultVatRate       VatRate        @default(GENERAL_19)
+  validityDays         Int            @default(15)
+  discountLimitSeller  Decimal        @default(10) @db.Decimal(5, 2)
+  discountLimitManager Decimal        @default(30) @db.Decimal(5, 2)
+  discountLimitAdmin   Decimal        @default(30) @db.Decimal(5, 2)
+  shippingTaxable      Boolean        @default(false)
+  expiringAlertDays    Int            @default(3)
+  followUpDays         Int            @default(5)
+  coldStartThreshold   Int            @default(30)
+  updatedAt            DateTime       @updatedAt
+}

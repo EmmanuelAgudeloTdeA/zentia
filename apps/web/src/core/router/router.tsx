@@ -1,5 +1,6 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import * as auth from '../../features/auth';
+import * as companySettings from '../../features/company-settings';
 import * as home from '../../features/home';
 import { NotFoundPage, PrivateLayout, PublicLayout, SessionLayout } from '../layout';
 import type { NavItem } from '../navigation';
@@ -11,7 +12,7 @@ interface FeatureModule {
   publicRoutes?: RouteObject[];
 }
 
-const FEATURES: readonly FeatureModule[] = [home, auth];
+const FEATURES: readonly FeatureModule[] = [home, auth, companySettings];
 
 const navItems = FEATURES.flatMap((feature) => feature.navItems);
 const headerEnd = <auth.UserMenu />;

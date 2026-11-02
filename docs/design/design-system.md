@@ -14,6 +14,12 @@ colors:
   primary-800: "#163463"
   primary-900: "#0F2648"
   primary-950: "#0A1A33"
+  brand-ink: "#101E30"
+  brand-indigo: "#304A8D"
+  brand-blue: "#488ED5"
+  brand-teal: "#5FCBCB"
+  brand-periwinkle: "#5B7AD9"
+  brand-violet: "#7D80E2"
   neutral-0: "#FFFFFF"
   neutral-50: "#F7F9FC"
   neutral-100: "#EEF2F6"
@@ -238,13 +244,13 @@ Zentia es una herramienta de trabajo diario para vendedores, gerentes y administ
 ### Lenguaje visual tomado de la referencia
 | Elemento | Se adopta |
 |---|---|
-| Encabezado | Banda con degradado azul marino (`primary-950` → `primary-600`), logo de la empresa en círculo blanco, navegación en píldoras, usuario con avatar de inicial y botón blanco "Nueva cotización". |
+| Encabezado | Banda con degradado de los colores del logo de Zentia (`brand-ink` → `brand-indigo` → `brand-periwinkle`) y un brillo diagonal suave, línea fina entre la navegación y el título, logo de la empresa (o la Z de Zentia) en círculo blanco, navegación en píldoras, usuario con avatar de inicial y botón blanco "Nueva cotización". |
 | Fondo | Gris frío claro (`neutral-100`) con tarjetas blancas de radio `lg` y sombra suave. |
 | Tarjetas de indicadores | Rótulo en `overline`, icono en cuadro `primary-50`, cifra grande en `kpi`, línea secundaria con el monto. En el tablero se superponen al borde inferior del encabezado. |
 | Tablas | Encabezados en `overline` gris, número de cotización en monoespaciada azul, montos alineados a la derecha con cifras tabulares, fila de dos líneas (cliente + resumen). |
 | Filtros | Chips redondeados con contador; el activo en `primary-600`. |
-| Secciones de formulario | Tarjeta blanca con título en `overline` precedido por una barra vertical `primary-600` de 3 px. |
-| Login | Tarjeta centrada sobre fondo con degradado, borde superior `primary-600` de 4 px, logo y nombre de la empresa desde `GET /company/branding`. |
+| Secciones de formulario | Tarjeta blanca de radio `xl` con título en `overline` precedido por una barra vertical con degradado `brand-teal` → `brand-periwinkle`; campos rellenos (`variant="filled"`, fondo `neutral-100`). |
+| Login | Tarjeta blanca centrada sobre el mismo fondo del encabezado, logo grande en círculo y nombre de la empresa desde `GET /company/branding` (sin logo, la Z de Zentia); campos rellenos. |
 
 ### Lo que la referencia muestra y Zentia **no** adopta
 | En la referencia | En Zentia | Motivo |
@@ -277,6 +283,18 @@ Todos los colores se usan **solo** a través de tokens. Ninguna clase de Tailwin
 | `primary-950` | `#0A1A33` | Inicio del degradado del encabezado y del fondo del login |
 
 El logo de la empresa no cambia la paleta: Zentia mantiene su azul aunque el logo tenga otros colores.
+
+### Colores del logo de Zentia
+Tomados de la Z del logo oficial (`apps/web/public/brand/zentia-mark.png`). Solo para fondos de marca (encabezado, login, vista previa de marca) y acentos decorativos; nunca para texto ni estados.
+
+| Token | Hex | Uso |
+|---|---|---|
+| `brand-ink` | `#101E30` | Inicio del degradado de marca (color de la palabra ZENTIA) |
+| `brand-indigo` | `#304A8D` | Tramo medio del degradado (diagonal de la Z) |
+| `brand-blue` | `#488ED5` | Brillos decorativos |
+| `brand-teal` | `#5FCBCB` | Inicio de la barra de sección, brillo superior |
+| `brand-periwinkle` | `#5B7AD9` | Final del degradado de marca y de la barra de sección |
+| `brand-violet` | `#7D80E2` | Brillo inferior |
 
 ### Neutros
 | Token | Hex | Uso |

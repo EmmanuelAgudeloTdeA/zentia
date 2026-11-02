@@ -110,3 +110,19 @@ export const LogOutIcon = createIcon(
 export const CheckIcon = createIcon(<path d="M5 12.5l4.5 4.5L19 7.5" />);
 
 export const CircleIcon = createIcon(<circle cx="12" cy="12" r="8" />);
+
+export const ImageIcon = createIcon(
+  <>
+    <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+    <circle cx="9" cy="10" r="1.75" />
+    <path d="M20.5 16l-5-5-8.5 8.5" />
+  </>,
+);
+
+export const UploadIcon = createIcon(
+  <path d="M12 16V4M7 9l5-5 5 5M4.5 15v3.5a2 2 0 002 2h11a2 2 0 002-2V15" />,
+);
+
+export const TrashIcon = createIcon(
+  <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" />,
+);

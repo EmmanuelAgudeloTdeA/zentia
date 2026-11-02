@@ -20,4 +20,6 @@ export interface ModuleDefinition {
   basePath: string;
   router: Router;
   openapi: OpenAPIRegistry;
+  /** Parsers propios de rutas concretas; se montan antes del `express.json()` global. */
+  bodyParsers?: Router;
 }

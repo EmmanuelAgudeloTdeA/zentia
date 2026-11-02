@@ -49,14 +49,17 @@ export function createApp({
       },
     }),
   );
-  app.use(express.json({ limit: '100kb' }));
-
   const modules = createModules({
     env,
     clock,
     publicLimiter: createGeneralLimiter(),
     ...(overrides ? { overrides } : {}),
   });
+  for (const module of modules) {
+    if (module.bodyParsers) app.use(`/api${module.basePath}`, module.bodyParsers);
+  }
+  app.use(express.json({ limit: '100kb' }));
+
   const api = Router();
   for (const module of modules) {
     api.use(module.basePath, module.router);

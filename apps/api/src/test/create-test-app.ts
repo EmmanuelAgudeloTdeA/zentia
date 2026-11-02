@@ -3,14 +3,24 @@ import type { Clock } from '../core/clock/index.js';
 import { loadEnv } from '../core/env/index.js';
 import { createLogger } from '../core/logger/index.js';
 import { createInMemoryAuth, TEST_JWT_SECRET, type InMemoryAuth } from './in-memory-auth.js';
+import {
+  createInMemoryCompanySettings,
+  type InMemoryCompanySettings,
+} from './in-memory-company-settings.js';
 
 interface TestAppOptions {
   env?: Record<string, string>;
   auth?: InMemoryAuth;
+  companySettings?: InMemoryCompanySettings;
   clock?: Clock;
 }
 
-export function createTestApp({ env: overrides = {}, auth, clock }: TestAppOptions = {}) {
+export function createTestApp({
+  env: overrides = {},
+  auth,
+  companySettings,
+  clock,
+}: TestAppOptions = {}) {
   const env = loadEnv({
     NODE_ENV: 'test',
     DATABASE_URL: 'postgresql://zentia:zentia@localhost:5432/zentia_test',
@@ -22,7 +32,10 @@ export function createTestApp({ env: overrides = {}, auth, clock }: TestAppOptio
   return createApp({
     env,
     logger: createLogger(env.LOG_LEVEL),
-    overrides: { auth: auth ?? createInMemoryAuth() },
+    overrides: {
+      auth: auth ?? createInMemoryAuth(),
+      companySettings: companySettings ?? createInMemoryCompanySettings(),
+    },
     ...(clock ? { clock } : {}),
   });
 }

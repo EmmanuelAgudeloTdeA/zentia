@@ -1,4 +1,5 @@
 import { useId, useState, type InputHTMLAttributes, type ReactNode, type Ref } from 'react';
+import { controlClasses, type FieldVariant } from './field-shell';
 import { AlertCircleIcon, EyeIcon, EyeOffIcon } from './icons';
 
 interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
@@ -6,6 +7,7 @@ interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'si
   error?: string | undefined;
   hint?: ReactNode;
   endAdornment?: ReactNode;
+  variant?: FieldVariant;
   ref?: Ref<HTMLInputElement>;
 }
 
@@ -17,6 +19,7 @@ export function TextField({
   required,
   id,
   className,
+  variant,
   ref,
   ...inputProps
 }: TextFieldProps) {
@@ -42,9 +45,7 @@ export function TextField({
           aria-required={required}
           aria-invalid={error ? true : undefined}
           aria-describedby={describedBy}
-          className={`h-10 w-full rounded-md border bg-neutral-0 px-3 text-body text-neutral-900 shadow-xs transition-colors duration-150 placeholder:text-neutral-500 hover:border-neutral-400 focus:border-primary-500 disabled:bg-neutral-100 disabled:text-neutral-500 ${
-            error ? 'border-danger-fg' : 'border-neutral-300'
-          } ${endAdornment ? 'pr-11' : ''}`}
+          className={`h-10 ${controlClasses(error, variant)} ${endAdornment ? 'pr-11' : ''}`}
           {...inputProps}
         />
         {endAdornment ? (

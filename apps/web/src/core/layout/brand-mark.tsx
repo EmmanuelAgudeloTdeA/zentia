@@ -1,32 +1,58 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import { Skeleton, ZentiaMark } from '../../shared/ui';
+import { logoUrl, useBrandingStore } from '../branding';
 
 interface BrandLogoProps {
-  size?: 'md' | 'lg';
+  size?: 'md' | 'lg' | 'xl';
 }
 
-// M2 (S2.1.4) reemplaza la inicial por el logo y el nombre de la empresa.
-export function BrandLogo({ size = 'md' }: BrandLogoProps) {
+export function useBrandName(): string {
   const { t } = useTranslation();
-  const dimensions = size === 'lg' ? 'size-16 text-h1' : 'size-10 text-h2';
+  const name = useBrandingStore((state) => state.name);
+  return name?.trim() ? name : t('app.name');
+}
+
+export function BrandLogo({ size = 'md' }: BrandLogoProps) {
+  const status = useBrandingStore((state) => state.status);
+  const hasLogo = useBrandingStore((state) => state.hasLogo);
+  const logoVersion = useBrandingStore((state) => state.logoVersion);
+  const [failedVersion, setFailedVersion] = useState<number | null>(null);
+  const dimensions = { md: 'size-10', lg: 'size-16', xl: 'size-22' }[size];
+  const circle = `inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-neutral-0 shadow-sm ring-4 ring-white/20 ${dimensions}`;
+
+  if (status === 'loading') {
+    return (
+      <span aria-hidden="true" className={circle}>
+        <Skeleton className="size-full rounded-full" />
+      </span>
+    );
+  }
 
   return (
-    <span
-      aria-hidden="true"
-      className={`inline-flex shrink-0 items-center justify-center rounded-full bg-neutral-0 font-bold text-primary-600 shadow-sm ring-4 ring-white/20 ${dimensions}`}
-    >
-      {t('app.name').charAt(0)}
+    <span aria-hidden="true" className={circle}>
+      {hasLogo && failedVersion !== logoVersion ? (
+        <img
+          src={logoUrl(logoVersion)}
+          alt=""
+          className="size-full object-contain p-1"
+          onError={() => setFailedVersion(logoVersion)}
+        />
+      ) : (
+        <ZentiaMark className="size-3/4" />
+      )}
     </span>
   );
 }
 
 export function BrandMark() {
-  const { t } = useTranslation();
+  const brandName = useBrandName();
 
   return (
     <Link to="/" className="flex min-w-0 items-center gap-3 rounded-md text-white">
       <BrandLogo />
-      <span className="truncate text-h3">{t('app.name')}</span>
+      <span className="truncate text-h3">{brandName}</span>
     </Link>
   );
 }

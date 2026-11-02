@@ -1,8 +1,8 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import { SpinnerIcon } from './icons';
 
 export type ButtonVariant =
-  'primary' | 'secondary' | 'ghost' | 'danger' | 'danger-outline' | 'on-dark';
+  'primary' | 'secondary' | 'ghost' | 'ghost-on-dark' | 'danger' | 'danger-outline' | 'on-dark';
 
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
@@ -11,6 +11,7 @@ const VARIANT_CLASSES: Record<ButtonVariant, string> = {
   secondary:
     'border border-neutral-300 bg-neutral-0 text-neutral-800 shadow-xs hover:bg-neutral-50 active:bg-neutral-100',
   ghost: 'text-primary-600 hover:bg-primary-50 active:bg-primary-100',
+  'ghost-on-dark': 'text-white/90 hover:bg-white/10 hover:text-white active:bg-white/15',
   danger: 'bg-danger-solid text-white hover:bg-danger-fg',
   'danger-outline':
     'border border-danger-border bg-neutral-0 text-danger-fg hover:bg-danger-bg active:bg-danger-bg',
@@ -38,6 +39,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: ButtonSize;
   icon?: ReactNode;
   loading?: boolean;
+  ref?: Ref<HTMLButtonElement>;
 }
 
 export function Button({
