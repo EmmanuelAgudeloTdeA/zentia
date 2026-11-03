@@ -154,3 +154,20 @@ model Product {
 | Columnas de búsqueda `nameKey` | Se calculan en la aplicación al guardar; no se usa `unaccent` ni extensiones de Postgres. |
 | Unidad de medida del producto | Las fuentes no la piden (las cantidades admiten 2 decimales); queda fuera. |
 | Dependencia blanda con M2 | Solo `defaultVatRate`; si M2 no está disponible, el formulario usa `GENERAL_19`. |
+
+## 9. Notas de implementación (H3.1 y H3.2)
+Ajustes respecto a este plan, sin cambio de comportamiento:
+| Punto | Implementación |
+|---|---|
+| Filtro de estado | `GET /customers` y `GET /products` usan `status=active|inactive|all` (defecto `active`) en vez de `isActive`, porque los chips de la interfaz necesitan "Todos". Para `SELLER` y `MANAGER`, `/products` fuerza `active`. |
+| Reglas de contacto | `CUSTOMER_CONTACT_REQUIRED` e `INVALID_PHONE` son reglas de dominio (`customers/domain/customer.ts`), no `VALIDATION_ERROR`: el schema de `shared` solo da forma y el caso de uso valida también el resultado combinado del `PATCH`. |
+| Normalizadores | `packages/shared/src/normalize/`: `normalizeDocumentId`, `normalizePhone`, `formatPhoneForDisplay`, `toSearchKey`, `normalizeCategoryLabel`; el correo usa `normalizeEmail` de la política de contraseñas. |
+| Búsqueda de clientes | La aplicación arma los términos (`customerSearchTerms`): `nameKey` sin tildes, correo, documento normalizado y dígitos del teléfono (desde 3); el repositorio hace un `OR` de `contains`. |
+| Categorías | `resolveCategory` reutiliza la forma escrita de otro producto con la misma clave; al editar se excluye el propio producto, así el único producto de una categoría puede corregir su ortografía. Las sugerencias usan `categoryKey contains` (no solo prefijo). |
+| Lectores para M4/M5 | `CustomerReader` (`getById`, `getActiveById` → 409 `CUSTOMER_INACTIVE`) y `CatalogReader` (`getByIds`, `getActiveByIds` → 404 `PRODUCT_NOT_FOUND` o 409 `PRODUCT_INACTIVE` con `{ productId }`), expuestos por los barriles de `customers` y `catalog`. |
+| Dinero | `moneyString` (entero canónico de hasta 15 dígitos) y `positiveMoneyString` en `shared`; Prisma `Decimal` → `toFixed(0)`. En el front, `formatCop` usa `BigInt` para no perder precisión. |
+| Aviso de duplicados | Al salir del campo documento, el front busca con `status=all` y avisa si algún documento empieza igual que el escrito (o al revés). |
+| Componentes base | `Combobox` (ARIA combobox/listbox, espera de 250 ms, opción "Crear «x»"), `MoneyField` y `FilterChip` en `shared/ui`; `formatCop`, `formatDate` y `groupThousands` en `core/format`; `useDebouncedValue` en `shared/lib`. |
+| IVA por defecto | El formulario de producto lee `GET /company/settings` con `companyService` (barril de `company-settings`); si falla, usa `GENERAL_19`. |
+| Pruebas de integración | Con `TEST_DATABASE_URL` los archivos de prueba corren en serie (`fileParallelism`), porque comparten la base. |
+| Secciones del detalle | Cotizaciones (M4) e interacciones (M6) no se muestran hasta que existan esos módulos. |
