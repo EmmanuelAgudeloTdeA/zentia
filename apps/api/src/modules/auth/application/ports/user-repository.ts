@@ -37,6 +37,7 @@ export interface UserOption {
   id: string;
   name: string;
   role: Role;
+  isActive: boolean;
 }
 
 export interface UserRepository {
@@ -48,7 +49,7 @@ export interface UserRepository {
   /** Lanza `EMAIL_TAKEN` si el correo ya pertenece a otro usuario. */
   update(id: string, changes: UserUpdate): Promise<AuthUser>;
   list(filter: UserSearchFilter, page: { skip: number; take: number }): Promise<UserPage>;
-  listActiveOptions(): Promise<UserOption[]>;
+  listOptions(options: { includeInactive: boolean }): Promise<UserOption[]>;
   /** Bloquea las filas contadas mientras dure la transacción. */
   countActiveAdmins(): Promise<number>;
 }

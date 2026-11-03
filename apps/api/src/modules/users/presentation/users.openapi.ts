@@ -9,6 +9,7 @@ import {
   userDtoSchema,
   userListDtoSchema,
   userOptionDtoSchema,
+  userOptionsQuerySchema,
 } from '@zentia/shared';
 import { z } from 'zod';
 
@@ -49,8 +50,10 @@ export function createUsersOpenApi(): OpenAPIRegistry {
     method: 'get',
     path: '/users/options',
     tags: ['Users'],
-    summary: 'Usuarios activos para reasignar y filtrar (MANAGER, ADMIN)',
+    summary:
+      'Usuarios para reasignar (activos) o filtrar por dueño (includeInactive) (MANAGER, ADMIN)',
     security,
+    request: { query: userOptionsQuerySchema },
     responses: {
       200: jsonResponse('Usuarios activos', z.array(userOptionDtoSchema)),
       ...GUARD_ERRORS,

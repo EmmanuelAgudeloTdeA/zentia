@@ -106,10 +106,10 @@ export class PrismaUserRepository implements UserRepository {
     return { items: items.map(toAuthUser), total };
   }
 
-  async listActiveOptions(): Promise<UserOption[]> {
+  async listOptions({ includeInactive }: { includeInactive: boolean }): Promise<UserOption[]> {
     return this.db.user.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true, role: true },
+      where: includeInactive ? {} : { isActive: true },
+      select: { id: true, name: true, role: true, isActive: true },
       orderBy: { name: 'asc' },
     });
   }

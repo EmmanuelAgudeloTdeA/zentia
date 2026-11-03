@@ -20,6 +20,9 @@ describe.skipIf(!databaseUrl)('Prisma auth repositories (integration)', () => {
   });
 
   beforeEach(async () => {
+    await prisma.quoteEvent.deleteMany();
+    await prisma.quoteVersion.deleteMany();
+    await prisma.quote.deleteMany();
     await prisma.customer.deleteMany();
     await prisma.refreshToken.deleteMany();
     await prisma.user.deleteMany();
@@ -95,7 +98,7 @@ describe.skipIf(!databaseUrl)('Prisma auth repositories (integration)', () => {
     expect(page.items.map((user) => user.name)).toEqual(['Beto']);
 
     await expect(users.countActiveAdmins()).resolves.toBe(1);
-    expect(await users.listActiveOptions()).toHaveLength(2);
+    expect(await users.listOptions({ includeInactive: false })).toHaveLength(2);
   });
 
   it('updates data and maps a duplicated email to EMAIL_TAKEN', async () => {
