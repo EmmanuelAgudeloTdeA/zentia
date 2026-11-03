@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { Role } from '@zentia/shared';
 import type { Clock } from '../core/clock/index.js';
+import { AppError } from '../core/http/index.js';
 import type {
   AuthInfrastructure,
   NewRefreshToken,
@@ -8,7 +9,11 @@ import type {
   PasswordHasher,
   PasswordUpdate,
   RefreshTokenRepository,
+  UserOption,
+  UserPage,
   UserRepository,
+  UserSearchFilter,
+  UserUpdate,
 } from '../modules/auth/application/index.js';
 import type { AuthUser, RefreshTokenRecord } from '../modules/auth/domain/index.js';
 import { CryptoSecureTokens, JoseAccessTokens } from '../modules/auth/infrastructure/index.js';
@@ -58,6 +63,7 @@ export class InMemoryUserRepository implements UserRepository {
   }
 
   async create(user: NewUser): Promise<AuthUser> {
+    if (await this.findByEmail(user.email)) throw new AppError('EMAIL_TAKEN', 409);
     const created: AuthUser = { ...user, id: randomUUID(), isActive: true, createdAt: new Date() };
     this.users.set(created.id, created);
     return created;
@@ -73,6 +79,42 @@ export class InMemoryUserRepository implements UserRepository {
     };
     this.users.set(id, updated);
     return updated;
+  }
+
+  async update(id: string, changes: UserUpdate): Promise<AuthUser> {
+    const user = this.users.get(id);
+    if (!user) throw new Error(`User ${id} not found`);
+    const owner = changes.email ? await this.findByEmail(changes.email) : null;
+    if (owner && owner.id !== id) throw new AppError('EMAIL_TAKEN', 409);
+    const defined = Object.fromEntries(
+      Object.entries(changes).filter(([, value]) => value !== undefined),
+    );
+    const updated: AuthUser = { ...user, ...defined };
+    this.users.set(id, updated);
+    return updated;
+  }
+
+  async list(filter: UserSearchFilter, page: { skip: number; take: number }): Promise<UserPage> {
+    const q = filter.q?.toLowerCase();
+    const matches = [...this.users.values()]
+      .filter((user) => !filter.role || user.role === filter.role)
+      .filter((user) => filter.isActive === undefined || user.isActive === filter.isActive)
+      .filter(
+        (user) => !q || user.name.toLowerCase().includes(q) || user.email.toLowerCase().includes(q),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name) || a.email.localeCompare(b.email));
+    return { items: matches.slice(page.skip, page.skip + page.take), total: matches.length };
+  }
+
+  async listActiveOptions(): Promise<UserOption[]> {
+    return [...this.users.values()]
+      .filter((user) => user.isActive)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(({ id, name, role }) => ({ id, name, role }));
+  }
+
+  async countActiveAdmins(): Promise<number> {
+    return [...this.users.values()].filter((user) => user.role === 'ADMIN' && user.isActive).length;
   }
 }
 

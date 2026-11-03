@@ -20,6 +20,10 @@ export const ERROR_CODES = [
   'LOGO_INVALID_TYPE',
   'LOGO_TOO_LARGE',
   'LOGO_NOT_FOUND',
+  'EMAIL_TAKEN',
+  'USER_NOT_FOUND',
+  'CANNOT_MODIFY_SELF',
+  'LAST_ADMIN',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

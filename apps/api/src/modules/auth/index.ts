@@ -19,9 +19,22 @@ import {
 export {
   assertCanAccess,
   SeedFirstAdminUseCase,
+  toUserDto,
   type AuthInfrastructure,
+  type AuthUnitOfWork,
+  type PasswordHasher,
+  type UserOption,
+  type UserRepository,
+  type UserSearchFilter,
+  type UserUpdate,
 } from './application/index.js';
-export { resolveScope, scopeFilter, type AccessScope, type Actor } from './domain/index.js';
+export {
+  resolveScope,
+  scopeFilter,
+  type AccessScope,
+  type Actor,
+  type AuthUser,
+} from './domain/index.js';
 export { createPrismaAuthInfrastructure, type AuthSecurityConfig } from './infrastructure/index.js';
 
 export interface AuthModuleOptions {

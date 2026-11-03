@@ -126,3 +126,48 @@ export const UploadIcon = createIcon(
 export const TrashIcon = createIcon(
   <path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5M10 11v5M14 11v5" />,
 );
+
+export const MoreIcon = createIcon(
+  <>
+    <circle cx="12" cy="5" r="1" />
+    <circle cx="12" cy="12" r="1" />
+    <circle cx="12" cy="19" r="1" />
+  </>,
+);
+
+export const PlusIcon = createIcon(<path d="M12 5v14M5 12h14" />);
+
+export const SearchIcon = createIcon(
+  <>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M20 20l-3.5-3.5" />
+  </>,
+);
+
+export const CopyIcon = createIcon(
+  <>
+    <rect x="9" y="9" width="12" height="12" rx="2" />
+    <path d="M5 15H4a1 1 0 01-1-1V4a1 1 0 011-1h10a1 1 0 011 1v1" />
+  </>,
+);
+
+export const EditIcon = createIcon(
+  <>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z" />
+  </>,
+);
+
+export const UsersIcon = createIcon(
+  <>
+    <circle cx="9" cy="8" r="3.5" />
+    <path d="M2.5 20a6.5 6.5 0 0113 0M16 4.5a3.5 3.5 0 010 7M18.5 14.5A6.5 6.5 0 0121.5 20" />
+  </>,
+);
+
+export const UserOffIcon = createIcon(
+  <>
+    <circle cx="10" cy="8" r="3.5" />
+    <path d="M3.5 20a6.5 6.5 0 0110.5-5.1M16 16l5 5M21 16l-5 5" />
+  </>,
+);

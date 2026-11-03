@@ -8,7 +8,10 @@
     "retry": "Reintentar",
     "back": "Volver",
     "close": "Cerrar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "pagination": "{{from}}–{{to}} de {{total}}",
+    "previousPage": "Página anterior",
+    "nextPage": "Página siguiente"
   },
   "layout": {
     "nav": {
@@ -62,7 +65,11 @@
     "PASSWORD_REUSED": "La nueva contraseña debe ser distinta de la actual.",
     "LOGO_INVALID_TYPE": "El logo debe ser una imagen PNG o JPG.",
     "LOGO_TOO_LARGE": "El logo no puede superar 512 KB.",
-    "LOGO_NOT_FOUND": "La empresa no tiene logo."
+    "LOGO_NOT_FOUND": "La empresa no tiene logo.",
+    "EMAIL_TAKEN": "El correo ya está registrado. Usa otro correo.",
+    "USER_NOT_FOUND": "No encontramos el usuario.",
+    "CANNOT_MODIFY_SELF": "No puedes cambiar tu propio rol ni desactivarte.",
+    "LAST_ADMIN": "Debe quedar al menos un administrador activo."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
@@ -137,7 +144,76 @@
     }
   },
   "nav": {
-    "settings": "Ajustes"
+    "settings": "Ajustes",
+    "users": "Usuarios"
+  },
+  "users": {
+    "title": "Usuarios",
+    "description": "Crea cuentas, asigna roles y controla quién accede al sistema.",
+    "new": "Nuevo usuario",
+    "edit": "Editar usuario",
+    "tableCaption": "Lista de usuarios",
+    "you": "Tú",
+    "filters": {
+      "search": "Buscar por nombre o correo",
+      "role": "Rol",
+      "status": "Estado",
+      "all": "Todos",
+      "clear": "Limpiar filtros"
+    },
+    "columns": {
+      "name": "Nombre",
+      "email": "Correo",
+      "role": "Rol",
+      "status": "Estado",
+      "actions": "Acciones"
+    },
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "actions": {
+      "edit": "Editar",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "resetPassword": "Restablecer contraseña"
+    },
+    "confirm": {
+      "deactivateTitle": "¿Desactivar a {{name}}?",
+      "deactivate": "{{name}} no podrá iniciar sesión. Sus cotizaciones se conservan y se pueden reasignar.",
+      "resetPasswordTitle": "¿Restablecer la contraseña de {{name}}?",
+      "resetPassword": "Se cerrarán sus sesiones y deberá cambiar la contraseña al entrar.",
+      "reset": "Restablecer"
+    },
+    "form": {
+      "name": "Nombre",
+      "email": "Correo",
+      "role": "Rol",
+      "active": "Activo",
+      "activeHint": "Un usuario inactivo no puede iniciar sesión.",
+      "selfReadonlyHint": "No puedes cambiar tu propio rol ni desactivarte.",
+      "create": "Crear usuario",
+      "save": "Guardar cambios"
+    },
+    "temporaryPassword": {
+      "title": "Contraseña temporal",
+      "subtitle": "Para {{email}}",
+      "notice": "Esta contraseña se muestra una sola vez. Entrégala al usuario; deberá cambiarla al iniciar sesión.",
+      "copy": "Copiar",
+      "copied": "Copiada",
+      "done": "Listo"
+    },
+    "empty": {
+      "title": "Ningún usuario coincide con los filtros.",
+      "description": "Prueba con otra búsqueda o limpia los filtros."
+    },
+    "toast": {
+      "created": "Usuario {{name}} creado.",
+      "updated": "Usuario actualizado.",
+      "activated": "Usuario activado.",
+      "deactivated": "Usuario desactivado.",
+      "passwordReset": "Contraseña de {{name}} restablecida."
+    }
   },
   "settings": {
     "title": "Ajustes de la empresa",
