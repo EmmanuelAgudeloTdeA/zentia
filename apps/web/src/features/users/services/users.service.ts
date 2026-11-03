@@ -24,7 +24,11 @@ export const usersService = {
       query: { ...query },
       ...(signal ? { signal } : {}),
     }),
-  options: () => request<UserOptionDto[]>('GET', '/users/options'),
+  /** Activos para reasignar; con `includeInactive` para filtrar por dueño. */
+  options: (includeInactive = false) =>
+    request<UserOptionDto[]>('GET', '/users/options', {
+      query: includeInactive ? { includeInactive: true } : {},
+    }),
   get: (id: string) => request<UserDto>('GET', `/users/${id}`),
   create: (body: CreateUserRequest) => request<CreateUserResult>('POST', '/users', { body }),
   update: (id: string, body: UpdateUserRequest) =>

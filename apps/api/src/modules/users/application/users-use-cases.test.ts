@@ -164,7 +164,9 @@ describe('user queries', () => {
 
     const options = await new ListUserOptionsUseCase(deps).execute();
     expect(options.map((option) => option.name)).toEqual(['admin', 'ana', 'carla']);
-    expect(options[0]).toEqual({ id: admin.id, name: 'admin', role: 'ADMIN' });
+    expect(options[0]).toEqual({ id: admin.id, name: 'admin', role: 'ADMIN', isActive: true });
+    const all = await new ListUserOptionsUseCase(deps).execute(true);
+    expect(all.map((option) => option.name)).toEqual(['admin', 'ana', 'beto', 'carla']);
   });
 
   it('GetUserUseCase answers USER_NOT_FOUND', async () => {

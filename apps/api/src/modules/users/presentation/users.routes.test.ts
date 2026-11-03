@@ -46,8 +46,18 @@ describe('role guard', () => {
       .set('Authorization', manager.authorization);
     expect(ok.status).toBe(200);
     expect(ok.body).toEqual([
-      { id: manager.user.id, name: 'manager', role: 'MANAGER' },
-      { id: seller.user.id, name: 'seller', role: 'SELLER' },
+      { id: manager.user.id, name: 'manager', role: 'MANAGER', isActive: true },
+      { id: seller.user.id, name: 'seller', role: 'SELLER', isActive: true },
+    ]);
+
+    const withInactive = await request(app())
+      .get('/api/users/options')
+      .query({ includeInactive: 'true' })
+      .set('Authorization', manager.authorization);
+    expect(withInactive.body.map((option: { name: string }) => option.name)).toEqual([
+      'manager',
+      'off',
+      'seller',
     ]);
 
     const denied = await request(app())

@@ -20,8 +20,9 @@ export class ListUsersUseCase {
 export class ListUserOptionsUseCase {
   constructor(private readonly deps: UserReadDependencies) {}
 
-  execute(): Promise<UserOptionDto[]> {
-    return this.deps.users.listActiveOptions();
+  /** Solo activos por defecto (reasignar); con inactivos para filtrar por dueño (M4). */
+  execute(includeInactive = false): Promise<UserOptionDto[]> {
+    return this.deps.users.listOptions({ includeInactive });
   }
 }
 

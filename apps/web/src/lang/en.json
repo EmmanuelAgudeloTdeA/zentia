@@ -98,7 +98,21 @@
     "INVALID_PHONE": "The phone must have 10 digits (Colombia) or 11 to 15 digits with the country code.",
     "CUSTOMER_INACTIVE": "The customer is inactive and cannot be used in new quotes.",
     "PRODUCT_NOT_FOUND": "The product does not exist.",
-    "PRODUCT_INACTIVE": "The product is inactive and cannot be added to new quotes."
+    "PRODUCT_INACTIVE": "The product is inactive and cannot be added to new quotes.",
+    "QUOTE_NOT_FOUND": "Quote not found.",
+    "QUOTE_CONFLICT": "This quote changed. Reload to see the current version.",
+    "QUOTE_INVALID_TRANSITION": "The quote does not allow that status change.",
+    "QUOTE_NOT_EDITABLE": "This quote can no longer be edited.",
+    "QUOTE_EXPIRED": "This quote has already expired. Reactivate it to continue.",
+    "QUOTE_EMPTY": "No active products are left for the quote.",
+    "QUOTE_CUSTOMER_LOCKED": "The customer cannot be changed on a sent quote.",
+    "QUOTE_NOT_DUPLICABLE": "Only approved or rejected quotes can be duplicated.",
+    "DUPLICATE_PRODUCT_LINE": "That product is already in the quote; adjust its quantity.",
+    "DISCOUNT_LIMIT_EXCEEDED": "The discount exceeds your limit ({{limit}} %).",
+    "CUSTOMER_REQUEST_REQUIRED": "Write what the customer asked for.",
+    "INVALID_EXPIRY_DATE": "Choose a date after today.",
+    "REASSIGN_TARGET_INVALID": "The selected user does not exist or is inactive.",
+    "REASSIGN_SAME_OWNER": "The quote already belongs to that user."
   },
   "validation": {
     "invalid_type": "The value is not valid.",
@@ -173,13 +187,233 @@
     "DocumentLocale": {
       "es": "Spanish",
       "en": "English"
+    },
+    "QuoteStatus": {
+      "DRAFT": "Draft",
+      "SENT": "Sent",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "EXPIRED": "Expired",
+      "VOIDED": "Voided"
+    },
+    "QuoteEventType": {
+      "DISCOUNT_OVERRIDE": "Authorized discount",
+      "EXPIRY_CHANGED": "Expiry change",
+      "REASSIGNED": "Reassignment",
+      "STATE_CHANGED": "Status change"
     }
   },
   "nav": {
     "settings": "Settings",
     "users": "Users",
     "customers": "Customers",
-    "products": "Products"
+    "products": "Products",
+    "quotes": "Quotes"
+  },
+  "quotes": {
+    "title": "Quotes",
+    "description": "Create, send and follow up on your sales proposals.",
+    "new": "New quote",
+    "tableCaption": "Quote list",
+    "number": "Number",
+    "customer": "Customer",
+    "owner": "Owner",
+    "total": "Total",
+    "expiresAt": "Expires",
+    "status": "Status",
+    "filters": {
+      "all": "All",
+      "status": "Status",
+      "search": "Search by number or customer",
+      "customer": "Customer",
+      "owner": "Owner",
+      "inactiveOwner": "{{name}} (inactive)",
+      "allCustomers": "All customers",
+      "allOwners": "All owners"
+    },
+    "empty": {
+      "title": "There are no quotes yet. Create the first one to get started.",
+      "filteredTitle": "No quotes match the filters."
+    },
+    "expiry": {
+      "today": "Expires today",
+      "inDays_one": "Expires in {{count}} day",
+      "inDays_other": "Expires in {{count}} days",
+      "on": "Expires on {{date}}",
+      "expiredOn": "Expired on {{date}}"
+    },
+    "editor": {
+      "newTitle": "New quote",
+      "editTitle": "Edit {{number}}",
+      "customerSection": "Customer",
+      "customerPlaceholder": "Search by name or document",
+      "customerRequired": "Select a customer.",
+      "customerLocked": "The customer cannot be changed on a sent quote.",
+      "customerInactive": "The customer is inactive. Choose another one before saving or sending.",
+      "productsSection": "Products",
+      "addProduct": "Add product",
+      "productPlaceholder": "Search by name or category",
+      "linesEmpty": "There are no products yet. Search above to add them.",
+      "linesRequired": "Add at least one product.",
+      "maxLines": "Up to 100 products per quote.",
+      "product": "Product",
+      "category": "Category",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price before VAT",
+      "vatRate": "VAT",
+      "lineAmount": "Amount",
+      "remove": "Remove {{name}}",
+      "quantityInvalid": "The quantity must be greater than 0, with up to 2 decimals.",
+      "conditionsSection": "Conditions",
+      "discountPct": "Global discount",
+      "discountLimitHint": "Your limit: {{limit}}",
+      "discountExceeded": "Exceeds your discount limit ({{limit}}).",
+      "discountInvalid": "Use a percentage between 0 and 100 with up to 2 decimals.",
+      "discountLocked": "Discount applied by a manager or administrator. You can edit the products, but not the discount.",
+      "discountOverride": "Exceeds the seller limit ({{limit}}). It will be recorded under your name.",
+      "shippingAmount": "Shipping",
+      "shippingTaxable": "Shipping includes 19 % VAT.",
+      "shippingNotTaxable": "Shipping does not include VAT.",
+      "totalsTitle": "Summary",
+      "saveDraft": "Save draft",
+      "saveChanges": "Save changes",
+      "conflict": "This quote changed while you were editing it.",
+      "reload": "Reload",
+      "duplicatedNotice": "{{number}} was created from the duplicated quote.",
+      "omittedProducts": "Inactive products were left out: {{names}}.",
+      "discountReset": "The discount was set to 0 % because it exceeded your limit.",
+      "notEditable": "This quote can no longer be edited.",
+      "discardTitle": "Discard changes?",
+      "discardDescription": "The changes you did not save will be lost.",
+      "discard": "Discard"
+    },
+    "totals": {
+      "subtotal": "Subtotal",
+      "discount": "Discount ({{pct}})",
+      "linesVat": "VAT",
+      "shipping": "Shipping",
+      "shippingVat": "Shipping VAT",
+      "total": "Total"
+    },
+    "customerRequest": {
+      "title": "What the customer asked for",
+      "context": "Version {{number}} will be created with these changes.",
+      "label": "What did the customer ask for?",
+      "save": "Save version"
+    },
+    "detail": {
+      "summary": "Summary",
+      "lines": "Products",
+      "createdAt": "Created on",
+      "firstSentAt": "First sent",
+      "sentAt": "Last sent",
+      "approvedAt": "Approved on",
+      "currentVersion": "Current version",
+      "noExpiry": "No expiry (draft)",
+      "voidReason": "Void reason",
+      "notFound": "Quote not found.",
+      "backToList": "Go to quotes",
+      "moreActions": "More actions"
+    },
+    "actions": {
+      "edit": "Edit",
+      "send": "Mark as sent",
+      "approve": "Mark as approved",
+      "reject": "Mark as rejected",
+      "void": "Void",
+      "changeExpiry": "Change expiry",
+      "reassign": "Reassign",
+      "reactivate": "Reactivate",
+      "duplicate": "Duplicate"
+    },
+    "dialogs": {
+      "send": {
+        "title": "Mark {{number}} as sent?",
+        "description": "Use it when you sent it through another channel. It will expire on {{date}} and version 1 will be saved."
+      },
+      "approve": {
+        "title": "Mark {{number}} as approved?",
+        "description": "{{number}} will be Approved and can no longer be edited."
+      },
+      "reject": {
+        "title": "Mark {{number}} as rejected?",
+        "description": "{{number}} will be Rejected and can no longer be edited."
+      },
+      "expired": "This quote has already expired. Reactivate it to continue.",
+      "void": {
+        "title": "Void {{number}}",
+        "description": "{{number}} will be voided, keep its number and can no longer be edited.",
+        "reason": "Reason"
+      },
+      "expiry": {
+        "title": "Change expiry",
+        "current": "Current expiry: {{date}}",
+        "newDate": "New date",
+        "invalid": "Choose a date after today.",
+        "submit": "Change date"
+      },
+      "reassign": {
+        "title": "Reassign {{number}}",
+        "current": "Current owner: {{name}}",
+        "target": "New owner",
+        "targetRequired": "Select another user.",
+        "submit": "Reassign"
+      },
+      "reactivate": {
+        "title": "Reactivate {{number}}",
+        "request": "What the customer asked for",
+        "updatePrices": "Update prices to the current price",
+        "currentPrice": "Current price",
+        "catalogPrice": "Catalog price",
+        "difference": "Difference",
+        "inactive": "Inactive product: keeps its price.",
+        "newExpiry": "New expiry date: {{date}}",
+        "submit": "Reactivate"
+      },
+      "duplicate": {
+        "title": "Duplicate {{number}}?",
+        "description": "A new draft will be created with current catalog prices, under your name."
+      }
+    },
+    "toast": {
+      "saved": "Quote {{number}} saved.",
+      "versionSaved": "Version {{version}} saved.",
+      "noChanges": "There were no changes to save.",
+      "sent": "{{number}} marked as sent.",
+      "approved": "{{number}} marked as approved.",
+      "rejected": "{{number}} marked as rejected.",
+      "voided": "{{number}} voided.",
+      "expiryChanged": "{{number}} expiry updated.",
+      "reassigned": "{{number}} reassigned to {{name}}.",
+      "reactivated": "{{number}} reactivated.",
+      "duplicated": "{{number}} created."
+    }
+  },
+  "history": {
+    "title": "History",
+    "empty": "There is no history yet. It is recorded from the first time the quote is sent.",
+    "actor": {
+      "system": "System"
+    },
+    "version": "Version {{number}}",
+    "initialVersion": "Initial version (sent)",
+    "customerRequest": "What the customer asked for",
+    "by": "{{actor}} · {{date}}",
+    "changes": {
+      "added": "Added: {{name}} ({{quantity}})",
+      "removed": "Removed: {{name}}",
+      "quantity": "{{name}}: quantity {{from}} → {{to}}",
+      "price": "{{name}}: price {{from}} → {{to}}",
+      "discount": "Discount: {{from}} → {{to}}",
+      "shipping": "Shipping: {{from}} → {{to}}",
+      "total": "Total: {{from}} → {{to}}"
+    },
+    "events": {
+      "STATE_CHANGED": "Status changed",
+      "DISCOUNT_OVERRIDE": "Discount {{from}} → {{to}} (exceeds the seller limit: {{limit}})",
+      "EXPIRY_CHANGED": "Expiry {{from}} → {{to}}",
+      "REASSIGNED": "Reassigned from {{from}} to {{to}}"
+    }
   },
   "customers": {
     "title": "Customers",

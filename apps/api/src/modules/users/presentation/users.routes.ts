@@ -2,6 +2,7 @@ import {
   createUserRequestSchema,
   listUsersQuerySchema,
   updateUserRequestSchema,
+  userOptionsQuerySchema,
 } from '@zentia/shared';
 import { Router, type Request } from 'express';
 import { z } from 'zod';
@@ -49,8 +50,9 @@ export function createUsersRouter(deps: UsersRouterDependencies): Router {
     res.json(await deps.listUsers.execute(listUsersQuerySchema.parse(req.query)));
   });
 
-  router.get('/options', deps.requireAuth({ roles: ['MANAGER', 'ADMIN'] }), async (_req, res) => {
-    res.json(await deps.listOptions.execute());
+  router.get('/options', deps.requireAuth({ roles: ['MANAGER', 'ADMIN'] }), async (req, res) => {
+    const { includeInactive } = userOptionsQuerySchema.parse(req.query);
+    res.json(await deps.listOptions.execute(includeInactive));
   });
 
   router.get('/:id', adminOnly, async (req, res) => {

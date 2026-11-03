@@ -41,7 +41,7 @@ export class RepositoryCatalogReader implements CatalogReader {
     );
     return unique.map((productId) => {
       const product = found.get(productId);
-      if (!product) throw new AppError('PRODUCT_NOT_FOUND', 404, { productId });
+      if (!product) throw new AppError('PRODUCT_NOT_FOUND', 400, { productId });
       return toSnapshot(product);
     });
   }
@@ -49,7 +49,7 @@ export class RepositoryCatalogReader implements CatalogReader {
   async getActiveByIds(ids: readonly string[]): Promise<ProductSnapshotDto[]> {
     const snapshots = await this.getByIds(ids);
     const inactive = snapshots.find((product) => !product.isActive);
-    if (inactive) throw new AppError('PRODUCT_INACTIVE', 409, { productId: inactive.id });
+    if (inactive) throw new AppError('PRODUCT_INACTIVE', 400, { productId: inactive.id });
     return snapshots;
   }
 }

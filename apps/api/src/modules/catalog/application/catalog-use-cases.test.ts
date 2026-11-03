@@ -93,7 +93,7 @@ describe('RepositoryCatalogReader', () => {
     const [snapshot] = await reader.getActiveByIds([active.id, active.id]);
     expect(snapshot?.price.toFixed(0)).toBe('1550000');
     expect(await reader.getByIds([inactive.id])).toHaveLength(1);
-    await expectCode(reader.getActiveByIds([active.id, inactive.id]), 'PRODUCT_INACTIVE', 409);
+    await expectCode(reader.getActiveByIds([active.id, inactive.id]), 'PRODUCT_INACTIVE', 400);
     const missing = await reader.getByIds(['missing']).catch((e: unknown) => e);
     expect(missing).toMatchObject({ code: 'PRODUCT_NOT_FOUND', params: { productId: 'missing' } });
   });

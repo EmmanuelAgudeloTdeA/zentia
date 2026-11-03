@@ -56,6 +56,14 @@ export const userOptionDtoSchema = z.object({
   id: z.uuid(),
   name: z.string(),
   role: roleSchema,
+  isActive: z.boolean(),
+});
+
+export const userOptionsQuerySchema = z.object({
+  includeInactive: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
 });
 
 export type UserOptionDto = z.infer<typeof userOptionDtoSchema>;
