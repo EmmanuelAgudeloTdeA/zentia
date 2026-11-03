@@ -6,3 +6,6 @@ export * from './health.schema.js';
 export * from './locale.schema.js';
 export * from './password-policy.js';
 export * from './users.schema.js';
+export * from './customers.schema.js';
+export * from './pagination.schema.js';
+export * from './products.schema.js';

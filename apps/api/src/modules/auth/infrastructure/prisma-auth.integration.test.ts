@@ -20,6 +20,7 @@ describe.skipIf(!databaseUrl)('Prisma auth repositories (integration)', () => {
   });
 
   beforeEach(async () => {
+    await prisma.customer.deleteMany();
     await prisma.refreshToken.deleteMany();
     await prisma.user.deleteMany();
     const user = await users.create({

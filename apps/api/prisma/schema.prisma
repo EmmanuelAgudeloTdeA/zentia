@@ -25,6 +25,7 @@ model User {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   refreshTokens      RefreshToken[]
+  customers          Customer[]
 
   @@index([role, isActive])
 }
@@ -81,4 +82,41 @@ model CompanySettings {
   followUpDays         Int            @default(5)
   coldStartThreshold   Int            @default(30)
   updatedAt            DateTime       @updatedAt
+}
+
+/// CHECK en la migración: phone IS NOT NULL OR email IS NOT NULL.
+model Customer {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(150)
+  nameKey     String   @db.VarChar(150)
+  documentId  String   @unique @db.VarChar(20)
+  phone       String?  @db.VarChar(15)
+  email       String?  @db.VarChar(150)
+  isActive    Boolean  @default(true)
+  createdById String   @db.Uuid
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, nameKey])
+  @@index([phone])
+  @@index([email])
+}
+
+/// CHECK en la migración: price > 0.
+model Product {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @db.VarChar(150)
+  nameKey     String   @db.VarChar(150)
+  category    String   @db.VarChar(80)
+  categoryKey String   @db.VarChar(80)
+  price       Decimal  @db.Decimal(15, 0)
+  vatRate     VatRate
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive, categoryKey])
+  @@index([categoryKey])
+  @@index([nameKey])
 }

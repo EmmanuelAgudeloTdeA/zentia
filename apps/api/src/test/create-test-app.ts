@@ -3,6 +3,8 @@ import type { Clock } from '../core/clock/index.js';
 import { loadEnv } from '../core/env/index.js';
 import { createLogger } from '../core/logger/index.js';
 import type { UsersInfrastructure } from '../modules/users/index.js';
+import { createInMemoryCatalog, type InMemoryCatalog } from './in-memory-catalog.js';
+import { createInMemoryCustomers, type InMemoryCustomers } from './in-memory-customers.js';
 import { createInMemoryAuth, TEST_JWT_SECRET, type InMemoryAuth } from './in-memory-auth.js';
 import {
   createInMemoryCompanySettings,
@@ -14,6 +16,8 @@ interface TestAppOptions {
   auth?: InMemoryAuth;
   companySettings?: InMemoryCompanySettings;
   users?: UsersInfrastructure;
+  customers?: InMemoryCustomers;
+  catalog?: InMemoryCatalog;
   clock?: Clock;
 }
 
@@ -28,6 +32,8 @@ export function createTestApp({
   auth,
   companySettings,
   users,
+  customers,
+  catalog,
   clock,
 }: TestAppOptions = {}) {
   const env = loadEnv({
@@ -38,13 +44,17 @@ export function createTestApp({
     BCRYPT_COST: '4',
     ...overrides,
   });
+  const authInfrastructure = auth ?? createInMemoryAuth();
+  const userName = (id: string) => authInfrastructure.users.users.get(id)?.name ?? 'Usuario';
   return createApp({
     env,
     logger: createLogger(env.LOG_LEVEL),
     overrides: {
-      auth: auth ?? createInMemoryAuth(),
+      auth: authInfrastructure,
       companySettings: companySettings ?? createInMemoryCompanySettings(),
       users: users ?? sequentialTemporaryPasswords(),
+      customers: customers ?? createInMemoryCustomers(userName),
+      catalog: catalog ?? createInMemoryCatalog(),
     },
     ...(clock ? { clock } : {}),
   });

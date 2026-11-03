@@ -1,6 +1,8 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import * as auth from '../../features/auth';
+import * as catalog from '../../features/catalog';
 import * as companySettings from '../../features/company-settings';
+import * as customers from '../../features/customers';
 import * as home from '../../features/home';
 import * as users from '../../features/users';
 import { NotFoundPage, PrivateLayout, PublicLayout, SessionLayout } from '../layout';
@@ -13,7 +15,7 @@ interface FeatureModule {
   publicRoutes?: RouteObject[];
 }
 
-const FEATURES: readonly FeatureModule[] = [home, auth, users, companySettings];
+const FEATURES: readonly FeatureModule[] = [home, auth, customers, catalog, users, companySettings];
 
 const navItems = FEATURES.flatMap((feature) => feature.navItems);
 const headerEnd = <auth.UserMenu />;
