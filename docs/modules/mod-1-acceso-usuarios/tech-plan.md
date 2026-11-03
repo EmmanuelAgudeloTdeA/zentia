@@ -200,3 +200,20 @@ Ajustes respecto a este plan, sin cambio de comportamiento:
 | Errores en componentes | `core/errors` reexporta `ApiError`, `errorKey` e `isApiError`; los componentes no importan `core/http-client`. |
 | Tests de `domain` | La regla de lint de `domain` excluye `*.test.ts` (pueden importar `vitest`). |
 | Integración con PostgreSQL | `prisma-auth.integration.test.ts` se omite si no existe `TEST_DATABASE_URL`. |
+
+## 10. Notas de implementación (H1.3)
+Ajustes respecto a este plan, sin cambio de comportamiento:
+| Punto | Implementación |
+|---|---|
+| Módulo `users` | Vive en `modules/users` y usa el repositorio de `User`, la unidad de trabajo y el `PasswordHasher` del barril de `auth` (dependencia `users` → `auth`). `UserRepository` suma `update`, `list`, `listActiveOptions` y `countActiveAdmins`. |
+| `TokenService.revokeAllForUser` | Se usa `RefreshTokenRepository.revokeAllForUser` dentro de la misma transacción que la desactivación o el restablecimiento. |
+| `LAST_ADMIN` concurrente | `countActiveAdmins` hace `SELECT … FOR UPDATE` sobre los admins activos dentro de la transacción de `UpdateUserUseCase`, así dos desactivaciones simultáneas no dejan el sistema sin administrador. |
+| Reglas de protección | Función pura `checkAdminProtection` en `users/domain`, con pruebas para cada combinación. |
+| `EMAIL_TAKEN` | Se valida antes de crear y, por carrera, el repositorio traduce la violación única de Prisma (`P2002`) al mismo código. |
+| Contraseña temporal | `CryptoTemporaryPasswords`: 12 caracteres con `crypto.randomInt` sobre un alfabeto sin ambiguos (sin `0 O 1 l I i o`), al menos una letra y un número. |
+| `:id` inválido | Un id que no es UUID responde 404 `USER_NOT_FOUND` (no 400), igual que uno inexistente. |
+| Nombre del usuario | `userNameSchema`: 1–100 caracteres (cierra el vacío del ui-brief). |
+| `PATCH /users/:id` | Acepta un cuerpo parcial; si está vacío, devuelve el usuario sin cambios. |
+| Componentes base nuevos | `Dialog`, `DataTable` (tabla en ≥ 640 px y tarjetas en móvil), `Pagination`, `Badge` y `ActionMenu` ("Más acciones") en `shared/ui`, reutilizables por M3 y siguientes. |
+| Formulario | Con cambios sin guardar, Esc y el clic en el fondo no cierran el diálogo; Cancelar y la X sí. Al editarse a sí mismo, rol y "Activo" quedan deshabilitados y el `PATCH` solo envía nombre y correo. |
+| Pruebas | `user-admin-rules.test.ts`, `users-use-cases.test.ts`, `users.routes.test.ts`, `crypto-temporary-passwords.test.ts`, integración Prisma de los métodos nuevos y `users-page.test.tsx`. |
