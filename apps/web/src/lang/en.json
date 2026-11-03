@@ -11,7 +11,29 @@
     "cancel": "Cancel",
     "pagination": "{{from}}–{{to}} of {{total}}",
     "previousPage": "Previous page",
-    "nextPage": "Next page"
+    "nextPage": "Next page",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "statusFilter": {
+      "label": "Status",
+      "active": "Active",
+      "inactive": "Inactive",
+      "all": "All"
+    },
+    "actions": {
+      "edit": "Edit",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "more": "More actions",
+      "clearFilters": "Clear filters"
+    },
+    "combobox": {
+      "loading": "Searching…",
+      "noResults": "No results.",
+      "error": "Suggestions could not be loaded."
+    }
   },
   "layout": {
     "nav": {
@@ -69,7 +91,14 @@
     "EMAIL_TAKEN": "This email is already registered. Use another email.",
     "USER_NOT_FOUND": "We could not find the user.",
     "CANNOT_MODIFY_SELF": "You cannot change your own role or deactivate yourself.",
-    "LAST_ADMIN": "There must be at least one active administrator."
+    "LAST_ADMIN": "There must be at least one active administrator.",
+    "CUSTOMER_NOT_FOUND": "The customer does not exist.",
+    "CUSTOMER_DOCUMENT_TAKEN": "A customer with this document already exists.",
+    "CUSTOMER_CONTACT_REQUIRED": "Enter at least a phone or an email.",
+    "INVALID_PHONE": "The phone must have 10 digits (Colombia) or 11 to 15 digits with the country code.",
+    "CUSTOMER_INACTIVE": "The customer is inactive and cannot be used in new quotes.",
+    "PRODUCT_NOT_FOUND": "The product does not exist.",
+    "PRODUCT_INACTIVE": "The product is inactive and cannot be added to new quotes."
   },
   "validation": {
     "invalid_type": "The value is not valid.",
@@ -85,6 +114,9 @@
     },
     "parameters": {
       "expiringAlertDaysLtValidity": "Must be less than the validity days ({{validityDays}})."
+    },
+    "price": {
+      "positive": "The price must be a whole number greater than 0."
     }
   },
   "auth": {
@@ -145,7 +177,96 @@
   },
   "nav": {
     "settings": "Settings",
-    "users": "Users"
+    "users": "Users",
+    "customers": "Customers",
+    "products": "Products"
+  },
+  "customers": {
+    "title": "Customers",
+    "description": "Customers shared by the whole sales team.",
+    "new": "New customer",
+    "edit": "Edit customer",
+    "search": "Search by name, document, phone or email",
+    "tableCaption": "Customer list",
+    "fields": {
+      "name": "Name or company name",
+      "documentId": "Document (tax ID or national ID)",
+      "phone": "Phone",
+      "email": "Email",
+      "status": "Status",
+      "createdBy": "Created by",
+      "createdAt": "Created on",
+      "contact": "Contact"
+    },
+    "contactHint": "Enter at least a phone or an email.",
+    "phoneHint": "57 is added if it has 10 digits.",
+    "phonePreview": "It will be used as {{phone}}",
+    "documentPreview": "It will be saved as {{documentId}}",
+    "duplicateFound": "A customer with this document already exists: {{name}}.",
+    "openExisting": "Open existing customer",
+    "confirm": {
+      "deactivateTitle": "Deactivate {{name}}?",
+      "deactivate": "The customer {{name}} will not be available for new quotes. Existing quotes do not change."
+    },
+    "form": {
+      "create": "Create customer",
+      "save": "Save changes"
+    },
+    "detail": {
+      "data": "Details",
+      "notFound": "The customer does not exist.",
+      "backToList": "Go to customers"
+    },
+    "empty": {
+      "title": "There are no customers yet. Create the first one to start quoting.",
+      "filteredTitle": "No customers match the search."
+    },
+    "toast": {
+      "created": "Customer created.",
+      "updated": "Customer updated.",
+      "activated": "Customer activated.",
+      "deactivated": "Customer deactivated."
+    }
+  },
+  "products": {
+    "title": "Products",
+    "description": "Prices exclude VAT.",
+    "new": "New product",
+    "edit": "Edit product",
+    "search": "Search by name or category",
+    "tableCaption": "Product catalog",
+    "fields": {
+      "name": "Name",
+      "category": "Category",
+      "price": "Price before VAT",
+      "vatRate": "VAT rate",
+      "status": "Status"
+    },
+    "priceHint": "Price before VAT.",
+    "snapshotNotice": "Price or rate changes do not affect existing quotes.",
+    "category": {
+      "createNew": "Create category “{{value}}”",
+      "filterPlaceholder": "All categories"
+    },
+    "confirm": {
+      "deactivateTitle": "Deactivate {{name}}?",
+      "deactivate": "{{name}} will not be available for new quotes. Existing quotes keep their price."
+    },
+    "form": {
+      "create": "Create product",
+      "save": "Save changes"
+    },
+    "empty": {
+      "adminTitle": "There are no products yet. Create the first one to start quoting.",
+      "title": "There are no products yet. The administrator must create them.",
+      "filteredTitle": "No products match the search."
+    },
+    "toast": {
+      "created": "Product created.",
+      "updated": "Product updated.",
+      "activated": "Product activated.",
+      "deactivated": "Product deactivated."
+    }
   },
   "users": {
     "title": "Users",

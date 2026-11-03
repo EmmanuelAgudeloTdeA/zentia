@@ -11,7 +11,29 @@
     "cancel": "Cancelar",
     "pagination": "{{from}}–{{to}} de {{total}}",
     "previousPage": "Página anterior",
-    "nextPage": "Página siguiente"
+    "nextPage": "Página siguiente",
+    "status": {
+      "active": "Activo",
+      "inactive": "Inactivo"
+    },
+    "statusFilter": {
+      "label": "Estado",
+      "active": "Activos",
+      "inactive": "Inactivos",
+      "all": "Todos"
+    },
+    "actions": {
+      "edit": "Editar",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "more": "Más acciones",
+      "clearFilters": "Limpiar filtros"
+    },
+    "combobox": {
+      "loading": "Buscando…",
+      "noResults": "Sin resultados.",
+      "error": "No se pudieron cargar las sugerencias."
+    }
   },
   "layout": {
     "nav": {
@@ -69,7 +91,14 @@
     "EMAIL_TAKEN": "El correo ya está registrado. Usa otro correo.",
     "USER_NOT_FOUND": "No encontramos el usuario.",
     "CANNOT_MODIFY_SELF": "No puedes cambiar tu propio rol ni desactivarte.",
-    "LAST_ADMIN": "Debe quedar al menos un administrador activo."
+    "LAST_ADMIN": "Debe quedar al menos un administrador activo.",
+    "CUSTOMER_NOT_FOUND": "El cliente no existe.",
+    "CUSTOMER_DOCUMENT_TAKEN": "Ya existe un cliente con este documento.",
+    "CUSTOMER_CONTACT_REQUIRED": "Ingresa al menos un teléfono o un correo.",
+    "INVALID_PHONE": "El teléfono debe tener 10 dígitos (Colombia) o entre 11 y 15 con el indicativo.",
+    "CUSTOMER_INACTIVE": "El cliente está inactivo y no se puede usar en cotizaciones nuevas.",
+    "PRODUCT_NOT_FOUND": "El producto no existe.",
+    "PRODUCT_INACTIVE": "El producto está inactivo y no se puede agregar a cotizaciones nuevas."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
@@ -85,6 +114,9 @@
     },
     "parameters": {
       "expiringAlertDaysLtValidity": "Debe ser menor que los días de vigencia ({{validityDays}})."
+    },
+    "price": {
+      "positive": "El precio debe ser un número entero mayor que 0."
     }
   },
   "auth": {
@@ -145,7 +177,96 @@
   },
   "nav": {
     "settings": "Ajustes",
-    "users": "Usuarios"
+    "users": "Usuarios",
+    "customers": "Clientes",
+    "products": "Productos"
+  },
+  "customers": {
+    "title": "Clientes",
+    "description": "Clientes compartidos por todo el equipo comercial.",
+    "new": "Nuevo cliente",
+    "edit": "Editar cliente",
+    "search": "Buscar por nombre, documento, teléfono o correo",
+    "tableCaption": "Lista de clientes",
+    "fields": {
+      "name": "Nombre o razón social",
+      "documentId": "Documento (NIT o cédula)",
+      "phone": "Teléfono",
+      "email": "Correo",
+      "status": "Estado",
+      "createdBy": "Creado por",
+      "createdAt": "Fecha de creación",
+      "contact": "Contacto"
+    },
+    "contactHint": "Ingresa al menos un teléfono o un correo.",
+    "phoneHint": "Se antepone 57 si tiene 10 dígitos.",
+    "phonePreview": "Se usará como {{phone}}",
+    "documentPreview": "Se guardará como {{documentId}}",
+    "duplicateFound": "Ya existe un cliente con este documento: {{name}}.",
+    "openExisting": "Abrir cliente existente",
+    "confirm": {
+      "deactivateTitle": "¿Desactivar a {{name}}?",
+      "deactivate": "El cliente {{name}} no se podrá usar en cotizaciones nuevas. Sus cotizaciones existentes no cambian."
+    },
+    "form": {
+      "create": "Crear cliente",
+      "save": "Guardar cambios"
+    },
+    "detail": {
+      "data": "Datos",
+      "notFound": "El cliente no existe.",
+      "backToList": "Ir a clientes"
+    },
+    "empty": {
+      "title": "Aún no hay clientes. Crea el primero para poder cotizar.",
+      "filteredTitle": "Ningún cliente coincide con la búsqueda."
+    },
+    "toast": {
+      "created": "Cliente creado.",
+      "updated": "Cliente actualizado.",
+      "activated": "Cliente activado.",
+      "deactivated": "Cliente desactivado."
+    }
+  },
+  "products": {
+    "title": "Productos",
+    "description": "Precios sin IVA.",
+    "new": "Nuevo producto",
+    "edit": "Editar producto",
+    "search": "Buscar por nombre o categoría",
+    "tableCaption": "Catálogo de productos",
+    "fields": {
+      "name": "Nombre",
+      "category": "Categoría",
+      "price": "Precio sin IVA",
+      "vatRate": "Tarifa de IVA",
+      "status": "Estado"
+    },
+    "priceHint": "Precio antes de IVA.",
+    "snapshotNotice": "Los cambios de precio o tarifa no afectan las cotizaciones existentes.",
+    "category": {
+      "createNew": "Crear categoría «{{value}}»",
+      "filterPlaceholder": "Todas las categorías"
+    },
+    "confirm": {
+      "deactivateTitle": "¿Desactivar {{name}}?",
+      "deactivate": "{{name}} no se podrá agregar a cotizaciones nuevas. Las cotizaciones existentes conservan su precio."
+    },
+    "form": {
+      "create": "Crear producto",
+      "save": "Guardar cambios"
+    },
+    "empty": {
+      "adminTitle": "Aún no hay productos. Crea el primero para poder cotizar.",
+      "title": "Aún no hay productos. El administrador debe crearlos.",
+      "filteredTitle": "Ningún producto coincide con la búsqueda."
+    },
+    "toast": {
+      "created": "Producto creado.",
+      "updated": "Producto actualizado.",
+      "activated": "Producto activado.",
+      "deactivated": "Producto desactivado."
+    }
   },
   "users": {
     "title": "Usuarios",
