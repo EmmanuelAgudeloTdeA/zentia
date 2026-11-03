@@ -9,10 +9,20 @@ import {
   type AuthInfrastructure,
 } from './auth/index.js';
 import {
+  createCatalogModule,
+  createPrismaCatalogInfrastructure,
+  type CatalogInfrastructure,
+} from './catalog/index.js';
+import {
   createCompanySettingsModule,
   createPrismaCompanySettingsInfrastructure,
   type CompanySettingsInfrastructure,
 } from './company-settings/index.js';
+import {
+  createCustomersModule,
+  createPrismaCustomersInfrastructure,
+  type CustomersInfrastructure,
+} from './customers/index.js';
 import { createHealthModule } from './health/index.js';
 import {
   createUsersModule,
@@ -25,6 +35,8 @@ export interface InfrastructureOverrides {
   auth?: AuthInfrastructure;
   companySettings?: CompanySettingsInfrastructure;
   users?: UsersInfrastructure;
+  customers?: CustomersInfrastructure;
+  catalog?: CatalogInfrastructure;
 }
 
 export interface CreateModulesOptions {
@@ -65,5 +77,20 @@ export function createModules({
     infrastructure: overrides.users ?? { temporaryPasswords: new CryptoTemporaryPasswords() },
     clock,
   });
-  return [createHealthModule(dependencies), auth.module, users, companySettings.module];
+  const customers = createCustomersModule({
+    ...dependencies,
+    infrastructure: overrides.customers ?? createPrismaCustomersInfrastructure(getPrisma()),
+  });
+  const catalog = createCatalogModule({
+    ...dependencies,
+    infrastructure: overrides.catalog ?? createPrismaCatalogInfrastructure(getPrisma()),
+  });
+  return [
+    createHealthModule(dependencies),
+    auth.module,
+    users,
+    companySettings.module,
+    customers.module,
+    catalog.module,
+  ];
 }
