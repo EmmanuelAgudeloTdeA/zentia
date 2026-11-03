@@ -8,7 +8,10 @@
     "retry": "Retry",
     "back": "Back",
     "close": "Close",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "pagination": "{{from}}–{{to}} of {{total}}",
+    "previousPage": "Previous page",
+    "nextPage": "Next page"
   },
   "layout": {
     "nav": {
@@ -62,7 +65,11 @@
     "PASSWORD_REUSED": "The new password must be different from the current one.",
     "LOGO_INVALID_TYPE": "The logo must be a PNG or JPG image.",
     "LOGO_TOO_LARGE": "The logo cannot exceed 512 KB.",
-    "LOGO_NOT_FOUND": "The company has no logo."
+    "LOGO_NOT_FOUND": "The company has no logo.",
+    "EMAIL_TAKEN": "This email is already registered. Use another email.",
+    "USER_NOT_FOUND": "We could not find the user.",
+    "CANNOT_MODIFY_SELF": "You cannot change your own role or deactivate yourself.",
+    "LAST_ADMIN": "There must be at least one active administrator."
   },
   "validation": {
     "invalid_type": "The value is not valid.",
@@ -137,7 +144,76 @@
     }
   },
   "nav": {
-    "settings": "Settings"
+    "settings": "Settings",
+    "users": "Users"
+  },
+  "users": {
+    "title": "Users",
+    "description": "Create accounts, assign roles and control who can access the system.",
+    "new": "New user",
+    "edit": "Edit user",
+    "tableCaption": "User list",
+    "you": "You",
+    "filters": {
+      "search": "Search by name or email",
+      "role": "Role",
+      "status": "Status",
+      "all": "All",
+      "clear": "Clear filters"
+    },
+    "columns": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "edit": "Edit",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "resetPassword": "Reset password"
+    },
+    "confirm": {
+      "deactivateTitle": "Deactivate {{name}}?",
+      "deactivate": "{{name}} will not be able to sign in. Their quotes are kept and can be reassigned.",
+      "resetPasswordTitle": "Reset {{name}}'s password?",
+      "resetPassword": "Their sessions will be closed and they will have to change the password when signing in.",
+      "reset": "Reset"
+    },
+    "form": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "active": "Active",
+      "activeHint": "An inactive user cannot sign in.",
+      "selfReadonlyHint": "You cannot change your own role or deactivate yourself.",
+      "create": "Create user",
+      "save": "Save changes"
+    },
+    "temporaryPassword": {
+      "title": "Temporary password",
+      "subtitle": "For {{email}}",
+      "notice": "This password is shown only once. Give it to the user; they will have to change it when signing in.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "done": "Done"
+    },
+    "empty": {
+      "title": "No users match the filters.",
+      "description": "Try another search or clear the filters."
+    },
+    "toast": {
+      "created": "User {{name}} created.",
+      "updated": "User updated.",
+      "activated": "User activated.",
+      "deactivated": "User deactivated.",
+      "passwordReset": "{{name}}'s password was reset."
+    }
   },
   "settings": {
     "title": "Company settings",
