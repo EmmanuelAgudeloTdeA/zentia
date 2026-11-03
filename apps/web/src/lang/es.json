@@ -98,7 +98,21 @@
     "INVALID_PHONE": "El teléfono debe tener 10 dígitos (Colombia) o entre 11 y 15 con el indicativo.",
     "CUSTOMER_INACTIVE": "El cliente está inactivo y no se puede usar en cotizaciones nuevas.",
     "PRODUCT_NOT_FOUND": "El producto no existe.",
-    "PRODUCT_INACTIVE": "El producto está inactivo y no se puede agregar a cotizaciones nuevas."
+    "PRODUCT_INACTIVE": "El producto está inactivo y no se puede agregar a cotizaciones nuevas.",
+    "QUOTE_NOT_FOUND": "Cotización no encontrada.",
+    "QUOTE_CONFLICT": "Esta cotización cambió. Recarga para ver la versión actual.",
+    "QUOTE_INVALID_TRANSITION": "La cotización no admite ese cambio de estado.",
+    "QUOTE_NOT_EDITABLE": "Esta cotización ya no se puede editar.",
+    "QUOTE_EXPIRED": "Esta cotización ya venció. Reactívala para continuar.",
+    "QUOTE_EMPTY": "No quedó ningún producto activo para la cotización.",
+    "QUOTE_CUSTOMER_LOCKED": "El cliente no se puede cambiar en una cotización enviada.",
+    "QUOTE_NOT_DUPLICABLE": "Solo se pueden duplicar cotizaciones aprobadas o rechazadas.",
+    "DUPLICATE_PRODUCT_LINE": "Ese producto ya está en la cotización; ajusta su cantidad.",
+    "DISCOUNT_LIMIT_EXCEEDED": "El descuento supera tu límite ({{limit}} %).",
+    "CUSTOMER_REQUEST_REQUIRED": "Escribe lo que solicitó el cliente.",
+    "INVALID_EXPIRY_DATE": "Elige una fecha posterior a hoy.",
+    "REASSIGN_TARGET_INVALID": "El usuario elegido no existe o está inactivo.",
+    "REASSIGN_SAME_OWNER": "La cotización ya es de ese usuario."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
@@ -173,13 +187,233 @@
     "DocumentLocale": {
       "es": "Español",
       "en": "Inglés"
+    },
+    "QuoteStatus": {
+      "DRAFT": "Borrador",
+      "SENT": "Enviada",
+      "APPROVED": "Aprobada",
+      "REJECTED": "Rechazada",
+      "EXPIRED": "Vencida",
+      "VOIDED": "Anulada"
+    },
+    "QuoteEventType": {
+      "DISCOUNT_OVERRIDE": "Descuento autorizado",
+      "EXPIRY_CHANGED": "Cambio de vencimiento",
+      "REASSIGNED": "Reasignación",
+      "STATE_CHANGED": "Cambio de estado"
     }
   },
   "nav": {
     "settings": "Ajustes",
     "users": "Usuarios",
     "customers": "Clientes",
-    "products": "Productos"
+    "products": "Productos",
+    "quotes": "Cotizaciones"
+  },
+  "quotes": {
+    "title": "Cotizaciones",
+    "description": "Crea, envía y da seguimiento a tus propuestas comerciales.",
+    "new": "Nueva cotización",
+    "tableCaption": "Lista de cotizaciones",
+    "number": "Número",
+    "customer": "Cliente",
+    "owner": "Dueño",
+    "total": "Total",
+    "expiresAt": "Vence",
+    "status": "Estado",
+    "filters": {
+      "all": "Todas",
+      "status": "Estado",
+      "search": "Buscar por número o cliente",
+      "customer": "Cliente",
+      "owner": "Dueño",
+      "inactiveOwner": "{{name}} (inactivo)",
+      "allCustomers": "Todos los clientes",
+      "allOwners": "Todos los dueños"
+    },
+    "empty": {
+      "title": "Aún no hay cotizaciones. Crea la primera para empezar.",
+      "filteredTitle": "Ninguna cotización coincide con los filtros."
+    },
+    "expiry": {
+      "today": "Vence hoy",
+      "inDays_one": "Vence en {{count}} día",
+      "inDays_other": "Vence en {{count}} días",
+      "on": "Vence el {{date}}",
+      "expiredOn": "Venció el {{date}}"
+    },
+    "editor": {
+      "newTitle": "Nueva cotización",
+      "editTitle": "Editar {{number}}",
+      "customerSection": "Cliente",
+      "customerPlaceholder": "Busca por nombre o documento",
+      "customerRequired": "Selecciona un cliente.",
+      "customerLocked": "El cliente no se puede cambiar en una cotización enviada.",
+      "customerInactive": "El cliente está inactivo. Elige otro antes de guardar o enviar.",
+      "productsSection": "Productos",
+      "addProduct": "Agregar producto",
+      "productPlaceholder": "Busca por nombre o categoría",
+      "linesEmpty": "Aún no hay productos. Búscalos arriba para agregarlos.",
+      "linesRequired": "Agrega al menos un producto.",
+      "maxLines": "Máximo 100 productos por cotización.",
+      "product": "Producto",
+      "category": "Categoría",
+      "quantity": "Cantidad",
+      "unitPrice": "Precio unitario sin IVA",
+      "vatRate": "IVA",
+      "lineAmount": "Valor",
+      "remove": "Quitar {{name}}",
+      "quantityInvalid": "La cantidad debe ser mayor que 0, con máximo 2 decimales.",
+      "conditionsSection": "Condiciones",
+      "discountPct": "Descuento global",
+      "discountLimitHint": "Tu límite: {{limit}}",
+      "discountExceeded": "Supera tu límite de descuento ({{limit}}).",
+      "discountInvalid": "Usa un porcentaje entre 0 y 100 con máximo 2 decimales.",
+      "discountLocked": "Descuento aplicado por un gerente o administrador. Puedes editar los productos, pero no el descuento.",
+      "discountOverride": "Supera el límite del vendedor ({{limit}}). Quedará registrado a tu nombre.",
+      "shippingAmount": "Envío",
+      "shippingTaxable": "El envío incluye IVA del 19 %.",
+      "shippingNotTaxable": "El envío no incluye IVA.",
+      "totalsTitle": "Resumen",
+      "saveDraft": "Guardar borrador",
+      "saveChanges": "Guardar cambios",
+      "conflict": "Esta cotización cambió mientras la editabas.",
+      "reload": "Recargar",
+      "duplicatedNotice": "Se creó {{number}} a partir de la cotización duplicada.",
+      "omittedProducts": "Se omitieron productos inactivos: {{names}}.",
+      "discountReset": "El descuento se dejó en 0 % porque superaba tu límite.",
+      "notEditable": "Esta cotización ya no se puede editar.",
+      "discardTitle": "¿Descartar cambios?",
+      "discardDescription": "Los cambios que no guardaste se perderán.",
+      "discard": "Descartar"
+    },
+    "totals": {
+      "subtotal": "Subtotal",
+      "discount": "Descuento ({{pct}})",
+      "linesVat": "IVA",
+      "shipping": "Envío",
+      "shippingVat": "IVA del envío",
+      "total": "Total"
+    },
+    "customerRequest": {
+      "title": "Lo que solicitó el cliente",
+      "context": "Se creará la versión {{number}} con estos cambios.",
+      "label": "¿Qué pidió el cliente?",
+      "save": "Guardar versión"
+    },
+    "detail": {
+      "summary": "Resumen",
+      "lines": "Productos",
+      "createdAt": "Creada el",
+      "firstSentAt": "Primer envío",
+      "sentAt": "Último envío",
+      "approvedAt": "Aprobada el",
+      "currentVersion": "Versión actual",
+      "noExpiry": "Sin vencimiento (borrador)",
+      "voidReason": "Motivo de anulación",
+      "notFound": "Cotización no encontrada.",
+      "backToList": "Ir a cotizaciones",
+      "moreActions": "Más acciones"
+    },
+    "actions": {
+      "edit": "Editar",
+      "send": "Marcar como enviada",
+      "approve": "Marcar como aprobada",
+      "reject": "Marcar como rechazada",
+      "void": "Anular",
+      "changeExpiry": "Cambiar vencimiento",
+      "reassign": "Reasignar",
+      "reactivate": "Reactivar",
+      "duplicate": "Duplicar"
+    },
+    "dialogs": {
+      "send": {
+        "title": "¿Marcar {{number}} como enviada?",
+        "description": "Úsalo cuando la enviaste por otro canal. Vencerá el {{date}} y se guardará la versión 1."
+      },
+      "approve": {
+        "title": "¿Marcar {{number}} como aprobada?",
+        "description": "{{number}} quedará Aprobada y ya no se podrá editar."
+      },
+      "reject": {
+        "title": "¿Marcar {{number}} como rechazada?",
+        "description": "{{number}} quedará Rechazada y ya no se podrá editar."
+      },
+      "expired": "Esta cotización ya venció. Reactívala para continuar.",
+      "void": {
+        "title": "Anular {{number}}",
+        "description": "{{number}} quedará anulada, conservará su número y no se podrá editar.",
+        "reason": "Motivo"
+      },
+      "expiry": {
+        "title": "Cambiar vencimiento",
+        "current": "Vencimiento actual: {{date}}",
+        "newDate": "Nueva fecha",
+        "invalid": "Elige una fecha posterior a hoy.",
+        "submit": "Cambiar fecha"
+      },
+      "reassign": {
+        "title": "Reasignar {{number}}",
+        "current": "Dueño actual: {{name}}",
+        "target": "Nuevo dueño",
+        "targetRequired": "Selecciona otro usuario.",
+        "submit": "Reasignar"
+      },
+      "reactivate": {
+        "title": "Reactivar {{number}}",
+        "request": "Lo que solicitó el cliente",
+        "updatePrices": "Actualizar precios al precio vigente",
+        "currentPrice": "Precio actual",
+        "catalogPrice": "Precio vigente",
+        "difference": "Diferencia",
+        "inactive": "Producto inactivo: conserva su precio.",
+        "newExpiry": "Nueva fecha de vencimiento: {{date}}",
+        "submit": "Reactivar"
+      },
+      "duplicate": {
+        "title": "¿Duplicar {{number}}?",
+        "description": "Se creará un borrador nuevo con los precios vigentes del catálogo, a tu nombre."
+      }
+    },
+    "toast": {
+      "saved": "Cotización {{number}} guardada.",
+      "versionSaved": "Versión {{version}} guardada.",
+      "noChanges": "No hubo cambios que guardar.",
+      "sent": "{{number}} marcada como enviada.",
+      "approved": "{{number}} marcada como aprobada.",
+      "rejected": "{{number}} marcada como rechazada.",
+      "voided": "{{number}} anulada.",
+      "expiryChanged": "Vencimiento de {{number}} actualizado.",
+      "reassigned": "{{number}} reasignada a {{name}}.",
+      "reactivated": "{{number}} reactivada.",
+      "duplicated": "Se creó {{number}}."
+    }
+  },
+  "history": {
+    "title": "Historial",
+    "empty": "Aún no hay historial. Se registra desde el primer envío.",
+    "actor": {
+      "system": "Sistema"
+    },
+    "version": "Versión {{number}}",
+    "initialVersion": "Versión inicial (envío)",
+    "customerRequest": "Lo que solicitó el cliente",
+    "by": "{{actor}} · {{date}}",
+    "changes": {
+      "added": "Agregado: {{name}} ({{quantity}})",
+      "removed": "Quitado: {{name}}",
+      "quantity": "{{name}}: cantidad {{from}} → {{to}}",
+      "price": "{{name}}: precio {{from}} → {{to}}",
+      "discount": "Descuento: {{from}} → {{to}}",
+      "shipping": "Envío: {{from}} → {{to}}",
+      "total": "Total: {{from}} → {{to}}"
+    },
+    "events": {
+      "STATE_CHANGED": "Cambió el estado",
+      "DISCOUNT_OVERRIDE": "Descuento {{from}} → {{to}} (supera el límite del vendedor: {{limit}})",
+      "EXPIRY_CHANGED": "Vencimiento {{from}} → {{to}}",
+      "REASSIGNED": "Reasignada de {{from}} a {{to}}"
+    }
   },
   "customers": {
     "title": "Clientes",

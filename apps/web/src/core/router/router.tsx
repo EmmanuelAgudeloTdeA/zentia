@@ -4,6 +4,7 @@ import * as catalog from '../../features/catalog';
 import * as companySettings from '../../features/company-settings';
 import * as customers from '../../features/customers';
 import * as home from '../../features/home';
+import * as quotes from '../../features/quotes';
 import * as users from '../../features/users';
 import { NotFoundPage, PrivateLayout, PublicLayout, SessionLayout } from '../layout';
 import type { NavItem } from '../navigation';
@@ -15,10 +16,23 @@ interface FeatureModule {
   publicRoutes?: RouteObject[];
 }
 
-const FEATURES: readonly FeatureModule[] = [home, auth, customers, catalog, users, companySettings];
+const FEATURES: readonly FeatureModule[] = [
+  home,
+  auth,
+  quotes,
+  customers,
+  catalog,
+  users,
+  companySettings,
+];
 
 const navItems = FEATURES.flatMap((feature) => feature.navItems);
-const headerEnd = <auth.UserMenu />;
+const headerEnd = (
+  <>
+    <quotes.NewQuoteButton />
+    <auth.UserMenu />
+  </>
+);
 
 export const routes: RouteObject[] = [
   {
