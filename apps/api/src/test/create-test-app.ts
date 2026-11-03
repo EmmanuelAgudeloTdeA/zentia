@@ -2,6 +2,7 @@ import { createApp } from '../app.js';
 import type { Clock } from '../core/clock/index.js';
 import { loadEnv } from '../core/env/index.js';
 import { createLogger } from '../core/logger/index.js';
+import type { UsersInfrastructure } from '../modules/users/index.js';
 import { createInMemoryAuth, TEST_JWT_SECRET, type InMemoryAuth } from './in-memory-auth.js';
 import {
   createInMemoryCompanySettings,
@@ -12,13 +13,21 @@ interface TestAppOptions {
   env?: Record<string, string>;
   auth?: InMemoryAuth;
   companySettings?: InMemoryCompanySettings;
+  users?: UsersInfrastructure;
   clock?: Clock;
+}
+
+/** Generador determinista: cada llamada devuelve `Temporal{n}abc`. */
+export function sequentialTemporaryPasswords(): UsersInfrastructure {
+  let next = 0;
+  return { temporaryPasswords: { generate: () => `Temporal${++next}abc` } };
 }
 
 export function createTestApp({
   env: overrides = {},
   auth,
   companySettings,
+  users,
   clock,
 }: TestAppOptions = {}) {
   const env = loadEnv({
@@ -35,6 +44,7 @@ export function createTestApp({
     overrides: {
       auth: auth ?? createInMemoryAuth(),
       companySettings: companySettings ?? createInMemoryCompanySettings(),
+      users: users ?? sequentialTemporaryPasswords(),
     },
     ...(clock ? { clock } : {}),
   });

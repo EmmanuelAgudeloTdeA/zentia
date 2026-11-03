@@ -77,4 +77,39 @@ describe.skipIf(!databaseUrl)('Prisma auth repositories (integration)', () => {
     expect((await users.findByEmail('ana@empresa.co'))?.id).toBe(userId);
     await expect(users.existsWithRole('ADMIN')).resolves.toBe(false);
   });
+
+  it('lists with case-insensitive search, filters and pagination', async () => {
+    await users.create({
+      email: 'beto@empresa.co',
+      name: 'Beto',
+      passwordHash: 'hash',
+      role: 'ADMIN',
+      mustChangePassword: false,
+    });
+    const search = await users.list({ q: 'BET' }, { skip: 0, take: 10 });
+    expect(search.items.map((user) => user.name)).toEqual(['Beto']);
+
+    const page = await users.list({}, { skip: 1, take: 1 });
+    expect(page).toMatchObject({ total: 2 });
+    expect(page.items.map((user) => user.name)).toEqual(['Beto']);
+
+    await expect(users.countActiveAdmins()).resolves.toBe(1);
+    expect(await users.listActiveOptions()).toHaveLength(2);
+  });
+
+  it('updates data and maps a duplicated email to EMAIL_TAKEN', async () => {
+    const other = await users.create({
+      email: 'beto@empresa.co',
+      name: 'Beto',
+      passwordHash: 'hash',
+      role: 'SELLER',
+      mustChangePassword: false,
+    });
+    const updated = await users.update(other.id, { name: 'Roberto', isActive: false });
+    expect(updated).toMatchObject({ name: 'Roberto', isActive: false });
+    await expect(users.update(other.id, { email: 'ana@empresa.co' })).rejects.toMatchObject({
+      code: 'EMAIL_TAKEN',
+      status: 409,
+    });
+  });
 });
