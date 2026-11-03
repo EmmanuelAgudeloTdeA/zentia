@@ -276,3 +276,18 @@ Tasas: `GENERAL_19` = 0,19 · `REDUCED_5` = 0,05 · `EXEMPT` = 0.
 | Límite de 100 líneas | Propuesto para acotar el tamaño de la cotización y del PDF (RNF-05). |
 | `Clock` nace en M4 | Primer módulo que lo necesita; vive en `core/` para M6, M8 y M9. |
 | `QuoteReassignedListener` | Punto de extensión: M6 se registra para traspasar notificaciones en la misma transacción (decisión 74). |
+
+## 9. Notas de implementación (H4.1, H4.2 y H4.3)
+Ajustes respecto a este plan y vacíos del ui-brief resueltos:
+| Punto | Implementación |
+|---|---|
+| Vacíos del ui-brief | V1 chips sin contador; V2 aprobar y rechazar con confirmación; V3 `allowedActions` excluye `approve`/`reject` si `expiresAt < hoy`; V4 "Vence en N días" usa `expiringAlertDays`; V5 `GET /users/options?includeInactive=true` para el filtro por dueño; V6 un Borrador con cliente inactivo no se guarda ni se envía (400 `CUSTOMER_INACTIVE`). |
+| Códigos de M3 | `CustomerReader`/`CatalogReader` responden 400 en `CUSTOMER_INACTIVE`, `PRODUCT_INACTIVE` y `PRODUCT_NOT_FOUND` (datos de entrada inválidos), como pide la tabla de errores de este módulo. |
+| `CHECK` de vencimiento | `status IN ('DRAFT','VOIDED') OR expiresAt IS NOT NULL`: un Borrador anulado no tiene vencimiento (migración `m4_quote_expiry_check_voided`). |
+| Concurrencia | Cada mutación hace `SELECT … FOR UPDATE` de la cotización dentro de la transacción y compara `updatedAt` (`QUOTE_CONFLICT`). |
+| Consecutivo | `UPDATE "QuoteSequence" … RETURNING` en la misma transacción; probado con 50 creaciones concurrentes y con rollback. |
+| Filtro de estados | `GET /quotes?status=DRAFT,SENT` (CSV), porque el `http-client` solo envía valores escalares. La búsqueda `q` acepta `COT-12`/`12` (número) o el nombre del cliente sin tildes. |
+| Historial | `QuoteEvent.actorId` y `QuoteVersion.authorId` tienen relación con `User` para mostrar nombres; los eventos con `versionId` se agrupan bajo su versión. `REASSIGNED` guarda `{ from, to }` con id y nombre. |
+| `customerRequest` | Se exige al editar una Enviada solo si hay cambios de contenido (sin cambios responde `changed: false` sin versión). En reactivar siempre es obligatorio. |
+| Puntos de extensión | `QuoteReassignedListener[]` (recibe la transacción con `client` de Prisma) y `AllowedActionsContributor[]`, vacíos hasta M6 y M5. El barril exporta `QuoteReader`, `SendQuoteUseCase` y `ExpireQuotesUseCase` (programado por M6). |
+| Front | `StatusBadge` genérico (lo reutiliza M7), `NumberField`, `TotalsSummary`, `formatDay`/`formatDateTime`/`todayInBogota`; botón "Nueva cotización" en el encabezado. La vista previa usa `calculateQuoteTotals` de `shared`. |
