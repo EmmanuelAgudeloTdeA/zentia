@@ -18,3 +18,10 @@ export const positiveMoneyString = z
   .string()
   .trim()
   .regex(/^[1-9]\d{0,14}$/);
+
+/** Cantidad mayor que 0 con hasta 2 decimales. */
+export const quantityString = z
+  .string()
+  .trim()
+  .regex(/^\d{1,10}(\.\d{1,2})?$/)
+  .refine((value) => /[1-9]/.test(value), { error: 'too_small' });
