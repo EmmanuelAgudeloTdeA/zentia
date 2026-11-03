@@ -1,11 +1,16 @@
+export { ActionMenu, type ActionMenuItem } from './action-menu';
 export { Alert, type AlertTone } from './alert';
 export { Avatar } from './avatar';
+export { Badge, type BadgeTone } from './badge';
 export { Button, buttonClasses, type ButtonSize, type ButtonVariant } from './button';
 export { ConfirmDialog } from './confirm-dialog';
+export { DataTable, type DataTableColumn } from './data-table';
+export { Dialog, type DialogSize } from './dialog';
 export { EmptyState } from './empty-state';
 export { ErrorMessage } from './error-message';
 export * from './icons';
 export { PageLoader } from './page-loader';
+export { Pagination } from './pagination';
 export { SectionCard } from './section-card';
 export { Select, type SelectOption } from './select';
 export { Skeleton } from './skeleton';
