@@ -12,13 +12,15 @@ export interface ActionMenuItem {
 interface ActionMenuProps {
   label: string;
   items: readonly ActionMenuItem[];
+  /** `onDark` para el encabezado oscuro de la página. */
+  tone?: 'default' | 'onDark';
 }
 
 const ITEM_CLASSES =
   'flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-body whitespace-nowrap';
 
 /** Menú "Más acciones" de una fila de tabla. */
-export function ActionMenu({ label, items }: ActionMenuProps) {
+export function ActionMenu({ label, items, tone = 'default' }: ActionMenuProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -66,7 +68,11 @@ export function ActionMenu({ label, items }: ActionMenuProps) {
         aria-expanded={open}
         aria-controls={open ? menuId : undefined}
         onClick={() => setOpen((value) => !value)}
-        className="inline-flex size-8 items-center justify-center rounded-md text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
+        className={`inline-flex items-center justify-center rounded-md ${
+          tone === 'onDark'
+            ? 'size-10 text-white/90 hover:bg-white/10 hover:text-white'
+            : 'size-8 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+        }`}
       >
         <MoreIcon size={18} />
       </button>
