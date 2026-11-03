@@ -149,7 +149,7 @@ model QuoteSequence {
   lastValue Int    @default(0)
 }
 
-/// CHECK en la migración: discountPct 0–100, shippingAmount >= 0, expiresAt obligatorio fuera de DRAFT.
+/// CHECK en la migración: discountPct 0–100, shippingAmount >= 0, expiresAt obligatorio salvo en DRAFT y VOIDED.
 model Quote {
   id              String         @id @default(uuid()) @db.Uuid
   number          Int            @unique
