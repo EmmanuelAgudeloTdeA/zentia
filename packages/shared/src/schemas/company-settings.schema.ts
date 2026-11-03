@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { DOCUMENT_LOCALES, VAT_RATES } from '../enums/index.js';
 import { percentString } from './decimal.schema.js';
+import { optionalText } from './pagination.schema.js';
 
 export const vatRateSchema = z.enum(VAT_RATES);
 export const documentLocaleSchema = z.enum(DOCUMENT_LOCALES);
@@ -51,16 +52,6 @@ export type CommercialParameters = z.infer<typeof commercialParametersSchema>;
 export const updateCommercialParametersSchema = z.object(commercialParametersShape).partial();
 
 export type UpdateCommercialParametersRequest = z.infer<typeof updateCommercialParametersSchema>;
-
-/** Texto opcional: vacío equivale a `null` (borra el valor). */
-function optionalText(max: number) {
-  return z
-    .string()
-    .trim()
-    .max(max)
-    .nullable()
-    .transform((value) => (value ? value : null));
-}
 
 const companyEmailSchema = z
   .string()
