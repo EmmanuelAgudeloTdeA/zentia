@@ -113,7 +113,7 @@ describe('RepositoryCustomerReader', () => {
     const reader = new RepositoryCustomerReader(infra);
 
     expect(await reader.getById(customer.id)).toMatchObject({ id: customer.id, isActive: false });
-    await expectCode(reader.getActiveById(customer.id), 'CUSTOMER_INACTIVE', 409);
+    await expectCode(reader.getActiveById(customer.id), 'CUSTOMER_INACTIVE', 400);
     await expectCode(reader.getById(ACTOR), 'CUSTOMER_NOT_FOUND', 404);
   });
 });

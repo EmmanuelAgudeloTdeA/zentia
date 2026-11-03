@@ -5,6 +5,7 @@ import { createLogger } from '../core/logger/index.js';
 import type { UsersInfrastructure } from '../modules/users/index.js';
 import { createInMemoryCatalog, type InMemoryCatalog } from './in-memory-catalog.js';
 import { createInMemoryCustomers, type InMemoryCustomers } from './in-memory-customers.js';
+import { createInMemoryQuotes, type InMemoryQuotes } from './in-memory-quotes.js';
 import { createInMemoryAuth, TEST_JWT_SECRET, type InMemoryAuth } from './in-memory-auth.js';
 import {
   createInMemoryCompanySettings,
@@ -18,7 +19,26 @@ interface TestAppOptions {
   users?: UsersInfrastructure;
   customers?: InMemoryCustomers;
   catalog?: InMemoryCatalog;
+  quotes?: InMemoryQuotes;
   clock?: Clock;
+}
+
+export function quoteLookups(auth: InMemoryAuth, customers: InMemoryCustomers) {
+  return {
+    customer: (id: string) => {
+      const customer = customers.customers.customers.get(id);
+      return {
+        id,
+        name: customer?.name ?? '?',
+        documentId: customer?.documentId ?? '',
+        isActive: customer?.isActive ?? false,
+      };
+    },
+    user: (id: string) => {
+      const user = auth.users.users.get(id);
+      return user ? { id, name: user.name, isActive: user.isActive } : null;
+    },
+  };
 }
 
 /** Generador determinista: cada llamada devuelve `Temporal{n}abc`. */
@@ -34,6 +54,7 @@ export function createTestApp({
   users,
   customers,
   catalog,
+  quotes,
   clock,
 }: TestAppOptions = {}) {
   const env = loadEnv({
@@ -46,6 +67,7 @@ export function createTestApp({
   });
   const authInfrastructure = auth ?? createInMemoryAuth();
   const userName = (id: string) => authInfrastructure.users.users.get(id)?.name ?? 'Usuario';
+  const customersInfrastructure = customers ?? createInMemoryCustomers(userName);
   return createApp({
     env,
     logger: createLogger(env.LOG_LEVEL),
@@ -53,8 +75,10 @@ export function createTestApp({
       auth: authInfrastructure,
       companySettings: companySettings ?? createInMemoryCompanySettings(),
       users: users ?? sequentialTemporaryPasswords(),
-      customers: customers ?? createInMemoryCustomers(userName),
+      customers: customersInfrastructure,
       catalog: catalog ?? createInMemoryCatalog(),
+      quotes:
+        quotes ?? createInMemoryQuotes(quoteLookups(authInfrastructure, customersInfrastructure)),
     },
     ...(clock ? { clock } : {}),
   });

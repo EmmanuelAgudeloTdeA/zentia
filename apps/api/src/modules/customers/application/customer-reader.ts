@@ -13,7 +13,7 @@ export interface CustomerSnapshotDto {
 /** Lectura de clientes para otros módulos (M4, M5). */
 export interface CustomerReader {
   getById(id: string): Promise<CustomerSnapshotDto>;
-  /** Para cotizaciones nuevas: rechaza clientes inactivos. */
+  /** Para cotizaciones nuevas: rechaza clientes inactivos (400, es un dato de entrada inválido). */
   getActiveById(id: string): Promise<CustomerSnapshotDto>;
 }
 
@@ -29,7 +29,7 @@ export class RepositoryCustomerReader implements CustomerReader {
 
   async getActiveById(id: string): Promise<CustomerSnapshotDto> {
     const customer = await this.getById(id);
-    if (!customer.isActive) throw new AppError('CUSTOMER_INACTIVE', 409);
+    if (!customer.isActive) throw new AppError('CUSTOMER_INACTIVE', 400);
     return customer;
   }
 }

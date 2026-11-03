@@ -25,6 +25,11 @@ import {
 } from './customers/index.js';
 import { createHealthModule } from './health/index.js';
 import {
+  createPrismaQuotesInfrastructure,
+  createQuotesModule,
+  type QuotesInfrastructure,
+} from './quotes/index.js';
+import {
   createUsersModule,
   CryptoTemporaryPasswords,
   type UsersInfrastructure,
@@ -37,6 +42,7 @@ export interface InfrastructureOverrides {
   users?: UsersInfrastructure;
   customers?: CustomersInfrastructure;
   catalog?: CatalogInfrastructure;
+  quotes?: QuotesInfrastructure;
 }
 
 export interface CreateModulesOptions {
@@ -85,6 +91,15 @@ export function createModules({
     ...dependencies,
     infrastructure: overrides.catalog ?? createPrismaCatalogInfrastructure(getPrisma()),
   });
+  const quotes = createQuotesModule({
+    ...dependencies,
+    infrastructure:
+      overrides.quotes ?? createPrismaQuotesInfrastructure(getPrisma(), authInfrastructure.users),
+    clock,
+    settings: companySettings.settingsReader,
+    customers: customers.customerReader,
+    catalog: catalog.catalogReader,
+  });
   return [
     createHealthModule(dependencies),
     auth.module,
@@ -92,5 +107,6 @@ export function createModules({
     companySettings.module,
     customers.module,
     catalog.module,
+    quotes.module,
   ];
 }

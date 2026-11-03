@@ -106,11 +106,11 @@ export class InMemoryUserRepository implements UserRepository {
     return { items: matches.slice(page.skip, page.skip + page.take), total: matches.length };
   }
 
-  async listActiveOptions(): Promise<UserOption[]> {
+  async listOptions({ includeInactive }: { includeInactive: boolean }): Promise<UserOption[]> {
     return [...this.users.values()]
-      .filter((user) => user.isActive)
+      .filter((user) => includeInactive || user.isActive)
       .sort((a, b) => a.name.localeCompare(b.name))
-      .map(({ id, name, role }) => ({ id, name, role }));
+      .map(({ id, name, role, isActive }) => ({ id, name, role, isActive }));
   }
 
   async countActiveAdmins(): Promise<number> {
