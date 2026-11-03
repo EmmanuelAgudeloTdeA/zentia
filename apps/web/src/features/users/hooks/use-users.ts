@@ -1,5 +1,6 @@
 import { USERS_PAGE_SIZE, type UserDto, type UserListDto } from '@zentia/shared';
 import { useCallback, useEffect, useState } from 'react';
+import { useDebouncedValue } from '../../../shared/lib';
 import { usersService } from '../services/users.service';
 import { useUsersFiltersStore } from '../store/users-filters.store';
 
@@ -10,21 +11,12 @@ type UsersState =
   | { status: 'error'; error: unknown }
   | { status: 'ready'; data: UserListDto };
 
-function useDebounced<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debounced;
-}
-
 export function useUsers() {
   const q = useUsersFiltersStore((state) => state.q);
   const role = useUsersFiltersStore((state) => state.role);
   const status = useUsersFiltersStore((state) => state.status);
   const page = useUsersFiltersStore((state) => state.page);
-  const search = useDebounced(q.trim(), SEARCH_DEBOUNCE_MS);
+  const search = useDebouncedValue(q.trim(), SEARCH_DEBOUNCE_MS);
   const [state, setState] = useState<UsersState>({ status: 'loading' });
   const [version, setVersion] = useState(0);
 
