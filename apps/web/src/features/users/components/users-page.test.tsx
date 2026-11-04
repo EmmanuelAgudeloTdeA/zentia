@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import type { UserDto } from '@zentia/shared';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useSessionStore } from '../../../core/auth';
 import { ApiError } from '../../../core/errors';
 import { PrivateLayout } from '../../../core/layout';
 import es from '../../../lang/es.json';
@@ -167,6 +168,53 @@ describe('UsersPage', () => {
         .disabled,
     ).toBe(true);
     expect(within(dialog).getAllByText(es.users.form.selfReadonlyHint).length).toBeGreaterThan(0);
+  });
+
+  it('updates the session user when editing oneself', async () => {
+    mockList([admin]);
+    const update = vi
+      .spyOn(usersService, 'update')
+      .mockResolvedValue({ ...admin, name: 'Admin Renombrado', email: 'nuevo@empresa.co' });
+    renderPage();
+    await findRow('Admin Uno');
+
+    fireEvent.click(
+      within(rowOf('Admin Uno')).getByRole('button', { name: es.users.actions.edit }),
+    );
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByLabelText(new RegExp(`^${es.users.form.name}`)), {
+      target: { value: 'Admin Renombrado' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: es.users.form.save }));
+
+    await waitFor(() =>
+      expect(useSessionStore.getState().user).toMatchObject({
+        id: ADMIN_ID,
+        name: 'Admin Renombrado',
+        email: 'nuevo@empresa.co',
+        role: 'ADMIN',
+      }),
+    );
+    expect(update).toHaveBeenCalledWith(
+      ADMIN_ID,
+      expect.objectContaining({ name: 'Admin Renombrado' }),
+    );
+  });
+
+  it('leaves the session user untouched when editing someone else', async () => {
+    mockList([admin, seller]);
+    vi.spyOn(usersService, 'update').mockResolvedValue({ ...seller, name: 'Beto Cambiado' });
+    renderPage();
+    await findRow('Beto Ruiz');
+
+    fireEvent.click(
+      within(rowOf('Beto Ruiz')).getByRole('button', { name: es.users.actions.edit }),
+    );
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: es.users.form.save }));
+
+    expect((await screen.findAllByText('Beto Cambiado')).length).toBeGreaterThan(0);
+    expect(useSessionStore.getState().user?.name).toBe('Admin Uno');
   });
 
   it('shows LAST_ADMIN inside the deactivate confirmation', async () => {

@@ -15,6 +15,8 @@ interface SessionState {
   setSession: (session: AuthSession) => void;
   setLoading: () => void;
   markPasswordChangeRequired: () => void;
+  /** Refleja cambios del propio usuario hechos desde otra pantalla (p. ej. administración de usuarios). */
+  syncUser: (user: SessionUser) => void;
   clearSession: (notice?: SessionNotice) => void;
   clearNotice: () => void;
 }
@@ -29,6 +31,7 @@ export const useSessionStore = create<SessionState>()((set) => ({
   setLoading: () => set({ status: 'loading' }),
   markPasswordChangeRequired: () =>
     set((state) => (state.user ? { user: { ...state.user, mustChangePassword: true } } : {})),
+  syncUser: (user) => set((state) => (state.user?.id === user.id ? { user } : {})),
   clearSession: (notice) =>
     set({ user: null, accessToken: null, status: 'anonymous', notice: notice ?? null }),
   clearNotice: () => set({ notice: null }),

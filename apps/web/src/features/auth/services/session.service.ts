@@ -1,12 +1,17 @@
 import type { ChangePasswordRequest, LoginRequest, UserDto } from '@zentia/shared';
 import { useSessionStore } from '../../../core/auth';
-import { configureHttpClient, isApiError } from '../../../core/http-client';
+import { configureHttpClient, isApiError, type ApiErrorCode } from '../../../core/http-client';
 import { authService } from './auth.service';
 
 const REFRESH_LOCK = 'zentia-auth-refresh';
-const IN_PROGRESS_RETRY_MS = 1_000;
+const RETRY_DELAY_MS: Partial<Record<ApiErrorCode, number>> = {
+  REFRESH_IN_PROGRESS: 1_000,
+  RATE_LIMITED: 3_000,
+};
+const FORBIDDEN_REFRESH_COOLDOWN_MS = 60_000;
 
 let inflight: Promise<boolean> | null = null;
+let lastForbiddenRefreshAt = Number.NEGATIVE_INFINITY;
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -23,8 +28,9 @@ async function refreshOnce(): Promise<boolean> {
     useSessionStore.getState().setSession(await authService.refresh());
     return true;
   } catch (error) {
-    if (!isApiError(error) || error.code !== 'REFRESH_IN_PROGRESS') return false;
-    await wait(IN_PROGRESS_RETRY_MS);
+    const delay = isApiError(error) ? RETRY_DELAY_MS[error.code] : undefined;
+    if (delay === undefined) return false;
+    await wait(delay);
     try {
       useSessionStore.getState().setSession(await authService.refresh());
       return true;
@@ -77,6 +83,14 @@ export function configureSessionHttpClient(): void {
     onError: (error) => {
       if (error.code === 'PASSWORD_CHANGE_REQUIRED') {
         useSessionStore.getState().markPasswordChangeRequired();
+      }
+      // Un 403 puede venir de un rol cambiado: se recarga el usuario, con enfriamiento para no entrar en bucle.
+      if (
+        error.code === 'FORBIDDEN' &&
+        Date.now() - lastForbiddenRefreshAt > FORBIDDEN_REFRESH_COOLDOWN_MS
+      ) {
+        lastForbiddenRefreshAt = Date.now();
+        void refreshSession();
       }
     },
   });
