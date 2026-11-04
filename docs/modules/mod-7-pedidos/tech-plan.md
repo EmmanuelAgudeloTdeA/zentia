@@ -133,3 +133,14 @@ Todas exigen autenticación y aplican el alcance sobre el dueño de la cotizaci�
 | Motivo de cancelación | Opcional; las fuentes no lo exigen. |
 | Conversión manual | La conversión es una acción explícita del usuario ("Convertir en pedido"), no ocurre al aprobar; "automática" en el PPI se refiere a no volver a digitar los datos. |
 | Pedido de una cotización cancelada | La cotización queda `APPROVED` sin posibilidad de reconversión; si el negocio se retoma, se duplica la cotización (M4). |
+
+## 9. Notas de implementación (H7.1 y H7.2)
+| Punto | Implementación |
+|---|---|
+| Contribuidores de acciones asíncronos | `AllowedActionsContributor` de M4 ahora puede devolver una promesa (y `toQuoteDto` es asíncrono), porque M7 consulta si la cotización ya tiene pedido para aportar `convertToOrder` o `viewOrder`. Solo consulta en cotizaciones `APPROVED`. |
+| `GET /api/quotes/:id/order` | Ruta extra para el enlace "Ver pedido" del detalle de la cotización: devuelve el resumen del pedido o 404 `ORDER_NOT_FOUND`. |
+| `QuoteReader` | Se usa `getForActor` (el modelo completo de la cotización) en vez de un `getApprovedSnapshot` específico; la validación de `APPROVED` vive en `ConvertQuoteToOrderUseCase`. |
+| Concurrencia | Conversión: el único de `quoteId` traduce P2002 a `ORDER_ALREADY_EXISTS`. Estado: `updateMany` condicionado por `updatedAt` (sin conflicto silencioso entre la lectura y la escritura). |
+| `CHECK` | `cancelReason` solo en pedidos `CANCELLED`; `quantity > 0` en las líneas. |
+| Vacíos del ui-brief | G1: "Marcar como entregado" pide confirmación. G2: sin filtro por vendedor. G3: en una Aprobada sin pedido, "Convertir en pedido" es la acción principal y "Duplicar" pasa a "Más acciones". Los chips de estado no muestran contador (la API no devuelve conteos, como en M4). |
+| Badge de estado | `OrderStatusBadge` reutiliza `StatusBadge` con la paleta de cotizaciones (Pendiente = borrador, En proceso = enviada, Entregado = aprobada, Cancelado = anulada). |

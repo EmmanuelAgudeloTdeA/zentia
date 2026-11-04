@@ -30,6 +30,7 @@ import {
   type DataTableColumn,
 } from '../../../shared/ui';
 import { FollowUpSection } from '../../follow-up';
+import { QuoteOrderAction } from '../../orders';
 import { useCommercialParameters } from '../hooks/use-commercial-parameters';
 import { useQuote, useQuoteHistory } from '../hooks/use-quote';
 import { quotesService } from '../services/quotes.service';
@@ -130,8 +131,12 @@ export function QuoteDetailPage() {
   const allowed = new Set(quote.allowedActions);
   const canShare = allowed.has('share');
   // Con M5, "Enviar" (canales) es la acción principal del Borrador y "Marcar como enviada" pasa al menú.
+  // Con M5, "Enviar" es la acción principal del Borrador; con M7, "Convertir en pedido" la de una
+  // Aprobada sin pedido (G3). La acción desplazada pasa a "Más acciones".
   const primary =
-    canShare && quote.status === 'DRAFT' ? undefined : PRIMARY_BY_STATUS[quote.status];
+    (canShare && quote.status === 'DRAFT') || allowed.has('convertToOrder')
+      ? undefined
+      : PRIMARY_BY_STATUS[quote.status];
   const expiry = expiryLabel(t, quote.status, quote.expiresAt, today, params.expiringAlertDays);
 
   const reloadAll = () => {
@@ -246,6 +251,12 @@ export function QuoteDetailPage() {
         backTo={QUOTES_PATH}
         actions={
           <>
+            <QuoteOrderAction
+              quoteId={quote.id}
+              quoteNumber={quote.displayNumber}
+              allowedActions={quote.allowedActions}
+              onReload={reloadAll}
+            />
             {canShare ? (
               <Button
                 variant={quote.status === 'DRAFT' ? 'on-dark' : 'ghost-on-dark'}

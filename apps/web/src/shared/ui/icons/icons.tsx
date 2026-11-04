@@ -231,3 +231,10 @@ export const FileTextIcon = createIcon(
 export const BellIcon = createIcon(
   <path d="M6 8a6 6 0 1112 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 003.4 0" />,
 );
+
+export const BoxIcon = createIcon(
+  <>
+    <path d="M21 8l-9-5-9 5 9 5 9-5z" />
+    <path d="M3 8v8l9 5 9-5V8M12 13v8" />
+  </>,
+);

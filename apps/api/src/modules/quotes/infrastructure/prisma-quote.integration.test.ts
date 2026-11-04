@@ -26,6 +26,8 @@ describe.skipIf(!databaseUrl)('Prisma quotes (integration)', () => {
   });
 
   beforeEach(async () => {
+    await prisma.orderItem.deleteMany();
+    await prisma.order.deleteMany();
     await prisma.notification.deleteMany();
     await prisma.interaction.deleteMany();
     await prisma.quoteEvent.deleteMany();

@@ -6,6 +6,7 @@ import type { UsersInfrastructure } from '../modules/users/index.js';
 import { createInMemoryCatalog, type InMemoryCatalog } from './in-memory-catalog.js';
 import { createInMemoryCustomers, type InMemoryCustomers } from './in-memory-customers.js';
 import { createInMemoryFollowUp, type InMemoryFollowUp } from './in-memory-follow-up.js';
+import { createInMemoryOrders } from './in-memory-orders.js';
 import { createInMemoryQuotes, type InMemoryQuotes } from './in-memory-quotes.js';
 import { createInMemoryAuth, TEST_JWT_SECRET, type InMemoryAuth } from './in-memory-auth.js';
 import {
@@ -71,6 +72,8 @@ export function createTestApp({
   const authInfrastructure = auth ?? createInMemoryAuth();
   const userName = (id: string) => authInfrastructure.users.users.get(id)?.name ?? 'Usuario';
   const customersInfrastructure = customers ?? createInMemoryCustomers(userName);
+  const quotesInfrastructure =
+    quotes ?? createInMemoryQuotes(quoteLookups(authInfrastructure, customersInfrastructure));
   return createApp({
     env,
     logger: createLogger(env.LOG_LEVEL),
@@ -80,8 +83,9 @@ export function createTestApp({
       users: users ?? sequentialTemporaryPasswords(),
       customers: customersInfrastructure,
       catalog: catalog ?? createInMemoryCatalog(),
-      quotes:
-        quotes ?? createInMemoryQuotes(quoteLookups(authInfrastructure, customersInfrastructure)),
+      quotes: quotesInfrastructure,
+      orders: createInMemoryOrders((id) => quotesInfrastructure.quotes.findById(id), userName)
+        .infrastructure,
       followUp: (followUp ?? createInMemoryFollowUp()).infrastructure,
     },
     ...(clock ? { clock } : {}),
