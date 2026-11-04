@@ -46,8 +46,10 @@ function product(id: string, name: string, price: string, vatRate: VatRate, isAc
   return { id, name, category: 'Tecnología', price: new Decimal(price), vatRate, isActive };
 }
 
+const acme = { name: 'Acme SAS', documentId: '9001234567', isActive: true };
+
 const customers: Record<string, { name: string; documentId: string; isActive: boolean }> = {
-  [CUSTOMER]: { name: 'Acme SAS', documentId: '9001234567', isActive: true },
+  [CUSTOMER]: acme,
   [INACTIVE_CUSTOMER]: { name: 'Viejo Ltda', documentId: '800111222', isActive: false },
 };
 
@@ -80,13 +82,16 @@ const catalogReader: CatalogReader = {
   },
 };
 
+let shippingTaxable = false;
+let sellerLimit = new Decimal(10);
+
 const settings: SettingsReader = {
   async getCommercialParameters() {
     return {
       defaultVatRate: 'GENERAL_19',
       validityDays: 15,
-      discountLimits: { SELLER: new Decimal(10), MANAGER: new Decimal(30), ADMIN: new Decimal(30) },
-      shippingTaxable: false,
+      discountLimits: { SELLER: sellerLimit, MANAGER: new Decimal(30), ADMIN: new Decimal(30) },
+      shippingTaxable,
       expiringAlertDays: 3,
       followUpDays: 5,
       coldStartThreshold: 30,
@@ -102,6 +107,9 @@ async function actorFor(email: string, role: Actor['role'], isActive = true): Pr
 
 beforeEach(async () => {
   listener.mockReset();
+  shippingTaxable = false;
+  sellerLimit = new Decimal(10);
+  acme.isActive = true;
   auth = createInMemoryAuth();
   clock = new FixedClock(new Date('2026-11-03T15:00:00.000Z'));
   products = new Map([
@@ -575,5 +583,259 @@ describe('queries', () => {
       event: { type: 'DISCOUNT_OVERRIDE' },
       actor: { name: 'gerente' },
     });
+  });
+});
+
+describe('audit (M4)', () => {
+  async function finalQuote(to: 'APPROVED' | 'REJECTED' = 'APPROVED', actor = seller) {
+    const sent = await send(await createPpi(actor, '0'), actor);
+    return await new ChangeQuoteStatusUseCase(deps).execute(actor, sent.id, {
+      to,
+      updatedAt: sent.updatedAt,
+    });
+  }
+
+  it('duplicates with the current product snapshot (name, category, price and VAT) and the source quantity', async () => {
+    const approved = await finalQuote();
+    products.set(LAPTOP, {
+      id: LAPTOP,
+      name: 'Portátil Pro',
+      category: 'Cómputo',
+      price: new Decimal('2600000'),
+      vatRate: 'REDUCED_5',
+      isActive: true,
+    });
+    const { quote } = await new DuplicateQuoteUseCase(deps).execute(seller, approved.id);
+    expect(quote.items).toMatchObject([
+      {
+        productName: 'Portátil Pro',
+        category: 'Cómputo',
+        unitPrice: '2600000',
+        vatRate: 'REDUCED_5',
+        quantity: '2',
+        lineAmount: '5200000',
+      },
+    ]);
+    expect(quote.linesVat).toBe('260000');
+  });
+
+  it('rejects a duplicate when every product is inactive or the customer is inactive', async () => {
+    const approved = await finalQuote();
+    acme.isActive = false;
+    await expectCode(
+      new DuplicateQuoteUseCase(deps).execute(seller, approved.id),
+      'CUSTOMER_INACTIVE',
+      400,
+    );
+    acme.isActive = true;
+    products.set(LAPTOP, product(LAPTOP, 'Portátil', '2500000', 'GENERAL_19', false));
+    await expectCode(
+      new DuplicateQuoteUseCase(deps).execute(seller, approved.id),
+      'QUOTE_EMPTY',
+      400,
+    );
+  });
+
+  it('records DISCOUNT_OVERRIDE when a manager raises a draft discount above the seller limit', async () => {
+    const draft = await createPpi(seller, '10');
+    const { quote } = await new UpdateQuoteUseCase(deps).execute(manager, draft.id, {
+      discountPct: '20',
+      updatedAt: draft.updatedAt,
+    });
+    expect(quote.discountPct).toBe('20');
+    expect(eventsOf(draft.id)).toMatchObject([
+      {
+        type: 'DISCOUNT_OVERRIDE',
+        actorId: manager.id,
+        data: { from: '10', to: '20', sellerLimit: '10' },
+      },
+    ]);
+  });
+
+  it('keeps a manager discount change on a sent quote in the version, without DISCOUNT_OVERRIDE', async () => {
+    const sent = await send(await createPpi(seller, '10'));
+    const result = await new UpdateQuoteUseCase(deps).execute(manager, sent.id, {
+      discountPct: '20',
+      customerRequest: 'Pidió más descuento',
+      updatedAt: sent.updatedAt,
+    });
+    expect(result).toMatchObject({ changed: true, versionNumber: 2 });
+    expect(quotes.quotes.versions.at(-1)).toMatchObject({
+      number: 2,
+      changes: { discountPct: { from: '10', to: '20' } },
+    });
+    expect(eventsOf(sent.id).some((event) => event.type === 'DISCOUNT_OVERRIDE')).toBe(false);
+  });
+
+  it('RN-14: a seller cannot lower a discount above their limit, in draft or sent', async () => {
+    const draft = await createPpi(manager, '20');
+    await new ReassignQuoteUseCase(deps).execute(manager, draft.id, {
+      ownerId: seller.id,
+      updatedAt: draft.updatedAt,
+    });
+    const update = new UpdateQuoteUseCase(deps);
+    const current = await new GetQuoteUseCase(deps).execute(seller, draft.id);
+    const error = await expectCode(
+      update.execute(seller, draft.id, { discountPct: '5', updatedAt: current.updatedAt }),
+      'DISCOUNT_LIMIT_EXCEEDED',
+      403,
+    );
+    expect(error.params).toEqual({ limit: '10' });
+    const sent = await send(current);
+    await expectCode(
+      update.execute(seller, sent.id, {
+        discountPct: '0',
+        customerRequest: 'Sin descuento',
+        updatedAt: sent.updatedAt,
+      }),
+      'DISCOUNT_LIMIT_EXCEEDED',
+      403,
+    );
+  });
+
+  it('reads the discount limits on every operation', async () => {
+    await expectCode(createPpi(seller, '15'), 'DISCOUNT_LIMIT_EXCEEDED', 403);
+    sellerLimit = new Decimal(15);
+    expect((await createPpi(seller, '15')).discountPct).toBe('15');
+  });
+
+  it('rejects reassigning a voided quote', async () => {
+    const draft = await createPpi();
+    const voided = await new VoidQuoteUseCase(deps).execute(seller, draft.id, {
+      reason: 'Error',
+      updatedAt: draft.updatedAt,
+    });
+    await expectCode(
+      new ReassignQuoteUseCase(deps).execute(manager, draft.id, {
+        ownerId: otherSeller.id,
+        updatedAt: voided.updatedAt,
+      }),
+      'QUOTE_INVALID_TRANSITION',
+      409,
+    );
+  });
+
+  it('changes the expiry date only on sent quotes', async () => {
+    const change = new ChangeExpiryUseCase(deps);
+    const draft = await createPpi();
+    await expectCode(
+      change.execute(seller, draft.id, { expiresAt: '2026-12-01', updatedAt: draft.updatedAt }),
+      'QUOTE_NOT_EDITABLE',
+      409,
+    );
+    const sent = await send(draft);
+    clock.advance(16 * 86_400_000);
+    await new ExpireQuotesUseCase(deps).execute();
+    const expired = await new GetQuoteUseCase(deps).execute(seller, sent.id);
+    expect(expired.status).toBe('EXPIRED');
+    await expectCode(
+      change.execute(seller, sent.id, { expiresAt: '2026-12-31', updatedAt: expired.updatedAt }),
+      'QUOTE_NOT_EDITABLE',
+      409,
+    );
+  });
+
+  it('rejects invalid transitions with from and to params', async () => {
+    const draft = await createPpi();
+    const approve = await expectCode(
+      new ChangeQuoteStatusUseCase(deps).execute(seller, draft.id, {
+        to: 'APPROVED',
+        updatedAt: draft.updatedAt,
+      }),
+      'QUOTE_INVALID_TRANSITION',
+      409,
+    );
+    expect(approve.params).toEqual({ from: 'DRAFT', to: 'APPROVED' });
+    const sent = await send(draft);
+    const resend = await expectCode(send(sent), 'QUOTE_INVALID_TRANSITION', 409);
+    expect(resend.params).toEqual({ from: 'SENT', to: 'SENT' });
+  });
+
+  it('does not void approved or expired quotes', async () => {
+    const approved = await finalQuote();
+    const voidQuote = new VoidQuoteUseCase(deps);
+    const error = await expectCode(
+      voidQuote.execute(seller, approved.id, { reason: 'x', updatedAt: approved.updatedAt }),
+      'QUOTE_INVALID_TRANSITION',
+      409,
+    );
+    expect(error.params).toEqual({ from: 'APPROVED', to: 'VOIDED' });
+    const sent = await send(await createPpi());
+    clock.advance(16 * 86_400_000);
+    await new ExpireQuotesUseCase(deps).execute();
+    const expired = await new GetQuoteUseCase(deps).execute(seller, sent.id);
+    await expectCode(
+      voidQuote.execute(seller, sent.id, { reason: 'x', updatedAt: expired.updatedAt }),
+      'QUOTE_INVALID_TRANSITION',
+      409,
+    );
+  });
+
+  it('hides the history of a foreign quote from a seller', async () => {
+    const draft = await createPpi();
+    await expectCode(
+      new GetQuoteHistoryUseCase(deps).execute(otherSeller, draft.id),
+      'QUOTE_NOT_FOUND',
+      404,
+    );
+  });
+
+  it('does not send a quote whose customer became inactive', async () => {
+    const draft = await createPpi();
+    acme.isActive = false;
+    await expectCode(send(draft), 'CUSTOMER_INACTIVE', 400);
+  });
+
+  it('keeps the shippingTaxable snapshot after the parameter changes', async () => {
+    shippingTaxable = true;
+    const draft = await createPpi();
+    expect(draft).toMatchObject({ shippingTaxable: true, shippingVat: '3800', total: '5378800' });
+    shippingTaxable = false;
+    const { quote } = await new UpdateQuoteUseCase(deps).execute(seller, draft.id, {
+      shippingAmount: '10000',
+      updatedAt: draft.updatedAt,
+    });
+    expect(quote).toMatchObject({ shippingTaxable: true, shippingVat: '1900' });
+    const sent = await send(quote);
+    expect(sent.shippingTaxable).toBe(true);
+    expect(quotes.quotes.versions.at(-1)?.snapshot.shippingTaxable).toBe(true);
+  });
+
+  it('rejects amounts that do not fit Decimal(15,0) with QUOTE_AMOUNT_TOO_LARGE', async () => {
+    const HUGE = randomUUID();
+    products.set(HUGE, product(HUGE, 'Enorme', '999999999999999', 'EXEMPT'));
+    const create = new CreateQuoteUseCase(deps);
+    const base = { customerId: CUSTOMER, discountPct: '0', shippingAmount: '0' };
+    const fits = await create.execute(seller, {
+      ...base,
+      items: [{ productId: HUGE, quantity: '1' }],
+    });
+    expect(fits.total).toBe('999999999999999');
+    const error = await expectCode(
+      create.execute(seller, { ...base, items: [{ productId: HUGE, quantity: '2' }] }),
+      'QUOTE_AMOUNT_TOO_LARGE',
+      400,
+    );
+    expect(error.params).toEqual({ maxDigits: 15 });
+    await expectCode(
+      new UpdateQuoteUseCase(deps).execute(seller, fits.id, {
+        shippingAmount: '1',
+        updatedAt: fits.updatedAt,
+      }),
+      'QUOTE_AMOUNT_TOO_LARGE',
+      400,
+    );
+  });
+
+  it('filters the list by first-sent date in Bogota days', async () => {
+    const sent = await send(await createPpi());
+    await createPpi();
+    const list = new ListQuotesUseCase(deps);
+    const filter = { status: [] as QuoteStatus[], page: 1, pageSize: 20 };
+    const ids = async (sentFrom: string, sentTo: string) =>
+      (await list.execute(manager, { ...filter, sentFrom, sentTo })).items.map((q) => q.id);
+    expect(await ids('2026-11-03', '2026-11-03')).toEqual([sent.id]);
+    expect(await ids('2026-11-04', '2026-11-30')).toEqual([]);
+    expect(await ids('2026-10-01', '2026-11-02')).toEqual([]);
   });
 });

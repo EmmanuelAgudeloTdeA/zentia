@@ -8,10 +8,13 @@ import es from '../../../lang/es.json';
 import { useToastStore } from '../../../shared/ui';
 import { signIn } from '../../../test/session-fixture';
 import { companyService } from '../../company-settings';
+import { usersService } from '../../users';
+import { openQuotesWithFilters, useQuoteFiltersStore } from '../store/quote-filters.store';
 import { documentsService } from '../services/documents.service';
 import { quotesService } from '../services/quotes.service';
 import { QuoteDetailPage } from './quote-detail-page';
-import { EditQuotePage } from './quote-editor-page';
+import { EditQuotePage, NewQuotePage } from './quote-editor-page';
+import { QuotesListPage } from './quotes-list-page';
 
 const QUOTE_ID = '2b3c4d5e-6f70-4a81-9b2c-3d4e5f6a7b8c';
 
@@ -68,6 +71,8 @@ function renderAt(path: string) {
       {
         element: <PrivateLayout navItems={[]} />,
         children: [
+          { path: '/quotes', element: <QuotesListPage /> },
+          { path: '/quotes/new', element: <NewQuotePage /> },
           { path: '/quotes/:id', element: <QuoteDetailPage /> },
           { path: '/quotes/:id/edit', element: <EditQuotePage /> },
         ],
@@ -353,5 +358,216 @@ describe('SendQuoteDialog', () => {
 
     await waitFor(() => expect(download).toHaveBeenCalledWith(QUOTE_ID, 'COT-0012', 'send'));
     expect(await within(dialog).findByText(es.quotes.send.downloaded)).toBeTruthy();
+  });
+});
+
+describe('audit (M4)', () => {
+  const OWNER_ID = '7b0f5c4e-0d5a-4a43-9d8a-6b8f2f3b1c11';
+  const OTHER_ID = '8c1a6d5f-1e6b-4b54-8e9b-7c9a3a4c2d22';
+  const NEW_ID = '9d2b7e6a-2f7c-4c65-9fac-8d0b4b5d3e33';
+  const SERVICE_ITEM = {
+    id: '1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5e',
+    productId: '6b7c8d9e-0f1a-4b2c-9d3e-4f5a6b7c8d9e',
+    productName: 'Instalación',
+    category: 'Servicios',
+    unitPrice: '100000',
+    vatRate: 'EXEMPT' as const,
+    quantity: '1',
+    lineAmount: '100000',
+  };
+
+  it('ReactivateDialog warns about inactive products and sends the request and the price choice', async () => {
+    const expired = quoteFixture({ status: 'EXPIRED', allowedActions: ['reactivate'] });
+    vi.spyOn(quotesService, 'get').mockResolvedValue(expired);
+    vi.spyOn(quotesService, 'history').mockResolvedValue([]);
+    vi.spyOn(quotesService, 'reactivationPreview').mockResolvedValue({
+      newExpiresAt: '2026-11-18',
+      lines: [
+        {
+          itemId: '4c5d6e7f-8091-4a2b-8c3d-4e5f6a7b8c9d',
+          productId: '5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d',
+          productName: 'Portátil',
+          quantity: '2',
+          productActive: false,
+          currentPrice: '2500000',
+          catalogPrice: '2500000',
+        },
+      ],
+    });
+    const reactivate = vi.spyOn(quotesService, 'reactivate').mockResolvedValue({
+      quote: quoteFixture(),
+      versionNumber: null,
+      keptInactiveProductIds: [],
+    });
+    renderAt(`/quotes/${QUOTE_ID}`);
+
+    fireEvent.click(await screen.findByRole('button', { name: es.quotes.actions.reactivate }));
+    const dialog = await screen.findByRole('dialog');
+    expect(await within(dialog).findByText(es.quotes.dialogs.reactivate.inactive)).toBeTruthy();
+    fireEvent.click(within(dialog).getByLabelText(es.quotes.dialogs.reactivate.updatePrices));
+    fireEvent.change(
+      within(dialog).getByLabelText(new RegExp(es.quotes.dialogs.reactivate.request)),
+      { target: { value: 'Sigue interesado' } },
+    );
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: es.quotes.dialogs.reactivate.submit }),
+    );
+    await waitFor(() =>
+      expect(reactivate).toHaveBeenCalledWith(QUOTE_ID, {
+        customerRequest: 'Sigue interesado',
+        updatePrices: false,
+        updatedAt: '2026-11-03T15:00:00.000Z',
+      }),
+    );
+  });
+
+  it('ReassignDialog lists users from the options service without the current owner', async () => {
+    signIn('MANAGER', { id: OTHER_ID });
+    vi.spyOn(quotesService, 'get').mockResolvedValue(
+      quoteFixture({ allowedActions: ['approve', 'reassign'] }),
+    );
+    vi.spyOn(quotesService, 'history').mockResolvedValue([]);
+    const options = vi.spyOn(usersService, 'options').mockResolvedValue([
+      { id: OWNER_ID, name: 'Ana Gómez', role: 'SELLER', isActive: true },
+      { id: OTHER_ID, name: 'Andrés Ruiz', role: 'SELLER', isActive: true },
+    ]);
+    const reassign = vi.spyOn(quotesService, 'reassign').mockResolvedValue(quoteFixture());
+    renderAt(`/quotes/${QUOTE_ID}`);
+
+    fireEvent.click(await screen.findByRole('button', { name: es.quotes.detail.moreActions }));
+    fireEvent.click(screen.getByRole('menuitem', { name: es.quotes.actions.reassign }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.change(within(dialog).getByRole('combobox'), { target: { value: 'an' } });
+    const option = await within(dialog).findByRole('option', { name: /Andrés Ruiz/ });
+    expect(options).toHaveBeenCalled();
+    expect(within(dialog).queryByRole('option', { name: /Ana Gómez/ })).toBeNull();
+    fireEvent.click(option);
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: es.quotes.dialogs.reassign.submit }),
+    );
+    await waitFor(() =>
+      expect(reassign).toHaveBeenCalledWith(QUOTE_ID, {
+        ownerId: OTHER_ID,
+        updatedAt: '2026-11-03T15:00:00.000Z',
+      }),
+    );
+  });
+
+  it('duplicates into the editor with the omitted products and the discount reset notice', async () => {
+    const approved = quoteFixture({
+      status: 'APPROVED',
+      allowedActions: ['duplicate'],
+      items: [quoteFixture().items[0]!, SERVICE_ITEM],
+    });
+    const copy = quoteFixture({
+      id: NEW_ID,
+      number: 13,
+      displayNumber: 'COT-0013',
+      status: 'DRAFT',
+      discountPct: '0',
+      allowedActions: ['edit', 'send', 'void'],
+    });
+    vi.spyOn(quotesService, 'get').mockImplementation(async (id) =>
+      id === NEW_ID ? copy : approved,
+    );
+    vi.spyOn(quotesService, 'history').mockResolvedValue([]);
+    vi.spyOn(quotesService, 'duplicate').mockResolvedValue({
+      quote: copy,
+      omittedProductIds: [SERVICE_ITEM.productId],
+      discountReset: true,
+    });
+    const router = renderAt(`/quotes/${QUOTE_ID}`);
+
+    fireEvent.click(await screen.findByRole('button', { name: es.quotes.actions.duplicate }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: es.quotes.actions.duplicate }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/quotes/${NEW_ID}/edit`));
+    expect(
+      await screen.findByText('Se creó COT-0013 a partir de la cotización duplicada.'),
+    ).toBeTruthy();
+    expect(screen.getByText('Se omitieron productos inactivos: Instalación.')).toBeTruthy();
+    expect(screen.getByText(es.quotes.editor.discountReset)).toBeTruthy();
+  });
+
+  it('shows the discount read-only to a seller when it exceeds the seller limit (RN-14)', async () => {
+    vi.spyOn(quotesService, 'get').mockResolvedValue(
+      quoteFixture({ status: 'DRAFT', discountPct: '20', allowedActions: ['edit'] }),
+    );
+    renderAt(`/quotes/${QUOTE_ID}/edit`);
+    await screen.findByText('Editar COT-0012');
+    const field = screen.getByLabelText(new RegExp(`^${es.quotes.editor.discountPct}`));
+    expect(field.hasAttribute('readonly')).toBe(true);
+    expect(screen.getByText(es.quotes.editor.discountLocked)).toBeTruthy();
+  });
+
+  it('does not ask for the customer request when a sent quote has no changes', async () => {
+    vi.spyOn(quotesService, 'get').mockResolvedValue(quoteFixture());
+    vi.spyOn(quotesService, 'history').mockResolvedValue([]);
+    const update = vi.spyOn(quotesService, 'update');
+    const router = renderAt(`/quotes/${QUOTE_ID}/edit`);
+    await screen.findByText('Editar COT-0012');
+    fireEvent.click(screen.getAllByRole('button', { name: es.quotes.editor.saveChanges })[0]!);
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/quotes/${QUOTE_ID}`));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(update).not.toHaveBeenCalled();
+    expect(useToastStore.getState().toasts.at(-1)?.message).toBe(es.quotes.toast.noChanges);
+  });
+
+  it('shows an error with retry and disables saving when the parameters fail on a new quote', async () => {
+    const getSettings = vi
+      .spyOn(companyService, 'getSettings')
+      .mockRejectedValueOnce(new ApiError('INTERNAL_ERROR', 500));
+    renderAt('/quotes/new');
+
+    expect(await screen.findByText(es.quotes.editor.parametersError)).toBeTruthy();
+    for (const button of screen.getAllByRole('button', { name: es.quotes.editor.saveDraft })) {
+      expect((button as HTMLButtonElement).disabled).toBe(true);
+    }
+    fireEvent.click(screen.getByRole('button', { name: es.common.retry }));
+    await waitFor(() => expect(screen.queryByText(es.quotes.editor.parametersError)).toBeNull());
+    expect(getSettings).toHaveBeenCalledTimes(2);
+    for (const button of screen.getAllByRole('button', { name: es.quotes.editor.saveDraft })) {
+      expect((button as HTMLButtonElement).disabled).toBe(false);
+    }
+  });
+
+  it('opens the list with the first-sent period chip, sends it and lets the user remove it', async () => {
+    signIn('MANAGER');
+    useQuoteFiltersStore.getState().reset();
+    const list = vi
+      .spyOn(quotesService, 'list')
+      .mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
+    openQuotesWithFilters({
+      statuses: ['APPROVED'],
+      owner: { id: OWNER_ID, label: 'Ana Gómez' },
+      sentPeriod: { from: '2026-10-01', to: '2026-10-31' },
+    });
+    renderAt('/quotes');
+
+    const chip = await screen.findByRole('button', {
+      name: 'Quitar filtro: Primer envío: 01/10/2026 – 31/10/2026',
+    });
+    await waitFor(() =>
+      expect(list).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          statuses: ['APPROVED'],
+          ownerId: OWNER_ID,
+          sentFrom: '2026-10-01',
+          sentTo: '2026-10-31',
+        }),
+        expect.anything(),
+      ),
+    );
+    fireEvent.click(chip);
+    await waitFor(() =>
+      expect(list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ sentFrom: undefined, sentTo: undefined, ownerId: OWNER_ID }),
+        expect.anything(),
+      ),
+    );
+    expect(screen.queryByText(/Primer envío/)).toBeNull();
+    useQuoteFiltersStore.getState().reset();
   });
 });
