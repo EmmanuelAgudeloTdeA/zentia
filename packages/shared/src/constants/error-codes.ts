@@ -45,6 +45,8 @@ export const ERROR_CODES = [
   'INVALID_EXPIRY_DATE',
   'REASSIGN_TARGET_INVALID',
   'REASSIGN_SAME_OWNER',
+  'PDF_GENERATION_FAILED',
+  'SHARE_CHANNEL_UNAVAILABLE',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

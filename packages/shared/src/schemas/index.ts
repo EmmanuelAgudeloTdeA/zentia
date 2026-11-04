@@ -10,3 +10,4 @@ export * from './customers.schema.js';
 export * from './pagination.schema.js';
 export * from './products.schema.js';
 export * from './quotes.schema.js';
+export * from './documents.schema.js';
