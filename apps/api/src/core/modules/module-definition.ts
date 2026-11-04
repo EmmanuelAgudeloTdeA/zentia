@@ -12,7 +12,7 @@ export interface RequireAuthOptions {
 export type RequireAuth = (options?: RequireAuthOptions) => RequestHandler;
 
 export interface ModuleDependencies {
-  publicLimiter: RequestHandler;
+  resourceLimiter: RequestHandler;
   requireAuth: RequireAuth;
 }
 

@@ -22,7 +22,7 @@ export type OrdersModuleOptions = ModuleDependencies & OrdersDependencies;
 /** `/orders` y la conversión bajo `/quotes/:id/order`. */
 export function createOrdersModules({
   requireAuth,
-  publicLimiter: _publicLimiter,
+  resourceLimiter: _resourceLimiter,
   ...deps
 }: OrdersModuleOptions): ModuleDefinition[] {
   return [

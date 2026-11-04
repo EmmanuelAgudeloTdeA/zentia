@@ -25,7 +25,7 @@ export interface CompanyRouterDependencies {
   updateParameters: UpdateParametersUseCase;
   uploadLogo: UploadLogoUseCase;
   deleteLogo: DeleteLogoUseCase;
-  publicLimiter: RequestHandler;
+  resourceLimiter: RequestHandler;
   requireAuth: RequireAuth;
 }
 
@@ -39,11 +39,11 @@ export function createCompanyRouter(deps: CompanyRouterDependencies): Router {
   const router = Router();
   const adminOnly = deps.requireAuth({ roles: ['ADMIN'] });
 
-  router.get('/branding', deps.publicLimiter, async (_req, res) => {
+  router.get('/branding', deps.resourceLimiter, async (_req, res) => {
     res.set('Cache-Control', 'no-cache').json(await deps.getBranding.execute());
   });
 
-  router.get('/logo', deps.publicLimiter, async (req, res) => {
+  router.get('/logo', deps.resourceLimiter, async (req, res) => {
     const logo = await deps.getLogo.execute();
     const etag = `"logo-${logo.version}"`;
     res.set({ 'Cache-Control': 'public, max-age=300', ETag: etag });

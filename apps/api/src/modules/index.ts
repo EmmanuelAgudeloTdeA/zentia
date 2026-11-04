@@ -89,7 +89,8 @@ export interface CreateModulesOptions {
   env: Env;
   clock: Clock;
   logger: Logger;
-  publicLimiter: RequestHandler;
+  sessionLimiter: RequestHandler;
+  resourceLimiter: RequestHandler;
   overrides?: InfrastructureOverrides;
 }
 
@@ -97,7 +98,8 @@ export function createModules({
   env,
   clock,
   logger,
-  publicLimiter,
+  sessionLimiter,
+  resourceLimiter,
   overrides = {},
 }: CreateModulesOptions): ModuleDefinition[] {
   const authInfrastructure =
@@ -111,9 +113,9 @@ export function createModules({
     infrastructure: authInfrastructure,
     clock,
     refreshTokenTtlSeconds: env.REFRESH_TOKEN_TTL,
-    publicLimiter,
+    sessionLimiter,
   });
-  const dependencies: ModuleDependencies = { publicLimiter, requireAuth: auth.requireAuth };
+  const dependencies: ModuleDependencies = { resourceLimiter, requireAuth: auth.requireAuth };
   const companySettings = createCompanySettingsModule({
     ...dependencies,
     infrastructure:

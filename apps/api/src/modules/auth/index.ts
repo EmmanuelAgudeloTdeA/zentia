@@ -41,7 +41,7 @@ export interface AuthModuleOptions {
   infrastructure: AuthInfrastructure;
   clock: Clock;
   refreshTokenTtlSeconds: number;
-  publicLimiter: RequestHandler;
+  sessionLimiter: RequestHandler;
 }
 
 export interface AuthModule {
@@ -67,7 +67,7 @@ export function createAuthModule(options: AuthModuleOptions): AuthModule {
         logout: new LogoutUseCase(deps),
         changePassword: new ChangeOwnPasswordUseCase(deps),
         loginLimiter: createLoginLimiter(),
-        publicLimiter: options.publicLimiter,
+        sessionLimiter: options.sessionLimiter,
         requireAuth,
       }),
       openapi: createAuthOpenApi(),

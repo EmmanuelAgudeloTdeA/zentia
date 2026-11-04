@@ -47,7 +47,7 @@ M0 no tiene casos de uso de negocio. Entrega piezas de `core/`, que no son un m�
 | `validate` | `apps/api/src/core/http/` | `validate({ body?, params?, query? })` con schemas de `shared` |
 | `openapi` | `apps/api/src/core/openapi/` | `createRegistry()` por módulo; `buildDocument(registries[])` |
 | `ModuleDefinition` | `apps/api/src/core/modules/` | `{ name, router, openapi }`; `app.ts` monta cada módulo bajo `/api` |
-| `rateLimiters` | `apps/api/src/core/http/` | `generalLimiter` reutilizable; los límites específicos (login) los define M1 |
+| `rateLimiters` | `apps/api/src/core/http/` | `sessionLimiter` (`POST /auth/refresh`, 60/min) y `resourceLimiter` (branding, logo y health, 120/min) con contadores separados; `POST /auth/logout` no lleva limitador (responde siempre 204); el de login lo define M1 |
 | `prisma` | `apps/api/src/core/prisma/` | singleton `PrismaClient`; desconexión en `SIGTERM` |
 
 En `packages/shared`:

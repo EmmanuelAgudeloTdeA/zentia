@@ -55,7 +55,7 @@ export function createPrismaAiInfrastructure(
 
 export function createAiModules({
   requireAuth,
-  publicLimiter: _publicLimiter,
+  resourceLimiter: _resourceLimiter,
   ...deps
 }: ModuleDependencies & AiDependencies): ModuleDefinition[] {
   return [
