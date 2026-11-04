@@ -65,25 +65,39 @@ async function send(method: HttpMethod, path: string, options: RequestOptions): 
   }
 }
 
+/** Envía la petición con un reintento tras renovar la sesión; lanza `ApiError` si la respuesta no es 2xx. */
+async function sendWithSession(
+  method: HttpMethod,
+  path: string,
+  options: RequestOptions,
+): Promise<Response> {
+  let response = await send(method, path, options);
+  // El cuerpo de un error solo se puede leer una vez: se conserva para no perder el código.
+  let errorBody: unknown;
+  if (response.status === 401 && !options.skipAuth && hooks.onUnauthorized) {
+    errorBody = await readBody(response);
+    if (await hooks.onUnauthorized(toApiError(401, errorBody))) {
+      response = await send(method, path, options);
+      errorBody = undefined;
+    }
+  }
+  if (!response.ok) {
+    const error = toApiError(response.status, errorBody ?? (await readBody(response)));
+    if (!options.skipAuth) hooks.onError?.(error);
+    throw error;
+  }
+  return response;
+}
+
 export async function request<T>(
   method: HttpMethod,
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  let response = await send(method, path, options);
-  let body = await readBody(response);
+  return (await readBody(await sendWithSession(method, path, options))) as T;
+}
 
-  if (response.status === 401 && !options.skipAuth && hooks.onUnauthorized) {
-    if (await hooks.onUnauthorized(toApiError(401, body))) {
-      response = await send(method, path, options);
-      body = await readBody(response);
-    }
-  }
-
-  if (!response.ok) {
-    const error = toApiError(response.status, body);
-    if (!options.skipAuth) hooks.onError?.(error);
-    throw error;
-  }
-  return body as T;
+/** Descarga binaria (PDF) con la misma autenticación y manejo de errores que `request`. */
+export async function requestBlob(path: string, options: RequestOptions = {}): Promise<Blob> {
+  return (await sendWithSession('GET', path, options)).blob();
 }

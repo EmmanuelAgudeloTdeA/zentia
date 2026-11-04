@@ -1,4 +1,4 @@
-import type { CompanySettingsDto, Role } from '@zentia/shared';
+import type { CompanySettingsDto, DocumentLocale, Role } from '@zentia/shared';
 import { useEffect, useState } from 'react';
 import { companyService } from '../../company-settings';
 
@@ -7,6 +7,7 @@ export interface CommercialParameters {
   validityDays: number;
   expiringAlertDays: number;
   shippingTaxable: boolean;
+  documentLocale: DocumentLocale;
 }
 
 const FALLBACK: CommercialParameters = {
@@ -14,6 +15,7 @@ const FALLBACK: CommercialParameters = {
   validityDays: 15,
   expiringAlertDays: 3,
   shippingTaxable: false,
+  documentLocale: 'es',
 };
 
 function fromSettings(settings: CompanySettingsDto): CommercialParameters {
@@ -26,6 +28,7 @@ function fromSettings(settings: CompanySettingsDto): CommercialParameters {
     validityDays: settings.validityDays,
     expiringAlertDays: settings.expiringAlertDays,
     shippingTaxable: settings.shippingTaxable,
+    documentLocale: settings.documentLocale,
   };
 }
 

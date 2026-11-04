@@ -5,8 +5,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../../../core/errors';
 import { PrivateLayout } from '../../../core/layout';
 import es from '../../../lang/es.json';
+import { useToastStore } from '../../../shared/ui';
 import { signIn } from '../../../test/session-fixture';
 import { companyService } from '../../company-settings';
+import { documentsService } from '../services/documents.service';
 import { quotesService } from '../services/quotes.service';
 import { QuoteDetailPage } from './quote-detail-page';
 import { EditQuotePage } from './quote-editor-page';
@@ -233,5 +235,70 @@ describe('QuoteDetailPage', () => {
       }),
     );
     expect(await screen.findByRole('button', { name: es.quotes.actions.duplicate })).toBeTruthy();
+  });
+});
+
+describe('SendQuoteDialog', () => {
+  const draft = () =>
+    quoteFixture({
+      status: 'DRAFT',
+      expiresAt: null,
+      sentAt: null,
+      firstSentAt: null,
+      currentVersion: 0,
+      allowedActions: ['edit', 'send', 'void', 'downloadPdf', 'share'],
+    });
+
+  async function openDialog() {
+    vi.spyOn(quotesService, 'get').mockResolvedValue(draft());
+    vi.spyOn(quotesService, 'history').mockResolvedValue([]);
+    vi.spyOn(documentsService, 'shareLinks').mockResolvedValue({
+      whatsappUrl: 'https://wa.me/573001234567?text=Hola',
+      emailUrl: null,
+      missing: ['EMAIL'],
+    });
+    renderAt(`/quotes/${QUOTE_ID}`);
+    fireEvent.click(await screen.findByRole('button', { name: es.quotes.actions.share }));
+    return screen.findByRole('dialog');
+  }
+
+  it('disables the channel without contact data and sends the draft through WhatsApp', async () => {
+    const share = vi.spyOn(documentsService, 'share').mockResolvedValue(quoteFixture());
+    const dialog = await openDialog();
+
+    expect(await within(dialog).findByText(es.quotes.send.missingEmail)).toBeTruthy();
+    const whatsapp = within(dialog).getByRole('link', { name: es.quotes.send.whatsapp });
+    expect(whatsapp.getAttribute('href')).toBe('https://wa.me/573001234567?text=Hola');
+    expect(whatsapp.getAttribute('target')).toBe('_blank');
+    fireEvent.click(whatsapp);
+
+    await waitFor(() =>
+      expect(share).toHaveBeenCalledWith(QUOTE_ID, {
+        channel: 'WHATSAPP',
+        updatedAt: '2026-11-03T15:00:00.000Z',
+      }),
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getAllByText(es.enums.QuoteStatus.SENT).length).toBeGreaterThan(0);
+    expect(useToastStore.getState().toasts.at(-1)?.message).toBe('Cotización COT-0012 enviada.');
+  });
+
+  it('offers to mark as sent when registering the share fails', async () => {
+    vi.spyOn(documentsService, 'share').mockRejectedValue(new ApiError('QUOTE_CONFLICT', 409));
+    const dialog = await openDialog();
+    fireEvent.click(await within(dialog).findByRole('link', { name: es.quotes.send.whatsapp }));
+
+    expect(await within(dialog).findByText(es.errors.QUOTE_CONFLICT)).toBeTruthy();
+    fireEvent.click(within(dialog).getByRole('button', { name: es.quotes.actions.send }));
+    expect(await screen.findByText('¿Marcar COT-0012 como enviada?')).toBeTruthy();
+  });
+
+  it('downloads the clean PDF from the dialog', async () => {
+    const download = vi.spyOn(documentsService, 'downloadPdf').mockResolvedValue(undefined);
+    const dialog = await openDialog();
+    fireEvent.click(within(dialog).getByRole('button', { name: es.quotes.actions.downloadPdf }));
+
+    await waitFor(() => expect(download).toHaveBeenCalledWith(QUOTE_ID, 'COT-0012', 'send'));
+    expect(await within(dialog).findByText(es.quotes.send.downloaded)).toBeTruthy();
   });
 });

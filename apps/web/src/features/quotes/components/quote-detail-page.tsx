@@ -22,6 +22,7 @@ import {
   ErrorMessage,
   FileTextIcon,
   SectionCard,
+  SendIcon,
   Skeleton,
   toast,
   TotalsSummary,
@@ -40,7 +41,9 @@ import {
   type QuoteDialog,
 } from './quote-action-dialogs';
 import { expiryLabel } from './quote-format';
+import { DownloadPdfButton } from './download-pdf-button';
 import { QuoteHistoryTimeline } from './quote-history-timeline';
+import { SendQuoteDialog } from './send-quote-dialog';
 import { editQuotePath, QUOTES_PATH } from './quote-paths';
 import { QuoteStatusBadge } from './quote-status-badge';
 
@@ -86,6 +89,7 @@ export function QuoteDetailPage() {
   const params = useCommercialParameters();
   const today = useMemo(() => todayInBogota(), []);
   const [dialog, setDialog] = useState<QuoteDialog | null>(null);
+  const [sharing, setSharing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<unknown>(null);
 
@@ -123,7 +127,10 @@ export function QuoteDetailPage() {
   const quote = state.data;
   const number = quote.displayNumber;
   const allowed = new Set(quote.allowedActions);
-  const primary = PRIMARY_BY_STATUS[quote.status];
+  const canShare = allowed.has('share');
+  // Con M5, "Enviar" (canales) es la acción principal del Borrador y "Marcar como enviada" pasa al menú.
+  const primary =
+    canShare && quote.status === 'DRAFT' ? undefined : PRIMARY_BY_STATUS[quote.status];
   const expiry = expiryLabel(t, quote.status, quote.expiresAt, today, params.expiringAlertDays);
 
   const reloadAll = () => {
@@ -238,6 +245,15 @@ export function QuoteDetailPage() {
         backTo={QUOTES_PATH}
         actions={
           <>
+            {canShare ? (
+              <Button
+                variant={quote.status === 'DRAFT' ? 'on-dark' : 'ghost-on-dark'}
+                icon={<SendIcon size={16} />}
+                onClick={() => setSharing(true)}
+              >
+                {t('quotes.actions.share')}
+              </Button>
+            ) : null}
             {primary && allowed.has(primary) ? (
               <Button variant="on-dark" onClick={() => setDialog(primary)}>
                 {actionLabel(primary)}
@@ -260,6 +276,13 @@ export function QuoteDetailPage() {
               >
                 {t('quotes.actions.void')}
               </Button>
+            ) : null}
+            {allowed.has('downloadPdf') ? (
+              <DownloadPdfButton
+                quoteId={quote.id}
+                displayNumber={quote.displayNumber}
+                variant="ghost-on-dark"
+              />
             ) : null}
             <ActionMenu label={t('quotes.detail.moreActions')} items={menuItems} tone="onDark" />
           </>
@@ -408,6 +431,31 @@ export function QuoteDetailPage() {
                     number,
                   }),
               );
+          }}
+        />
+      ) : null}
+      {sharing ? (
+        <SendQuoteDialog
+          quote={quote}
+          projectedExpiresAt={addDaysTo(today, params.validityDays)}
+          onClose={() => setSharing(false)}
+          onReload={() => {
+            setSharing(false);
+            reloadAll();
+          }}
+          onMarkSent={() => {
+            setSharing(false);
+            setDialog('send');
+          }}
+          onShared={(updated, channel, wasDraft) => {
+            replace(updated);
+            void history.reload();
+            setSharing(false);
+            toast.success(
+              wasDraft
+                ? t('quotes.send.sent', { number })
+                : t('quotes.send.opened', { channel: t(`quotes.send.channels.${channel}`) }),
+            );
           }}
         />
       ) : null}

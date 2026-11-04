@@ -112,7 +112,9 @@
     "CUSTOMER_REQUEST_REQUIRED": "Write what the customer asked for.",
     "INVALID_EXPIRY_DATE": "Choose a date after today.",
     "REASSIGN_TARGET_INVALID": "The selected user does not exist or is inactive.",
-    "REASSIGN_SAME_OWNER": "The quote already belongs to that user."
+    "REASSIGN_SAME_OWNER": "The quote already belongs to that user.",
+    "PDF_GENERATION_FAILED": "The PDF could not be generated. Try again.",
+    "SHARE_CHANNEL_UNAVAILABLE": "The customer has no contact data for that channel."
   },
   "validation": {
     "invalid_type": "The value is not valid.",
@@ -324,7 +326,9 @@
       "changeExpiry": "Change expiry",
       "reassign": "Reassign",
       "reactivate": "Reactivate",
-      "duplicate": "Duplicate"
+      "duplicate": "Duplicate",
+      "downloadPdf": "Download PDF",
+      "share": "Send"
     },
     "dialogs": {
       "send": {
@@ -373,6 +377,30 @@
       "duplicate": {
         "title": "Duplicate {{number}}?",
         "description": "A new draft will be created with current catalog prices, under your name."
+      }
+    },
+    "send": {
+      "title": "Send {{number}}",
+      "expires": "Expires on {{date}}.",
+      "projected": "It will expire on {{date}} if you send it today.",
+      "language": "The PDF and the message are generated in {{language}}.",
+      "alreadySent": "It is already sent; the channel will open without changing the quote.",
+      "step1": "1. Download the PDF",
+      "step1Hint": "WhatsApp and email do not allow attaching files automatically. Download the PDF to attach it.",
+      "downloaded": "PDF downloaded",
+      "step2": "2. Choose the channel",
+      "whatsapp": "Open in WhatsApp",
+      "email": "Open in email",
+      "missingPhone": "The customer has no phone number.",
+      "missingEmail": "The customer has no email.",
+      "editCustomer": "Edit customer",
+      "reloadLinks": "Reload links",
+      "noChannels": "Add a phone or an email to the customer, or mark the quote as sent if you sent it another way.",
+      "sent": "Quote {{number}} sent.",
+      "opened": "{{channel}} opened.",
+      "channels": {
+        "WHATSAPP": "WhatsApp",
+        "EMAIL": "Email"
       }
     },
     "toast": {
