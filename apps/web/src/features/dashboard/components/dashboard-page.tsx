@@ -238,7 +238,7 @@ export function DashboardPage() {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+            <div className="flex snap-x gap-5 overflow-x-auto pb-1 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-4">
               {(['APPROVED', 'REJECTED', 'EXPIRED'] as const).map((status) => (
                 <KpiCard
                   key={status}
