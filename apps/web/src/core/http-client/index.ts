@@ -9,6 +9,7 @@ export {
 export {
   configureHttpClient,
   request,
+  requestBlob,
   type HttpClientHooks,
   type HttpMethod,
   type QueryValue,

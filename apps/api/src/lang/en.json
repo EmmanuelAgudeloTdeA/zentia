@@ -1,5 +1,54 @@
 {
-  "pdf": {},
-  "share": {},
+  "pdf": {
+    "title": "Quote",
+    "number": "Number",
+    "issueDate": "Issue date",
+    "expiresAt": "Valid until",
+    "projectedExpiry": "{{date}} (projected)",
+    "company": {
+      "taxId": "Tax ID {{taxId}}"
+    },
+    "customer": {
+      "title": "Customer",
+      "documentId": "Document",
+      "phone": "Phone",
+      "email": "Email"
+    },
+    "table": {
+      "product": "Product",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "vatRate": "VAT",
+      "amount": "Amount"
+    },
+    "totals": {
+      "subtotal": "Subtotal",
+      "discount": "Discount ({{pct}} %)",
+      "linesVat": "VAT",
+      "shipping": "Shipping",
+      "shippingVat": "Shipping VAT",
+      "total": "Total"
+    },
+    "commercialTerms": "Commercial terms",
+    "bankAccounts": "Payment accounts",
+    "pricesNote": "Amounts in Colombian pesos (COP).",
+    "page": "Page {{current}} of {{total}}",
+    "watermark": {
+      "DRAFT": "DRAFT",
+      "VOIDED": "VOIDED"
+    },
+    "vatRate": {
+      "GENERAL_19": "19 %",
+      "REDUCED_5": "5 %",
+      "EXEMPT": "Exempt"
+    }
+  },
+  "share": {
+    "message": "Hi {{customerName}}, here is quote {{quoteNumber}} from {{companyName}} for a total of {{total}}, valid until {{expiresAt}}. Looking forward to your comments.\n{{sellerName}}",
+    "email": {
+      "subject": "Quote {{quoteNumber}} – {{companyName}}",
+      "body": "{{message}}\n\nThe quote PDF is attached."
+    }
+  },
   "ai": {}
 }

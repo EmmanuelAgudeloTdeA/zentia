@@ -10,7 +10,7 @@ Todas exigen autenticación y aplican el alcance de M1 (una cotización ajena pa
 
 | Método | Ruta | Rol | Request | Response | Errores |
 |---|---|---|---|---|---|
-| GET | `/api/quotes/:id/pdf` | Todos (alcance) | — | 200 `application/pdf`, `Content-Disposition: attachment; filename="COT-0001.pdf"` | 404 `QUOTE_NOT_FOUND`, 500 `PDF_GENERATION_FAILED` |
+| GET | `/api/quotes/:id/pdf` | Todos (alcance) | query `{ purpose: view \| send }` (defecto `view`) | 200 `application/pdf`, `Content-Disposition: attachment; filename="COT-0001.pdf"` | 404 `QUOTE_NOT_FOUND`, 500 `PDF_GENERATION_FAILED` |
 | GET | `/api/quotes/:id/share-links` | Todos (alcance) | — | 200 `{ whatsappUrl: string \| null, emailUrl: string \| null, missing: ('PHONE' \| 'EMAIL')[] }` | 404 |
 | POST | `/api/quotes/:id/share` | Todos (alcance) | `{ channel: 'WHATSAPP' \| 'EMAIL', updatedAt }` | 200 `QuoteDto` (de M4) | 404; 409 `QUOTE_INVALID_TRANSITION` (si no es `DRAFT` ni `SENT`), `QUOTE_CONFLICT`; 400 `SHARE_CHANNEL_UNAVAILABLE` (el cliente no tiene el dato del canal) |
 
@@ -110,3 +110,15 @@ La feature visual vive en `features/quotes` (decisión de `architecture.md` §4:
 | PDF de `DRAFT` y `VOIDED` | Se permite con marca de agua, para revisión interna. |
 | PDF no guardado | Se genera desde el estado actual; las versiones anteriores se consultan en el historial (M4), no como PDF. |
 | `lang/` del back | Nace en este módulo con un traductor mínimo (JSON + marcadores + `Intl`), sin librerías nuevas. |
+
+## 9. Notas de implementación (H5.1 y H5.2)
+| Punto | Implementación |
+|---|---|
+| PDF limpio al enviar (V1) | `GET /quotes/:id/pdf?purpose=send` genera el PDF sin marca de agua ni leyenda "prevista"; la descarga del detalle (`view`) conserva la marca en Borrador y Anulada. Validado con el usuario y reflejado en S5.1.1.5. |
+| pdfmake 0.3 | Se carga con `createRequire` (CommonJS que exporta una instancia). Fuentes Roboto del propio paquete (`pdfmake/fonts/Roboto`), con política que solo permite leer esa carpeta y ninguna URL; el logo va como data URL. 100 líneas se generan en < 100 ms. |
+| Teléfono y correo del cliente | `QuoteReader` no los incluye; el módulo `documents` los lee con `CustomerReader.getById` (M3). |
+| `share` en Enviada | Devuelve el `QuoteDto` sin cambios con `QuoteReader.getDtoForActor` (nuevo en M4), pero igual valida `updatedAt` y el dato del canal. |
+| Mailto | Destinatario, asunto y cuerpo con `encodeURIComponent` y saltos de línea CRLF (`%0D%0A`, RFC 6068). |
+| `lang/` del back | `apps/api/src/lang/{es,en}.json` con `pdf.*` y `share.*`; la prueba de paridad ahora compara también los marcadores `{{x}}`. Traductor `JsonDocumentTranslator` con `Intl` (`es-CO`/`en-US`) y montos con `BigInt`. |
+| Descarga en el front | `requestBlob` en `core/http-client` (misma autenticación y renovación que `request`); el archivo se guarda como `COT-0001.pdf`. |
+| Detalle | En Borrador, "Enviar" (canales) es la acción principal y "Marcar como enviada" pasa a "Más acciones"; en Enviada, "Enviar" es secundaria. "Editar cliente" abre el cliente en otra pestaña y el diálogo ofrece "Recargar enlaces" (V6). |

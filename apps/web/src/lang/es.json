@@ -112,7 +112,9 @@
     "CUSTOMER_REQUEST_REQUIRED": "Escribe lo que solicitó el cliente.",
     "INVALID_EXPIRY_DATE": "Elige una fecha posterior a hoy.",
     "REASSIGN_TARGET_INVALID": "El usuario elegido no existe o está inactivo.",
-    "REASSIGN_SAME_OWNER": "La cotización ya es de ese usuario."
+    "REASSIGN_SAME_OWNER": "La cotización ya es de ese usuario.",
+    "PDF_GENERATION_FAILED": "No se pudo generar el PDF. Inténtalo de nuevo.",
+    "SHARE_CHANNEL_UNAVAILABLE": "El cliente no tiene el dato de contacto de ese canal."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
@@ -324,7 +326,9 @@
       "changeExpiry": "Cambiar vencimiento",
       "reassign": "Reasignar",
       "reactivate": "Reactivar",
-      "duplicate": "Duplicar"
+      "duplicate": "Duplicar",
+      "downloadPdf": "Descargar PDF",
+      "share": "Enviar"
     },
     "dialogs": {
       "send": {
@@ -373,6 +377,30 @@
       "duplicate": {
         "title": "¿Duplicar {{number}}?",
         "description": "Se creará un borrador nuevo con los precios vigentes del catálogo, a tu nombre."
+      }
+    },
+    "send": {
+      "title": "Enviar {{number}}",
+      "expires": "Vence el {{date}}.",
+      "projected": "Vencerá el {{date}} si la envías hoy.",
+      "language": "El PDF y el mensaje se generan en {{language}}.",
+      "alreadySent": "Ya está enviada; se abrirá el canal sin cambiar la cotización.",
+      "step1": "1. Descarga el PDF",
+      "step1Hint": "WhatsApp y el correo no permiten adjuntar archivos automáticamente. Descarga el PDF para adjuntarlo.",
+      "downloaded": "PDF descargado",
+      "step2": "2. Elige el canal",
+      "whatsapp": "Abrir en WhatsApp",
+      "email": "Abrir en correo",
+      "missingPhone": "El cliente no tiene teléfono registrado.",
+      "missingEmail": "El cliente no tiene correo registrado.",
+      "editCustomer": "Editar cliente",
+      "reloadLinks": "Recargar enlaces",
+      "noChannels": "Agrega un teléfono o un correo al cliente, o marca la cotización como enviada si la enviaste por otro medio.",
+      "sent": "Cotización {{number}} enviada.",
+      "opened": "Se abrió {{channel}}.",
+      "channels": {
+        "WHATSAPP": "WhatsApp",
+        "EMAIL": "el correo"
       }
     },
     "toast": {

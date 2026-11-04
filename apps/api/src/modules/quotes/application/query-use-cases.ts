@@ -92,12 +92,17 @@ export class GetQuoteHistoryUseCase {
 /** Lectura pública para M5 y M7, con el alcance del actor. */
 export interface QuoteReader {
   getForActor(id: string, actor: Actor): Promise<Quote>;
+  getDtoForActor(id: string, actor: Actor): Promise<QuoteDto>;
 }
 
 export class RepositoryQuoteReader implements QuoteReader {
-  constructor(private readonly deps: Pick<QuotesDependencies, 'quotes'>) {}
+  constructor(private readonly deps: QuotesDependencies) {}
 
   getForActor(id: string, actor: Actor): Promise<Quote> {
     return loadVisible(this.deps, id, actor);
+  }
+
+  async getDtoForActor(id: string, actor: Actor): Promise<QuoteDto> {
+    return toQuoteDto(this.deps, await loadVisible(this.deps, id, actor), actor);
   }
 }
