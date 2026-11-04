@@ -37,6 +37,12 @@ import {
 } from './follow-up/index.js';
 import { createHealthModule } from './health/index.js';
 import {
+  createOrderActionsContributor,
+  createOrdersModules,
+  createPrismaOrdersInfrastructure,
+  type OrdersInfrastructure,
+} from './orders/index.js';
+import {
   createPrismaQuotesInfrastructure,
   createQuotesModule,
   type QuotesInfrastructure,
@@ -57,6 +63,7 @@ export interface InfrastructureOverrides {
   quotes?: QuotesInfrastructure;
   documents?: DocumentsInfrastructure;
   followUp?: FollowUpInfrastructure;
+  orders?: OrdersInfrastructure;
 }
 
 export interface CreateModulesOptions {
@@ -107,6 +114,7 @@ export function createModules({
   });
   const followUpInfrastructure =
     overrides.followUp ?? createPrismaFollowUpInfrastructure(getPrisma());
+  const ordersInfrastructure = overrides.orders ?? createPrismaOrdersInfrastructure(getPrisma());
   const quotes = createQuotesModule({
     ...dependencies,
     infrastructure:
@@ -115,7 +123,7 @@ export function createModules({
     settings: companySettings.settingsReader,
     customers: customers.customerReader,
     catalog: catalog.catalogReader,
-    actionContributors: [documentActions],
+    actionContributors: [documentActions, createOrderActionsContributor(ordersInfrastructure)],
     reassignedListeners: [createTransferNotificationsListener(followUpInfrastructure)],
   });
   const documents = createDocumentsModule({
@@ -146,5 +154,11 @@ export function createModules({
     quotes.module,
     documents,
     ...followUp,
+    ...createOrdersModules({
+      ...dependencies,
+      ...ordersInfrastructure,
+      quotes: quotes.quoteReader,
+      clock,
+    }),
   ];
 }
