@@ -478,6 +478,7 @@
       "editCustomer": "Editar cliente",
       "reloadLinks": "Recargar enlaces",
       "noChannels": "Agrega un teléfono o un correo al cliente, o marca la cotización como enviada si la enviaste por otro medio.",
+      "customerInactive": "El cliente está inactivo, por eso no se puede enviar esta cotización. Actívalo o cambia el cliente en el borrador.",
       "sent": "Cotización {{number}} enviada.",
       "opened": "Se abrió {{channel}}.",
       "channels": {

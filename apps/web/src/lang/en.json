@@ -478,6 +478,7 @@
       "editCustomer": "Edit customer",
       "reloadLinks": "Reload links",
       "noChannels": "Add a phone or an email to the customer, or mark the quote as sent if you sent it another way.",
+      "customerInactive": "The customer is inactive, so this quote cannot be sent. Reactivate the customer or change it in the draft.",
       "sent": "Quote {{number}} sent.",
       "opened": "{{channel}} opened.",
       "channels": {
