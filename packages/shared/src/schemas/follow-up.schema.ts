@@ -59,6 +59,8 @@ export const interactionListDtoSchema = z.object({
 export type InteractionListDto = z.infer<typeof interactionListDtoSchema>;
 
 export const listNotificationsQuerySchema = z.object({
+  /** Con M9, por defecto por probabilidad de cierre (desc) y luego por fecha. */
+  sort: z.enum(['probability', 'date']).default('probability'),
   unreadOnly: z
     .enum(['true', 'false'])
     .default('false')
@@ -78,6 +80,8 @@ export const notificationDtoSchema = z.object({
   readAt: z.iso.datetime().nullable(),
   createdAt: z.iso.datetime(),
   quote: z.object({ id: z.uuid(), displayNumber: z.string(), status: quoteStatusSchema }),
+  /** Probabilidad de cierre si la cotización sigue Enviada y M9 está activo. */
+  probability: z.int().nullable(),
 });
 
 export type NotificationDto = z.infer<typeof notificationDtoSchema>;
