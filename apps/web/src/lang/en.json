@@ -114,7 +114,10 @@
     "REASSIGN_TARGET_INVALID": "The selected user does not exist or is inactive.",
     "REASSIGN_SAME_OWNER": "The quote already belongs to that user.",
     "PDF_GENERATION_FAILED": "The PDF could not be generated. Try again.",
-    "SHARE_CHANNEL_UNAVAILABLE": "The customer has no contact data for that channel."
+    "SHARE_CHANNEL_UNAVAILABLE": "The customer has no contact data for that channel.",
+    "INTERACTION_QUOTE_MISMATCH": "The quote does not belong to this customer.",
+    "INTERACTION_FUTURE_DATE": "The date cannot be later than today.",
+    "NOTIFICATION_NOT_FOUND": "The notification does not exist."
   },
   "validation": {
     "invalid_type": "The value is not valid.",
@@ -203,6 +206,13 @@
       "EXPIRY_CHANGED": "Expiry change",
       "REASSIGNED": "Reassignment",
       "STATE_CHANGED": "Status change"
+    },
+    "InteractionType": {
+      "CALL": "Call",
+      "EMAIL": "Email",
+      "WHATSAPP": "WhatsApp",
+      "MEETING": "Meeting",
+      "OTHER": "Other"
     }
   },
   "nav": {
@@ -210,7 +220,8 @@
     "users": "Users",
     "customers": "Customers",
     "products": "Products",
-    "quotes": "Quotes"
+    "quotes": "Quotes",
+    "notifications": "Notifications"
   },
   "quotes": {
     "title": "Quotes",
@@ -442,6 +453,45 @@
       "EXPIRY_CHANGED": "Expiry {{from}} → {{to}}",
       "REASSIGNED": "Reassigned from {{from}} to {{to}}"
     }
+  },
+  "interactions": {
+    "title": "Follow-up",
+    "new": "Log interaction",
+    "dialogTitle": "Log interaction",
+    "fields": {
+      "type": "Type",
+      "note": "Note",
+      "occurredAt": "Date and time",
+      "quote": "Quote"
+    },
+    "typeRequired": "Select the interaction type.",
+    "futureDate": "The date cannot be later than today.",
+    "immutableHint": "Interactions cannot be edited or deleted once saved.",
+    "none": "No quote",
+    "save": "Save interaction",
+    "empty": "There are no interactions with this customer yet.",
+    "emptyQuote": "There are no interactions for this quote yet.",
+    "loadOlder": "Show older",
+    "showMore": "Show more",
+    "customerHistory": "View customer history",
+    "saved": "Interaction logged.",
+    "by": "{{author}} · {{date}}"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "bellLabel": "Notifications ({{count}} unread)",
+    "all": "All",
+    "unreadOnly": "Unread only",
+    "markAllRead": "Mark all as read",
+    "markedAll": "Notifications marked as read.",
+    "viewAll": "View all",
+    "empty": "You have no notifications.",
+    "emptyUnread": "You have no unread notifications.",
+    "resolved": "Resolved",
+    "loadError": "Notifications could not be loaded.",
+    "unread": "Unread",
+    "QUOTE_EXPIRING": "{{quoteNumber}} for {{customerName}} expires on {{expiresAt}}.",
+    "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} for {{customerName}} has gone {{days}} days without follow-up."
   },
   "customers": {
     "title": "Customers",

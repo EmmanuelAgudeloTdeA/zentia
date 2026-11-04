@@ -29,6 +29,7 @@ import {
   type ActionMenuItem,
   type DataTableColumn,
 } from '../../../shared/ui';
+import { FollowUpSection } from '../../follow-up';
 import { useCommercialParameters } from '../hooks/use-commercial-parameters';
 import { useQuote, useQuoteHistory } from '../hooks/use-quote';
 import { quotesService } from '../services/quotes.service';
@@ -355,6 +356,12 @@ export function QuoteDetailPage() {
               )}
             />
           </section>
+
+          <FollowUpSection
+            customerId={quote.customer.id}
+            customerName={quote.customer.name}
+            quote={{ id: quote.id, displayNumber: quote.displayNumber }}
+          />
 
           <SectionCard title={t('history.title')}>
             <QuoteHistoryTimeline state={history.state} onRetry={() => void history.reload()} />

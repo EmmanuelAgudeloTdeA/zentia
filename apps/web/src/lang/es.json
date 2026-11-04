@@ -114,7 +114,10 @@
     "REASSIGN_TARGET_INVALID": "El usuario elegido no existe o está inactivo.",
     "REASSIGN_SAME_OWNER": "La cotización ya es de ese usuario.",
     "PDF_GENERATION_FAILED": "No se pudo generar el PDF. Inténtalo de nuevo.",
-    "SHARE_CHANNEL_UNAVAILABLE": "El cliente no tiene el dato de contacto de ese canal."
+    "SHARE_CHANNEL_UNAVAILABLE": "El cliente no tiene el dato de contacto de ese canal.",
+    "INTERACTION_QUOTE_MISMATCH": "La cotización no pertenece a este cliente.",
+    "INTERACTION_FUTURE_DATE": "La fecha no puede ser posterior a hoy.",
+    "NOTIFICATION_NOT_FOUND": "La notificación no existe."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
@@ -203,6 +206,13 @@
       "EXPIRY_CHANGED": "Cambio de vencimiento",
       "REASSIGNED": "Reasignación",
       "STATE_CHANGED": "Cambio de estado"
+    },
+    "InteractionType": {
+      "CALL": "Llamada",
+      "EMAIL": "Correo",
+      "WHATSAPP": "WhatsApp",
+      "MEETING": "Reunión",
+      "OTHER": "Otro"
     }
   },
   "nav": {
@@ -210,7 +220,8 @@
     "users": "Usuarios",
     "customers": "Clientes",
     "products": "Productos",
-    "quotes": "Cotizaciones"
+    "quotes": "Cotizaciones",
+    "notifications": "Notificaciones"
   },
   "quotes": {
     "title": "Cotizaciones",
@@ -442,6 +453,45 @@
       "EXPIRY_CHANGED": "Vencimiento {{from}} → {{to}}",
       "REASSIGNED": "Reasignada de {{from}} a {{to}}"
     }
+  },
+  "interactions": {
+    "title": "Seguimiento",
+    "new": "Registrar observación",
+    "dialogTitle": "Registrar observación",
+    "fields": {
+      "type": "Tipo",
+      "note": "Nota",
+      "occurredAt": "Fecha y hora",
+      "quote": "Cotización"
+    },
+    "typeRequired": "Selecciona el tipo de interacción.",
+    "futureDate": "La fecha no puede ser posterior a hoy.",
+    "immutableHint": "Las observaciones no se pueden editar ni eliminar después de guardarlas.",
+    "none": "Sin cotización",
+    "save": "Guardar observación",
+    "empty": "Aún no hay observaciones con este cliente.",
+    "emptyQuote": "Aún no hay observaciones de esta cotización.",
+    "loadOlder": "Ver más antiguas",
+    "showMore": "Ver más",
+    "customerHistory": "Ver historial del cliente",
+    "saved": "Observación registrada.",
+    "by": "{{author}} · {{date}}"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "bellLabel": "Notificaciones ({{count}} sin leer)",
+    "all": "Todas",
+    "unreadOnly": "Solo no leídas",
+    "markAllRead": "Marcar todas como leídas",
+    "markedAll": "Notificaciones marcadas como leídas.",
+    "viewAll": "Ver todas",
+    "empty": "No tienes notificaciones.",
+    "emptyUnread": "No tienes notificaciones sin leer.",
+    "resolved": "Resuelta",
+    "loadError": "No se pudieron cargar las notificaciones.",
+    "unread": "Sin leer",
+    "QUOTE_EXPIRING": "{{quoteNumber}} de {{customerName}} vence el {{expiresAt}}.",
+    "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} de {{customerName}} lleva {{days}} días sin seguimiento."
   },
   "customers": {
     "title": "Clientes",

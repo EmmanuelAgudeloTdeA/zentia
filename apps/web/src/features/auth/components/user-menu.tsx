@@ -2,7 +2,8 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { CHANGE_PASSWORD_PATH, LOGIN_PATH, useSessionStore } from '../../../core/auth';
-import { Avatar, ChevronDownIcon, KeyIcon, LogOutIcon } from '../../../shared/ui';
+import { NOTIFICATIONS_PATH } from '../../../core/notifications';
+import { Avatar, ChevronDownIcon, InfoIcon, KeyIcon, LogOutIcon } from '../../../shared/ui';
 import { logout } from '../services/session.service';
 
 const ITEM_CLASSES =
@@ -79,6 +80,17 @@ export function UserMenu() {
               {t(`enums.Role.${user.role}`)}
             </p>
           </div>
+          {user.mustChangePassword ? null : (
+            <Link
+              role="menuitem"
+              to={NOTIFICATIONS_PATH}
+              onClick={() => setOpen(false)}
+              className={ITEM_CLASSES}
+            >
+              <InfoIcon size={16} />
+              {t('nav.notifications')}
+            </Link>
+          )}
           {user.mustChangePassword ? null : (
             <Link
               role="menuitem"
