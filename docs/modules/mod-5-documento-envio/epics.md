@@ -36,7 +36,7 @@ Como vendedor, quiero que el PDF tenga el logo, los datos de la empresa y las co
   2. Todos los textos fijos salen de la `lang/` del back en el idioma de `documentLocale`; no hay texto escrito en el código.
   3. Montos en COP sin decimales y fechas con formato según el idioma (`es-CO` o `en-US`).
   4. Las fuentes van embebidas y muestran tildes y ñ correctamente.
-  5. Un `DRAFT` lleva la marca de agua "Borrador" y la fecha de vencimiento prevista; un `VOIDED`, la marca de agua "Anulada".
+  5. Un `DRAFT` lleva la marca de agua "Borrador" y la fecha de vencimiento prevista; un `VOIDED`, la marca de agua "Anulada". Excepción (V1 del ui-brief, validada con el usuario): el PDF que se descarga desde el diálogo "Enviar" (`?purpose=send`) sale sin marca de agua ni leyenda "prevista", porque es el que recibe el cliente.
 - **Depende de:** M2 (S2.2.3), M4
 - **Tamaño:** M
 
