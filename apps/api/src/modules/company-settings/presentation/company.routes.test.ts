@@ -153,6 +153,18 @@ describe('PATCH /api/company/parameters', () => {
     expect((await company.settings.get()).validityDays).toBe(15);
   });
 
+  it('is forbidden for MANAGER and SELLER', async () => {
+    for (const role of ['MANAGER', 'SELLER'] as const) {
+      const response = await request(app())
+        .patch('/api/company/parameters')
+        .set('Authorization', await tokenFor(role))
+        .send({ followUpDays: 7 });
+      expect(response.status).toBe(403);
+      expect(response.body.error.code).toBe('FORBIDDEN');
+    }
+    expect((await company.settings.get()).followUpDays).toBe(5);
+  });
+
   it('rejects out-of-range values', async () => {
     const response = await request(app())
       .patch('/api/company/parameters')
@@ -274,6 +286,7 @@ describe('GET /api/company/branding', () => {
     const response = await request(app()).get('/api/company/branding');
     expect(response.status).toBe(200);
     expect(response.body).toEqual({ name: 'Acme SAS', hasLogo: false, logoVersion: 0 });
+    expect(response.headers['cache-control']).toBe('no-cache');
   });
 
   it('is documented in OpenAPI along with the other company routes', async () => {
