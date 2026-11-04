@@ -1,12 +1,16 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import type { OrderDto } from '@zentia/shared';
+import type { OrderDto, OrderListDto } from '@zentia/shared';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApiError } from '../../../core/errors';
 import { PrivateLayout } from '../../../core/layout';
 import es from '../../../lang/es.json';
+import { useToastStore } from '../../../shared/ui';
 import { signIn } from '../../../test/session-fixture';
 import { ordersService } from '../services/orders.service';
+import { useOrdersFiltersStore } from '../store/orders-filters.store';
 import { OrderDetailPage } from './order-detail-page';
+import { OrdersListPage } from './orders-list-page';
 import { QuoteOrderAction } from './quote-order-action';
 
 const ORDER_ID = '8f9a0b1c-2d3e-4f5a-8b6c-7d8e9f0a1b2c';
@@ -59,10 +63,65 @@ function renderAt(path: string, element = <OrderDetailPage />) {
 
 beforeEach(() => {
   signIn('SELLER');
+  useOrdersFiltersStore.getState().reset();
+  useToastStore.setState({ toasts: [] });
 });
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
+
+describe('OrdersListPage', () => {
+  function listResponse(overrides: Partial<OrderListDto> = {}): Response {
+    const body: OrderListDto = {
+      items: [orderFixture()],
+      total: 45,
+      page: 1,
+      pageSize: 20,
+      ...overrides,
+    };
+    return new Response(JSON.stringify(body), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  it('sends the status chips as CSV, the search and the page to the API', async () => {
+    const fetchMock = vi.fn((input: string) => {
+      const page = new URL(input, 'http://localhost').searchParams.get('page') ?? '1';
+      return Promise.resolve(listResponse({ page: Number(page) }));
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const lastQuery = () =>
+      new URL(String(fetchMock.mock.calls.at(-1)?.[0]), 'http://localhost').searchParams;
+    render(
+      <RouterProvider
+        router={createMemoryRouter([{ path: '/orders', element: <OrdersListPage /> }], {
+          initialEntries: ['/orders'],
+        })}
+      />,
+    );
+
+    expect((await screen.findAllByText('PED-0012')).length).toBeGreaterThan(0);
+    await waitFor(() => expect(lastQuery().get('page')).toBe('1'));
+    expect(lastQuery().has('status')).toBe(false);
+
+    const chips = screen.getByRole('group', { name: es.orders.filters.status });
+    fireEvent.click(within(chips).getByRole('button', { name: es.enums.OrderStatus.PENDING }));
+    fireEvent.click(within(chips).getByRole('button', { name: es.enums.OrderStatus.DELIVERED }));
+    await waitFor(() => expect(lastQuery().get('status')).toBe('PENDING,DELIVERED'));
+
+    fireEvent.change(screen.getByLabelText(es.orders.filters.search), {
+      target: { value: 'Acme' },
+    });
+    await waitFor(() => expect(lastQuery().get('q')).toBe('Acme'));
+    expect(lastQuery().get('status')).toBe('PENDING,DELIVERED');
+
+    fireEvent.click(await screen.findByRole('button', { name: es.common.nextPage }));
+    await waitFor(() => expect(lastQuery().get('page')).toBe('2'));
+    expect(lastQuery().get('pageSize')).toBe('20');
+  });
 });
 
 describe('OrderDetailPage', () => {
@@ -84,6 +143,71 @@ describe('OrderDetailPage', () => {
     );
     expect(await screen.findByRole('button', { name: es.orders.actions.deliver })).toBeTruthy();
     expect(screen.getByText(es.orders.noInventoryNotice)).toBeTruthy();
+  });
+
+  it('shows a conflict once, inline, with a reload action', async () => {
+    const get = vi.spyOn(ordersService, 'get').mockResolvedValue(orderFixture());
+    vi.spyOn(ordersService, 'changeStatus').mockRejectedValue(new ApiError('ORDER_CONFLICT', 409));
+    renderAt(`/orders/${ORDER_ID}`);
+
+    fireEvent.click(await screen.findByRole('button', { name: es.orders.actions.startProgress }));
+    expect(await screen.findByText(es.orders.conflict)).toBeTruthy();
+    expect(useToastStore.getState().toasts).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: es.orders.reload }));
+    await waitFor(() => expect(get).toHaveBeenCalledTimes(2));
+  });
+
+  it('shows an action error only once', async () => {
+    vi.spyOn(ordersService, 'get').mockResolvedValue(orderFixture());
+    vi.spyOn(ordersService, 'changeStatus').mockRejectedValue(
+      new ApiError('ORDER_INVALID_TRANSITION', 409),
+    );
+    renderAt(`/orders/${ORDER_ID}`);
+
+    fireEvent.click(await screen.findByRole('button', { name: es.orders.actions.startProgress }));
+    expect(await screen.findAllByText(es.errors.ORDER_INVALID_TRANSITION)).toHaveLength(1);
+    expect(useToastStore.getState().toasts).toHaveLength(0);
+  });
+
+  it('asks for confirmation before marking as delivered', async () => {
+    vi.spyOn(ordersService, 'get').mockResolvedValue(
+      orderFixture({ status: 'IN_PROGRESS', allowedActions: ['deliver', 'cancel'] }),
+    );
+    const change = vi
+      .spyOn(ordersService, 'changeStatus')
+      .mockResolvedValue(orderFixture({ status: 'DELIVERED', allowedActions: [] }));
+    renderAt(`/orders/${ORDER_ID}`);
+
+    fireEvent.click(await screen.findByRole('button', { name: es.orders.actions.deliver }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('¿Marcar PED-0012 como entregado?')).toBeTruthy();
+    expect(change).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: es.orders.actions.deliver }));
+
+    await waitFor(() =>
+      expect(change).toHaveBeenCalledWith(ORDER_ID, {
+        to: 'DELIVERED',
+        updatedAt: '2026-11-03T15:00:00.000Z',
+      }),
+    );
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('clears the action error when the cancel dialog is closed', async () => {
+    vi.spyOn(ordersService, 'get').mockResolvedValue(orderFixture());
+    vi.spyOn(ordersService, 'changeStatus').mockRejectedValue(
+      new ApiError('ORDER_INVALID_TRANSITION', 409),
+    );
+    renderAt(`/orders/${ORDER_ID}`);
+
+    fireEvent.click(await screen.findByRole('button', { name: es.orders.actions.cancel }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: es.orders.actions.cancel }));
+    expect(await within(dialog).findByText(es.errors.ORDER_INVALID_TRANSITION)).toBeTruthy();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: es.orders.cancel.back }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.queryByText(es.errors.ORDER_INVALID_TRANSITION)).toBeNull();
   });
 
   it('cancels with an optional reason after confirmation', async () => {
@@ -156,5 +280,43 @@ describe('QuoteOrderAction', () => {
     const link = await screen.findByRole('link', { name: /Ver pedido PED-0012/ });
     expect(link.getAttribute('href')).toBe(`/orders/${ORDER_ID}`);
     expect(screen.queryByRole('button', { name: es.orders.actions.convert })).toBeNull();
+  });
+
+  it('shows the conversion error and reloads the quote on close', async () => {
+    vi.spyOn(ordersService, 'convert').mockRejectedValue(new ApiError('ORDER_ALREADY_EXISTS', 409));
+    const onReload = vi.fn();
+    renderAt(
+      `/quotes/${QUOTE_ID}`,
+      <QuoteOrderAction
+        quoteId={QUOTE_ID}
+        quoteNumber="COT-0012"
+        allowedActions={['convertToOrder']}
+        onReload={onReload}
+      />,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: es.orders.actions.convert }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: es.orders.actions.convert }));
+    expect(await within(dialog).findByText(es.errors.ORDER_ALREADY_EXISTS)).toBeTruthy();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: es.common.cancel }));
+    expect(onReload).toHaveBeenCalled();
+  });
+
+  it('falls back to the orders list when the order cannot be loaded', async () => {
+    vi.spyOn(ordersService, 'getByQuote').mockRejectedValue(new ApiError('NETWORK_ERROR', 0));
+    renderAt(
+      `/quotes/${QUOTE_ID}`,
+      <QuoteOrderAction
+        quoteId={QUOTE_ID}
+        quoteNumber="COT-0012"
+        allowedActions={['viewOrder']}
+        onReload={vi.fn()}
+      />,
+    );
+
+    const link = await screen.findByRole('link', { name: es.orders.backToList });
+    expect(link.getAttribute('href')).toBe('/orders');
   });
 });

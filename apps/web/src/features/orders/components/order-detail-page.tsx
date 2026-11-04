@@ -119,10 +119,14 @@ export function OrderDetailPage() {
       toast.success(message);
     } catch (error) {
       setActionError(error);
-      if (pending === null) toast.error(t(errorKey(error)));
     } finally {
       setBusy(false);
     }
+  };
+
+  const closeCancel = () => {
+    setPending(null);
+    setActionError(null);
   };
 
   const conflict = isApiError(actionError) && actionError.code === 'ORDER_CONFLICT';
@@ -347,11 +351,11 @@ export function OrderDetailPage() {
           size="sm"
           title={t('orders.cancel.title', { number })}
           description={t('orders.cancel.description', { number, quote: order.quote.displayNumber })}
-          onClose={() => setPending(null)}
+          onClose={closeCancel}
           closeLabel={t('common.close')}
           footer={
             <>
-              <Button variant="secondary" onClick={() => setPending(null)} disabled={busy}>
+              <Button variant="secondary" onClick={closeCancel} disabled={busy}>
                 {t('orders.cancel.back')}
               </Button>
               <Button

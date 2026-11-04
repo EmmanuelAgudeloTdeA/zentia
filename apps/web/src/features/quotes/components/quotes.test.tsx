@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import type { CompanySettingsDto, HistoryEntryDto, QuoteDto } from '@zentia/shared';
+import type { CompanySettingsDto, HistoryEntryDto, QuoteDto, ShareLinksDto } from '@zentia/shared';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ApiError } from '../../../core/errors';
@@ -238,6 +238,33 @@ describe('QuoteDetailPage', () => {
   });
 });
 
+describe('DownloadPdfButton', () => {
+  it('shows loading while downloading and a toast when the PDF fails', async () => {
+    vi.spyOn(quotesService, 'get').mockResolvedValue(
+      quoteFixture({ allowedActions: ['edit', 'downloadPdf'] }),
+    );
+    vi.spyOn(quotesService, 'history').mockResolvedValue([]);
+    let fail: (error: unknown) => void = () => undefined;
+    vi.spyOn(documentsService, 'downloadPdf').mockReturnValue(
+      new Promise((_, reject) => {
+        fail = reject;
+      }),
+    );
+    renderAt(`/quotes/${QUOTE_ID}`);
+
+    const button = await screen.findByRole('button', { name: es.quotes.actions.downloadPdf });
+    fireEvent.click(button);
+    await waitFor(() => expect(button.getAttribute('aria-busy')).toBe('true'));
+    expect(button.hasAttribute('disabled')).toBe(true);
+
+    fail(new ApiError('PDF_GENERATION_FAILED', 500));
+    await waitFor(() =>
+      expect(useToastStore.getState().toasts.at(-1)?.message).toBe(es.errors.PDF_GENERATION_FAILED),
+    );
+    expect(button.hasAttribute('aria-busy')).toBe(false);
+  });
+});
+
 describe('SendQuoteDialog', () => {
   const draft = () =>
     quoteFixture({
@@ -249,13 +276,15 @@ describe('SendQuoteDialog', () => {
       allowedActions: ['edit', 'send', 'void', 'downloadPdf', 'share'],
     });
 
-  async function openDialog() {
-    vi.spyOn(quotesService, 'get').mockResolvedValue(draft());
+  async function openDialog(quote = draft(), links: Partial<ShareLinksDto> = {}) {
+    vi.spyOn(quotesService, 'get').mockResolvedValue(quote);
     vi.spyOn(quotesService, 'history').mockResolvedValue([]);
     vi.spyOn(documentsService, 'shareLinks').mockResolvedValue({
       whatsappUrl: 'https://wa.me/573001234567?text=Hola',
       emailUrl: null,
       missing: ['EMAIL'],
+      unavailableReason: null,
+      ...links,
     });
     renderAt(`/quotes/${QUOTE_ID}`);
     fireEvent.click(await screen.findByRole('button', { name: es.quotes.actions.share }));
@@ -291,6 +320,30 @@ describe('SendQuoteDialog', () => {
     expect(await within(dialog).findByText(es.errors.QUOTE_CONFLICT)).toBeTruthy();
     fireEvent.click(within(dialog).getByRole('button', { name: es.quotes.actions.send }));
     expect(await screen.findByText('¿Marcar COT-0012 como enviada?')).toBeTruthy();
+  });
+
+  it('does not offer to mark a sent quote as sent when registering the share fails', async () => {
+    vi.spyOn(documentsService, 'share').mockRejectedValue(new ApiError('QUOTE_CONFLICT', 409));
+    const dialog = await openDialog(
+      quoteFixture({ allowedActions: ['edit', 'void', 'downloadPdf', 'share'] }),
+    );
+    fireEvent.click(await within(dialog).findByRole('link', { name: es.quotes.send.whatsapp }));
+
+    expect(await within(dialog).findByText(es.errors.QUOTE_CONFLICT)).toBeTruthy();
+    expect(within(dialog).queryByRole('button', { name: es.quotes.actions.send })).toBeNull();
+    expect(within(dialog).getByRole('button', { name: es.quotes.editor.reload })).toBeTruthy();
+  });
+
+  it('explains that a draft with an inactive customer cannot be sent', async () => {
+    const dialog = await openDialog(draft(), {
+      whatsappUrl: null,
+      unavailableReason: 'CUSTOMER_INACTIVE',
+    });
+
+    expect(await within(dialog).findByText(es.quotes.send.customerInactive)).toBeTruthy();
+    expect(within(dialog).queryByRole('link', { name: es.quotes.send.whatsapp })).toBeNull();
+    expect(within(dialog).queryByText(es.quotes.send.noChannels)).toBeNull();
+    expect(within(dialog).queryByRole('button', { name: es.quotes.actions.send })).toBeNull();
   });
 
   it('downloads the clean PDF from the dialog', async () => {

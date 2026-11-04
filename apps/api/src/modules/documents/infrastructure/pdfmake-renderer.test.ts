@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { createRequire } from 'node:module';
+import type * as PdfMake from 'pdfmake';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { QuotePdfModel } from '../application/index.js';
 import { JsonDocumentTranslator } from './json-document-translator.js';
 import { PdfmakeRenderer } from './pdfmake-renderer.js';
@@ -50,8 +52,30 @@ function model(lines: number, logo: string | null): QuotePdfModel {
   };
 }
 
+const pdfmake = createRequire(import.meta.url)('pdfmake') as typeof PdfMake;
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe('PdfmakeRenderer', () => {
   const renderer = new PdfmakeRenderer(new JsonDocumentTranslator());
+
+  it('uses the company name as brand when there is no logo', async () => {
+    const definitions: string[] = [];
+    const createPdf = pdfmake.createPdf.bind(pdfmake);
+    // pdfmake muta la definición al maquetar: se captura antes.
+    vi.spyOn(pdfmake, 'createPdf').mockImplementation((definition, options) => {
+      definitions.push(JSON.stringify(definition));
+      return createPdf(definition, options);
+    });
+    await renderer.render(model(1, null), 'es');
+    await renderer.render(model(1, PNG_1X1), 'es');
+
+    expect(definitions[0]).toContain('{"text":"Tecnología Ñandú SAS","style":"companyName"}');
+    expect(definitions[0]).not.toContain('"image"');
+    expect(definitions[1]).toContain(`{"image":"${PNG_1X1}"`);
+  });
 
   it('renders a valid PDF with a logo, accents and watermark', async () => {
     const pdf = await renderer.render(model(3, PNG_1X1), 'es');

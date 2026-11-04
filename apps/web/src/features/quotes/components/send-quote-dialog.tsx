@@ -19,7 +19,7 @@ interface SendQuoteDialogProps {
 
 const CHANNELS: readonly {
   channel: ShareChannel;
-  link: keyof ShareLinksDto;
+  link: 'whatsappUrl' | 'emailUrl';
   missing: 'PHONE' | 'EMAIL';
 }[] = [
   { channel: 'WHATSAPP', link: 'whatsappUrl', missing: 'PHONE' },
@@ -46,6 +46,8 @@ export function SendQuoteDialog({
   const [sharing, setSharing] = useState<ShareChannel | null>(null);
   const [shareError, setShareError] = useState<unknown>(null);
   const draft = quote.status === 'DRAFT';
+  // Solo un Borrador con la acción permitida puede marcarse como enviada (en una Enviada, POST /send da 409).
+  const canMarkSent = draft && quote.allowedActions.includes('send');
 
   const loadLinks = useCallback(async () => {
     setLinks({ status: 'loading' });
@@ -81,6 +83,7 @@ export function SendQuoteDialog({
     ? t('quotes.send.expires', { date: formatDay(quote.expiresAt) })
     : t('quotes.send.projected', { date: formatDay(projectedExpiresAt) });
   const available = links.status === 'ready' ? CHANNELS.filter(({ link }) => links.data[link]) : [];
+  const unavailableReason = links.status === 'ready' ? links.data.unavailableReason : null;
 
   return (
     <Dialog
@@ -143,6 +146,19 @@ export function SendQuoteDialog({
             <div className="mt-3">
               <ErrorMessage error={links.error} onRetry={() => void loadLinks()} />
             </div>
+          ) : unavailableReason === 'CUSTOMER_INACTIVE' ? (
+            <div className="mt-3">
+              <Alert
+                tone="warning"
+                action={
+                  <Button variant="secondary" size="sm" onClick={() => void loadLinks()}>
+                    {t('quotes.send.reloadLinks')}
+                  </Button>
+                }
+              >
+                {t('quotes.send.customerInactive')}
+              </Alert>
+            </div>
           ) : (
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
               {CHANNELS.map(({ channel, link, missing }) => {
@@ -193,14 +209,14 @@ export function SendQuoteDialog({
               })}
             </div>
           )}
-          {links.status === 'ready' && links.data.missing.length > 0 ? (
+          {links.status === 'ready' && links.data.missing.length > 0 && !unavailableReason ? (
             <Button variant="ghost" size="sm" className="mt-2" onClick={() => void loadLinks()}>
               {t('quotes.send.reloadLinks')}
             </Button>
           ) : null}
         </section>
 
-        {links.status === 'ready' && available.length === 0 && draft ? (
+        {links.status === 'ready' && available.length === 0 && !unavailableReason && canMarkSent ? (
           <Alert
             tone="warning"
             action={
@@ -217,9 +233,11 @@ export function SendQuoteDialog({
             tone="danger"
             action={
               <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" size="sm" onClick={onMarkSent}>
-                  {t('quotes.actions.send')}
-                </Button>
+                {canMarkSent ? (
+                  <Button variant="secondary" size="sm" onClick={onMarkSent}>
+                    {t('quotes.actions.send')}
+                  </Button>
+                ) : null}
                 <Button variant="secondary" size="sm" onClick={onReload}>
                   {t('quotes.editor.reload')}
                 </Button>

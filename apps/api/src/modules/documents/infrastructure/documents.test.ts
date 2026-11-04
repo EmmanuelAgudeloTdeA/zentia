@@ -11,9 +11,11 @@ import { JsonDocumentTranslator } from './json-document-translator.js';
 import {
   buildQuotePdfModel,
   documentActions,
+  GenerateQuotePdfUseCase,
   GetShareLinksUseCase,
   ShareQuoteUseCase,
   type DocumentsDependencies,
+  type PdfRenderer,
 } from '../application/index.js';
 
 const actor: Actor = { id: randomUUID(), role: 'SELLER', mustChangePassword: false };
@@ -64,6 +66,7 @@ const profile: DocumentProfileDto = {
 
 let quote: Quote;
 let contact: { phone: string | null; email: string | null };
+let customerActive: boolean;
 let deps: DocumentsDependencies;
 const send = vi.fn();
 const translator = new JsonDocumentTranslator();
@@ -72,6 +75,7 @@ beforeEach(() => {
   send.mockReset().mockResolvedValue({ status: 'SENT' } as QuoteDto);
   quote = quoteFixture();
   contact = { phone: '573001234567', email: null };
+  customerActive = true;
   const quotes: QuoteReader = {
     getForActor: async () => quote,
     getDtoForActor: async () => ({ status: quote.status }) as QuoteDto,
@@ -81,7 +85,7 @@ beforeEach(() => {
       id,
       name: 'José Pérez',
       documentId: '9001234567',
-      isActive: true,
+      isActive: customerActive,
       ...contact,
     }),
     getActiveById: () => Promise.reject(new Error('unused')),
@@ -159,6 +163,42 @@ describe('buildQuotePdfModel', () => {
   });
 });
 
+describe('GenerateQuotePdfUseCase', () => {
+  it('renders in the documentLocale with the quote totals', async () => {
+    const render = vi.fn<PdfRenderer['render']>().mockResolvedValue(Buffer.from('%PDF'));
+    deps.renderer = { render };
+    deps.settings = {
+      ...deps.settings,
+      getDocumentProfile: async () => ({ ...profile, documentLocale: 'en' }),
+    };
+    const pdf = await new GenerateQuotePdfUseCase(deps).execute(actor, quote.id, 'view');
+
+    expect(pdf.fileName).toBe('COT-0012.pdf');
+    const [model, locale] = render.mock.calls[0]!;
+    expect(locale).toBe('en');
+    expect(model.totals).toEqual({
+      subtotal: quote.subtotal,
+      discountPct: quote.discountPct,
+      discountAmount: quote.discountAmount,
+      linesVat: quote.linesVat,
+      shippingAmount: quote.shippingAmount,
+      shippingTaxable: quote.shippingTaxable,
+      shippingVat: quote.shippingVat,
+      total: quote.total,
+    });
+    expect(model.company).toMatchObject({ name: 'Ñandú SAS', logoDataUrl: null });
+  });
+
+  it('maps a renderer failure to PDF_GENERATION_FAILED', async () => {
+    deps.renderer = { render: () => Promise.reject(new Error('font missing')) };
+    await expectCode(
+      new GenerateQuotePdfUseCase(deps).execute(actor, quote.id, 'send'),
+      'PDF_GENERATION_FAILED',
+      500,
+    );
+  });
+});
+
 describe('JsonDocumentTranslator', () => {
   it('formats money and dates per locale and fills markers', () => {
     expect(translator.formatMoney('5375000', 'es')).toBe('$ 5.375.000');
@@ -193,12 +233,49 @@ describe('GetShareLinksUseCase', () => {
       /^mailto:jose%2Bcompras@acme\.co\?subject=Cotizaci%C3%B3n%20COT-0012/,
     );
     expect(links.emailUrl).toContain('%0D%0A');
+    const decoded = decodeURIComponent(links.emailUrl ?? '');
+    expect(decoded).toContain('Cotización COT-0012 – Ñandú SAS');
+    expect(decoded).toContain('Adjunto el PDF de la cotización.');
+  });
+
+  it('writes the message in the documentLocale', async () => {
+    deps.settings = {
+      ...deps.settings,
+      getDocumentProfile: async () => ({ ...profile, documentLocale: 'en' }),
+    };
+    const links = await new GetShareLinksUseCase(deps).execute(actor, quote.id);
+    const text = decodeURIComponent(links.whatsappUrl?.split('text=')[1] ?? '');
+    expect(text).toContain('COT-0012');
+    expect(text).toContain('COP 5,375,000');
+    expect(text).toContain('11/18/2026');
+    expect(text).not.toContain('Hola');
   });
 
   it('returns no links outside DRAFT and SENT', async () => {
     quote = quoteFixture({ status: 'APPROVED', expiresAt: '2026-11-18' });
     const links = await new GetShareLinksUseCase(deps).execute(actor, quote.id);
-    expect(links).toEqual({ whatsappUrl: null, emailUrl: null, missing: ['EMAIL'] });
+    expect(links).toEqual({
+      whatsappUrl: null,
+      emailUrl: null,
+      missing: ['EMAIL'],
+      unavailableReason: null,
+    });
+  });
+
+  it('returns no links for a draft whose customer is inactive', async () => {
+    customerActive = false;
+    const links = await new GetShareLinksUseCase(deps).execute(actor, quote.id);
+    expect(links).toEqual({
+      whatsappUrl: null,
+      emailUrl: null,
+      missing: ['EMAIL'],
+      unavailableReason: 'CUSTOMER_INACTIVE',
+    });
+
+    quote = quoteFixture({ status: 'SENT', expiresAt: '2026-11-18' });
+    const sent = await new GetShareLinksUseCase(deps).execute(actor, quote.id);
+    expect(sent.whatsappUrl).toMatch(/^https:\/\/wa\.me\//);
+    expect(sent.unavailableReason).toBeNull();
   });
 });
 

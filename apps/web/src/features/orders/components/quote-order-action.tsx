@@ -30,13 +30,15 @@ export function QuoteOrderAction({
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [lookupFailed, setLookupFailed] = useState(false);
 
   useEffect(() => {
     if (!hasOrder) return;
     let cancelled = false;
+    setLookupFailed(false);
     ordersService.getByQuote(quoteId).then(
       (result) => !cancelled && setOrder(result),
-      () => undefined,
+      () => !cancelled && setLookupFailed(true),
     );
     return () => {
       cancelled = true;
@@ -44,14 +46,22 @@ export function QuoteOrderAction({
   }, [hasOrder, quoteId]);
 
   if (hasOrder) {
-    return order ? (
-      <Link
-        to={`/orders/${order.id}`}
-        className="inline-flex h-10 items-center gap-2 rounded-md bg-neutral-0 px-4 text-button text-primary-900 uppercase shadow-sm hover:bg-primary-50"
-      >
+    const linkClass =
+      'inline-flex h-10 items-center gap-2 rounded-md bg-neutral-0 px-4 text-button text-primary-900 uppercase shadow-sm hover:bg-primary-50';
+    if (order) {
+      return (
+        <Link to={`/orders/${order.id}`} className={linkClass}>
+          <BoxIcon size={16} />
+          {t('orders.actions.view', { number: order.displayNumber })}
+          <OrderStatusBadge status={order.status} size="sm" />
+        </Link>
+      );
+    }
+    // Si no se pudo consultar el pedido, se ofrece la lista para no ocultar que existe.
+    return lookupFailed ? (
+      <Link to="/orders" className={linkClass}>
         <BoxIcon size={16} />
-        {t('orders.actions.view', { number: order.displayNumber })}
-        <OrderStatusBadge status={order.status} size="sm" />
+        {t('orders.backToList')}
       </Link>
     ) : null;
   }

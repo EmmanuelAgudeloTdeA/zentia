@@ -48,7 +48,7 @@ export function createDocumentsOpenApi(): OpenAPIRegistry {
     tags,
     security,
     summary:
-      'Enlaces wa.me y mailto con el mensaje en documentLocale (null si falta el dato o el estado no lo permite)',
+      'Enlaces wa.me y mailto con el mensaje en documentLocale (null si falta el dato, el estado no lo permite o el cliente de un Borrador está inactivo: unavailableReason)',
     request: { params },
     responses: {
       200: {
