@@ -100,4 +100,57 @@ describe('products routes', () => {
     const missing = await request(app).get('/api/products/123').set('Authorization', admin);
     expect(missing.body.error.code).toBe('PRODUCT_NOT_FOUND');
   });
+
+  it('ignores the status filter for a MANAGER and shows only active products', async () => {
+    const app = createTestApp({ auth });
+    const admin = await bearer('ADMIN');
+    const manager = await bearer('MANAGER');
+    const created = await request(app)
+      .post('/api/products')
+      .set('Authorization', admin)
+      .send(product);
+    await request(app)
+      .post('/api/products')
+      .set('Authorization', admin)
+      .send({ ...product, name: 'Mouse' });
+    await request(app)
+      .patch(`/api/products/${created.body.id}`)
+      .set('Authorization', admin)
+      .send({ isActive: false });
+
+    for (const status of ['inactive', 'all']) {
+      const list = await request(app)
+        .get('/api/products')
+        .query({ status })
+        .set('Authorization', manager);
+      expect(list.body.total).toBe(1);
+      expect(list.body.items.map((p: { name: string }) => p.name)).toEqual(['Mouse']);
+    }
+  });
+
+  it('has no delete route and suggests at most 10 categories', async () => {
+    const app = createTestApp({ auth });
+    const admin = await bearer('ADMIN');
+    const created = await request(app)
+      .post('/api/products')
+      .set('Authorization', admin)
+      .send(product);
+    const removed = await request(app)
+      .delete(`/api/products/${created.body.id}`)
+      .set('Authorization', admin);
+    expect(removed.status).toBe(404);
+
+    for (let index = 0; index < 12; index += 1) {
+      await request(app)
+        .post('/api/products')
+        .set('Authorization', admin)
+        .send({ ...product, name: `Producto ${index}`, category: `Categoría ${index}` });
+    }
+    const categories = await request(app)
+      .get('/api/products/categories')
+      .query({ q: 'categoria' })
+      .set('Authorization', await bearer('SELLER'));
+    expect(categories.status).toBe(200);
+    expect(categories.body).toHaveLength(10);
+  });
 });

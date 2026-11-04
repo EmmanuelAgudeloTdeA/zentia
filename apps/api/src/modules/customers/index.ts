@@ -1,6 +1,7 @@
 import type { ModuleDefinition, ModuleDependencies } from '../../core/modules/index.js';
 import {
   CreateCustomerUseCase,
+  FindDocumentMatchesUseCase,
   GetCustomerUseCase,
   RepositoryCustomerReader,
   SearchCustomersUseCase,
@@ -40,6 +41,7 @@ export function createCustomersModule({
       router: createCustomersRouter({
         search: new SearchCustomersUseCase(infrastructure),
         get: new GetCustomerUseCase(infrastructure),
+        documentMatches: new FindDocumentMatchesUseCase(infrastructure),
         create: new CreateCustomerUseCase(infrastructure),
         update: new UpdateCustomerUseCase(infrastructure),
         requireAuth,

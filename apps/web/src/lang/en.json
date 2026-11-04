@@ -680,6 +680,13 @@
       "updated": "Customer updated.",
       "activated": "Customer activated.",
       "deactivated": "Customer deactivated."
+    },
+    "quotes": {
+      "title": "Quotes",
+      "ownOnly": "You only see the quotes you own.",
+      "empty": "This customer has no quotes yet.",
+      "updatedAt": "Updated on {{date}}",
+      "loadMore": "Show more"
     }
   },
   "products": {

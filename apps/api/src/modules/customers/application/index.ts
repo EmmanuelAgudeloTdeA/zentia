@@ -5,6 +5,7 @@ export {
 } from './customer-reader.js';
 export {
   CreateCustomerUseCase,
+  FindDocumentMatchesUseCase,
   GetCustomerUseCase,
   SearchCustomersUseCase,
   UpdateCustomerUseCase,

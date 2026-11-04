@@ -45,6 +45,7 @@ model Product {
 | Método | Ruta | Rol | Request | Response | Errores |
 |---|---|---|---|---|---|
 | GET | `/api/customers` | Autenticado | query `{ q?, isActive=true, page=1, pageSize=20 }` | 200 `{ items: CustomerDto[], total, page, pageSize }` | 400 |
+| GET | `/api/customers/document-matches` | Autenticado | query `{ documentId }` | 200 `{ items: CustomerDto[] }` (máx. 5; vacío con menos de 5 caracteres) | 400 |
 | GET | `/api/customers/:id` | Autenticado | — | 200 `CustomerDto` | 404 `CUSTOMER_NOT_FOUND` |
 | POST | `/api/customers` | Autenticado | `{ name, documentId, phone?, email? }` | 201 `CustomerDto` | 400 `VALIDATION_ERROR`, 400 `CUSTOMER_CONTACT_REQUIRED`, 400 `INVALID_PHONE`, 409 `CUSTOMER_DOCUMENT_TAKEN` |
 | PATCH | `/api/customers/:id` | Autenticado | `{ name?, documentId?, phone?, email?, isActive? }` | 200 `CustomerDto` | ídem + 404 `CUSTOMER_NOT_FOUND` |
@@ -164,10 +165,11 @@ Ajustes respecto a este plan, sin cambio de comportamiento:
 | Normalizadores | `packages/shared/src/normalize/`: `normalizeDocumentId`, `normalizePhone`, `formatPhoneForDisplay`, `toSearchKey`, `normalizeCategoryLabel`; el correo usa `normalizeEmail` de la política de contraseñas. |
 | Búsqueda de clientes | La aplicación arma los términos (`customerSearchTerms`): `nameKey` sin tildes, correo, documento normalizado y dígitos del teléfono (desde 3); el repositorio hace un `OR` de `contains`. |
 | Categorías | `resolveCategory` reutiliza la forma escrita de otro producto con la misma clave; al editar se excluye el propio producto, así el único producto de una categoría puede corregir su ortografía. Las sugerencias usan `categoryKey contains` (no solo prefijo). |
-| Lectores para M4/M5 | `CustomerReader` (`getById`, `getActiveById` → 409 `CUSTOMER_INACTIVE`) y `CatalogReader` (`getByIds`, `getActiveByIds` → 404 `PRODUCT_NOT_FOUND` o 409 `PRODUCT_INACTIVE` con `{ productId }`), expuestos por los barriles de `customers` y `catalog`. |
+| Lectores para M4/M5 | `CustomerReader` (`getById`, `getActiveById` → 400 `CUSTOMER_INACTIVE`) y `CatalogReader` (`getByIds`, `getActiveByIds` → 400 `PRODUCT_NOT_FOUND` o 400 `PRODUCT_INACTIVE` con `{ productId }`), expuestos por los barriles de `customers` y `catalog`. Responden 400 porque para M4 son datos de entrada inválidos (tabla de errores y notas del tech-plan de M4). `CustomerReader.getById` sí responde 404 `CUSTOMER_NOT_FOUND`. |
 | Dinero | `moneyString` (entero canónico de hasta 15 dígitos) y `positiveMoneyString` en `shared`; Prisma `Decimal` → `toFixed(0)`. En el front, `formatCop` usa `BigInt` para no perder precisión. |
-| Aviso de duplicados | Al salir del campo documento, el front busca con `status=all` y avisa si algún documento empieza igual que el escrito (o al revés). |
+| Aviso de duplicados | Al salir del campo documento, el front llama a `GET /customers/document-matches?documentId=` (cualquier rol, todos los clientes, activos o no): hasta 5 clientes cuyo documento normalizado empieza por el escrito o es un prefijo suyo (NIT sin y con dígito de verificación); con menos de 5 caracteres responde una lista vacía. El aviso no bloquea; el único de la BD sí. |
 | Componentes base | `Combobox` (ARIA combobox/listbox, espera de 250 ms, opción "Crear «x»"), `MoneyField` y `FilterChip` en `shared/ui`; `formatCop`, `formatDate` y `groupThousands` en `core/format`; `useDebouncedValue` en `shared/lib`. |
 | IVA por defecto | El formulario de producto lee `GET /company/settings` con `companyService` (barril de `company-settings`); si falla, usa `GENERAL_19`. |
 | Pruebas de integración | Con `TEST_DATABASE_URL` los archivos de prueba corren en serie (`fileParallelism`), porque comparten la base. |
-| Secciones del detalle | Cotizaciones (M4) e interacciones (M6) no se muestran hasta que existan esos módulos. |
+| Secciones del detalle | El detalle de cliente muestra "Cotizaciones" (`CustomerQuotesSection` del barril de `quotes`, con `GET /quotes?customerId=`; el vendedor solo ve las suyas) y "Seguimiento" (M6). |
+| Orden estable | Las listas de clientes y productos ordenan por `nameKey` y luego `id`, así la paginación no repite ni salta filas con nombres iguales. |

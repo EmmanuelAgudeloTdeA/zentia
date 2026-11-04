@@ -1,4 +1,9 @@
-import { normalizeDocumentId, normalizePhone, toSearchKey } from '@zentia/shared';
+import {
+  DOCUMENT_ID_LENGTH,
+  normalizeDocumentId,
+  normalizePhone,
+  toSearchKey,
+} from '@zentia/shared';
 
 export interface Customer {
   id: string;
@@ -52,4 +57,14 @@ export function customerSearchTerms(q: string): CustomerSearchTerms {
     documentId: documentId || null,
     phoneDigits: phoneDigits.length >= MIN_PHONE_SEARCH_DIGITS ? phoneDigits : null,
   };
+}
+
+/** Prefijos del documento desde la longitud mínima; `null` si es demasiado corto. */
+export function documentIdPrefixes(documentId: string): string[] | null {
+  if (documentId.length < DOCUMENT_ID_LENGTH.min) return null;
+  const prefixes: string[] = [];
+  for (let length = DOCUMENT_ID_LENGTH.min; length < documentId.length; length += 1) {
+    prefixes.push(documentId.slice(0, length));
+  }
+  return prefixes;
 }

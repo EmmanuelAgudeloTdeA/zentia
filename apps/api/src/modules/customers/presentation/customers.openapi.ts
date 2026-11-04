@@ -4,6 +4,8 @@ import {
   createCustomerRequestSchema,
   customerDtoSchema,
   customerListDtoSchema,
+  documentMatchesDtoSchema,
+  documentMatchesQuerySchema,
   listCustomersQuerySchema,
   updateCustomerRequestSchema,
 } from '@zentia/shared';
@@ -42,6 +44,21 @@ export function createCustomersOpenApi(): OpenAPIRegistry {
     request: { query: listCustomersQuerySchema },
     responses: {
       200: jsonResponse('Página de clientes ordenada por nombre', customerListDtoSchema),
+      400: errorResponse('VALIDATION_ERROR'),
+      ...GUARD_ERRORS,
+    },
+  });
+
+  registry.registerPath({
+    method: 'get',
+    path: '/customers/document-matches',
+    tags: ['Customers'],
+    summary:
+      'Posibles duplicados: hasta 5 clientes cuyo documento empieza por el escrito o es su prefijo (mínimo 5 caracteres)',
+    security,
+    request: { query: documentMatchesQuerySchema },
+    responses: {
+      200: jsonResponse('Clientes activos o inactivos que coinciden', documentMatchesDtoSchema),
       400: errorResponse('VALIDATION_ERROR'),
       ...GUARD_ERRORS,
     },

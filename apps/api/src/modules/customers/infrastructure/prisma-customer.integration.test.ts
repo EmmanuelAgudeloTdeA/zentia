@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { customerSearchTerms } from '../domain/index.js';
+import { customerSearchTerms, documentIdPrefixes } from '../domain/index.js';
 import { PrismaCustomerRepository } from './prisma-customer.repository.js';
 
 // Requiere una base migrada en TEST_DATABASE_URL (por ejemplo, zentia_test); si no existe, se omite.
@@ -50,14 +50,37 @@ describe.skipIf(!databaseUrl)('PrismaCustomerRepository (integration)', () => {
     const created = await customers.create(base());
     expect(created.createdBy).toEqual({ id: userId, name: 'Ana' });
 
+    await expect(customers.create(base())).rejects.toMatchObject({
+      code: 'CUSTOMER_DOCUMENT_TAKEN',
+    });
+  });
+
+  it('lets only one of two concurrent creates with the same document succeed', async () => {
     const results = await Promise.allSettled([
       customers.create({ ...base(), documentId: '555555' }),
       customers.create({ ...base(), documentId: '555555' }),
     ]);
-    expect(results.filter((r) => r.status === 'rejected')).toHaveLength(1);
-    await expect(customers.create(base())).rejects.toMatchObject({
-      code: 'CUSTOMER_DOCUMENT_TAKEN',
-    });
+    const rejected = results.filter((r) => r.status === 'rejected');
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0]?.reason).toMatchObject({ code: 'CUSTOMER_DOCUMENT_TAKEN', status: 409 });
+  });
+
+  it('finds document matches in both directions and orders repeated names by id', async () => {
+    const short = await customers.create({ ...base(), documentId: '900123456' });
+    const long = await customers.create({ ...base(), documentId: '9009999999' });
+    expect(
+      (
+        await customers.findDocumentMatches('9001234567', documentIdPrefixes('9001234567') ?? [], 5)
+      ).map((c) => c.id),
+    ).toEqual([short.id]);
+    expect((await customers.findDocumentMatches('90099', [], 5)).map((c) => c.id)).toEqual([
+      long.id,
+    ]);
+
+    const page = async (skip: number) =>
+      (await customers.search({ terms: null, status: 'all', skip, take: 1 })).items[0]?.id;
+    const ids = [await page(0), await page(1)];
+    expect(ids).toEqual([short.id, long.id].sort());
   });
 
   it('enforces the contact CHECK', async () => {

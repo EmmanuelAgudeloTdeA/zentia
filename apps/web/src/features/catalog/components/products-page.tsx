@@ -1,4 +1,4 @@
-import { ACTIVE_STATUS_FILTERS, type ProductDto } from '@zentia/shared';
+import { ACTIVE_STATUS_FILTERS, SEARCH_MAX_LENGTH, type ProductDto } from '@zentia/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSessionStore } from '../../../core/auth';
@@ -52,7 +52,9 @@ export function ProductsPage() {
     setBusy(true);
     setActionError(null);
     try {
-      replaceProduct(await productsService.update(product.id, { isActive }));
+      const updated = await productsService.update(product.id, { isActive });
+      if (filters.status === 'all') replaceProduct(updated);
+      else refresh();
       toast.success(t(isActive ? 'products.toast.activated' : 'products.toast.deactivated'));
       setDialog(null);
     } catch (error) {
@@ -227,6 +229,7 @@ export function ProductsPage() {
             <TextField
               label={t('products.search')}
               type="search"
+              maxLength={SEARCH_MAX_LENGTH}
               value={filters.q}
               onChange={(event) => filters.setQ(event.target.value)}
               endAdornment={<SearchIcon size={16} className="mr-2 text-neutral-400" />}

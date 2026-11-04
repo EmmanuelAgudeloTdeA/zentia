@@ -1,5 +1,6 @@
 export {
   customerSearchTerms,
+  documentIdPrefixes,
   prepareContact,
   type Customer,
   type CustomerRuleViolation,

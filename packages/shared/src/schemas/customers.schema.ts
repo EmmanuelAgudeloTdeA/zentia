@@ -4,6 +4,7 @@ import {
   activeStatusFilterSchema,
   optionalText,
   paginationQueryShape,
+  SEARCH_MAX_LENGTH,
 } from './pagination.schema.js';
 
 export const CUSTOMER_NAME_MAX_LENGTH = 150;
@@ -15,7 +16,7 @@ export const documentIdSchema = z
   .transform(normalizeDocumentId)
   .pipe(z.string().min(DOCUMENT_ID_LENGTH.min).max(DOCUMENT_ID_LENGTH.max));
 
-const customerEmailSchema = z
+export const customerEmailSchema = z
   .string()
   .trim()
   .toLowerCase()
@@ -48,7 +49,7 @@ export type UpdateCustomerRequest = z.input<typeof updateCustomerRequestSchema>;
 export type CustomerChanges = z.output<typeof updateCustomerRequestSchema>;
 
 export const listCustomersQuerySchema = z.object({
-  q: z.string().trim().max(100).optional(),
+  q: z.string().trim().max(SEARCH_MAX_LENGTH).optional(),
   status: activeStatusFilterSchema.default('active'),
   ...paginationQueryShape,
 });
@@ -78,3 +79,16 @@ export const customerListDtoSchema = z.object({
 });
 
 export type CustomerListDto = z.infer<typeof customerListDtoSchema>;
+
+export const DOCUMENT_MATCHES_LIMIT = 5;
+
+/** Aviso de posible duplicado: documentos que empiezan como el escrito o que son su prefijo. */
+export const documentMatchesQuerySchema = z.object({
+  documentId: z.string().max(40).transform(normalizeDocumentId),
+});
+
+export type DocumentMatchesQuery = z.input<typeof documentMatchesQuerySchema>;
+
+export const documentMatchesDtoSchema = z.object({ items: z.array(customerDtoSchema) });
+
+export type DocumentMatchesDto = z.infer<typeof documentMatchesDtoSchema>;

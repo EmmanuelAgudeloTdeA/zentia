@@ -1,6 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CUSTOMER_NAME_MAX_LENGTH,
+  customerEmailSchema,
+  DOCUMENT_ID_LENGTH,
   documentIdSchema,
   formatPhoneForDisplay,
   normalizeDocumentId,
@@ -22,7 +24,7 @@ const formSchema = z
     name: z.string().trim().min(1).max(CUSTOMER_NAME_MAX_LENGTH),
     documentId: documentIdSchema,
     phone: z.string().trim().max(30),
-    email: z.union([z.literal(''), z.email().max(150)]),
+    email: customerEmailSchema,
   })
   .superRefine((values, ctx) => {
     if (values.phone && !normalizePhone(values.phone)) {
@@ -94,20 +96,10 @@ export function CustomerFormDialog({
 
   const checkDuplicate = async () => {
     setDuplicate(null);
-    if (normalizedDocument.length < 5) return;
+    if (normalizedDocument.length < DOCUMENT_ID_LENGTH.min) return;
     try {
-      const { items } = await customersService.list({
-        q: normalizedDocument,
-        status: 'all',
-        page: 1,
-        pageSize: 5,
-      });
-      const match = items.find(
-        (item) =>
-          item.id !== customer?.id &&
-          (item.documentId.startsWith(normalizedDocument) ||
-            normalizedDocument.startsWith(item.documentId)),
-      );
+      const { items } = await customersService.documentMatches(normalizedDocument);
+      const match = items.find((item) => item.id !== customer?.id);
       if (match) setDuplicate({ id: match.id, name: match.name });
     } catch {
       // El aviso de duplicados es una ayuda; el back valida el documento al guardar.
@@ -120,7 +112,7 @@ export function CustomerFormDialog({
       name: values.name,
       documentId: values.documentId,
       phone: values.phone || null,
-      email: values.email || null,
+      email: values.email,
     };
     try {
       onSaved(

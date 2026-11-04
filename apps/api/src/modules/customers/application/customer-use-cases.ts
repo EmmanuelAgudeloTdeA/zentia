@@ -1,13 +1,20 @@
 import {
+  DOCUMENT_MATCHES_LIMIT,
   toSearchKey,
   type CustomerChanges,
   type CustomerDto,
   type CustomerInput,
   type CustomerListDto,
   type CustomerListFilter,
+  type DocumentMatchesDto,
 } from '@zentia/shared';
 import { AppError } from '../../../core/http/index.js';
-import { customerSearchTerms, prepareContact, type Customer } from '../domain/index.js';
+import {
+  customerSearchTerms,
+  documentIdPrefixes,
+  prepareContact,
+  type Customer,
+} from '../domain/index.js';
 import type { CustomersInfrastructure } from './customers-dependencies.js';
 import { toCustomerDto } from './customer-dto.js';
 import type { CustomerUpdate } from './ports/index.js';
@@ -95,5 +102,21 @@ export class SearchCustomersUseCase {
       take: pageSize,
     });
     return { items: result.items.map(toCustomerDto), total: result.total, page, pageSize };
+  }
+}
+
+export class FindDocumentMatchesUseCase {
+  constructor(private readonly deps: Deps) {}
+
+  /** `documentId` llega normalizado; el aviso no bloquea, el único de la BD sí. */
+  async execute(documentId: string): Promise<DocumentMatchesDto> {
+    const prefixes = documentIdPrefixes(documentId);
+    if (!prefixes) return { items: [] };
+    const matches = await this.deps.customers.findDocumentMatches(
+      documentId,
+      prefixes,
+      DOCUMENT_MATCHES_LIMIT,
+    );
+    return { items: matches.map(toCustomerDto) };
   }
 }

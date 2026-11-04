@@ -71,6 +71,7 @@ Como usuario sin sesión, quiero ver el nombre y el logo de la empresa en el log
   1. `GET /api/company/branding` es público, con rate limit general, y devuelve solo `{ name, hasLogo, logoVersion }`.
   2. `GET /api/company/logo` es público, con rate limit general; devuelve la imagen binaria con su `Content-Type`, `Cache-Control: public, max-age=300` y `ETag` basado en `logoVersion`; si no hay logo, 404 `LOGO_NOT_FOUND`.
   3. El login y el encabezado del layout muestran el logo (con `?v=logoVersion`) y el nombre; si `name` está vacío, usan `app.name`.
+     > Decisión del usuario (posterior): el encabezado del layout muestra solo el logo; el nombre queda como etiqueta accesible (`aria-label`/`title`). El login y el menú lateral en móvil siguen mostrando el nombre.
   4. Tras subir o eliminar el logo, el layout se actualiza sin recargar la página.
 - **Depende de:** S2.1.2
 - **Tamaño:** S
