@@ -3,7 +3,7 @@ import { AppError } from '../../../core/http/index.js';
 import type { Actor } from '../../auth/index.js';
 import { checkDiscount, discountForDuplicate } from '../domain/index.js';
 import { toQuoteDto } from './quote-dto.js';
-import { loadVisible, priceLines } from './quote-support.js';
+import { loadVisible, priceLines, type LineDraft } from './quote-support.js';
 import type { QuotesDependencies } from './quotes-dependencies.js';
 
 /** RN-28: nuevo Borrador con precios vigentes, dueño = actor y sin los productos inactivos. */
@@ -21,7 +21,21 @@ export class DuplicateQuoteUseCase {
         (product) => [product.id, product],
       ),
     );
-    const kept = source.items.filter((item) => products.get(item.productId)?.isActive);
+    // RN-28: snapshot vigente del catálogo (nombre, categoría, precio e IVA); solo la cantidad viene del origen.
+    const kept: LineDraft[] = source.items.flatMap((item) => {
+      const product = products.get(item.productId);
+      if (!product?.isActive) return [];
+      return [
+        {
+          productId: product.id,
+          productName: product.name,
+          category: product.category,
+          unitPrice: product.price.toFixed(0),
+          vatRate: product.vatRate,
+          quantity: item.quantity,
+        },
+      ];
+    });
     const omittedProductIds = source.items
       .filter((item) => !products.get(item.productId)?.isActive)
       .map((item) => item.productId);
@@ -38,10 +52,7 @@ export class DuplicateQuoteUseCase {
     });
     const override = check.ok ? check.override : null;
     const { items, amounts } = priceLines(
-      kept.map((item) => {
-        const product = products.get(item.productId);
-        return { ...item, unitPrice: product ? product.price.toFixed(0) : item.unitPrice };
-      }),
+      kept,
       discount.discountPct,
       source.shippingAmount,
       params.shippingTaxable,
