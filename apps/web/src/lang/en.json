@@ -117,7 +117,12 @@
     "SHARE_CHANNEL_UNAVAILABLE": "The customer has no contact data for that channel.",
     "INTERACTION_QUOTE_MISMATCH": "The quote does not belong to this customer.",
     "INTERACTION_FUTURE_DATE": "The date cannot be later than today.",
-    "NOTIFICATION_NOT_FOUND": "The notification does not exist."
+    "NOTIFICATION_NOT_FOUND": "The notification does not exist.",
+    "QUOTE_NOT_APPROVED": "Only approved quotes can be converted.",
+    "ORDER_ALREADY_EXISTS": "This quote already has an order.",
+    "ORDER_NOT_FOUND": "We could not find this order.",
+    "ORDER_INVALID_TRANSITION": "The order does not allow that status change.",
+    "ORDER_CONFLICT": "This order changed while you were viewing it. Reload to see the current version."
   },
   "validation": {
     "invalid_type": "The value is not valid.",
@@ -213,6 +218,12 @@
       "WHATSAPP": "WhatsApp",
       "MEETING": "Meeting",
       "OTHER": "Other"
+    },
+    "OrderStatus": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In progress",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled"
     }
   },
   "nav": {
@@ -221,7 +232,8 @@
     "customers": "Customers",
     "products": "Products",
     "quotes": "Quotes",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "orders": "Orders"
   },
   "quotes": {
     "title": "Quotes",
@@ -492,6 +504,69 @@
     "unread": "Unread",
     "QUOTE_EXPIRING": "{{quoteNumber}} for {{customerName}} expires on {{expiresAt}}.",
     "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} for {{customerName}} has gone {{days}} days without follow-up."
+  },
+  "orders": {
+    "title": "Orders",
+    "tableCaption": "Order list",
+    "number": "Number",
+    "sourceQuote": "Source quote",
+    "customer": "Customer",
+    "owner": "Owner",
+    "total": "Total",
+    "createdAt": "Created on",
+    "status": "Status",
+    "filters": {
+      "all": "All",
+      "status": "Status",
+      "search": "Search by number or customer"
+    },
+    "noInventoryNotice": "Orders do not move inventory or generate invoices.",
+    "empty": {
+      "title": "There are no orders yet. They are created from an approved quote.",
+      "filteredTitle": "No orders match the filters."
+    },
+    "dates": {
+      "title": "Dates",
+      "createdAt": "Created",
+      "inProgressAt": "In progress",
+      "deliveredAt": "Delivered",
+      "cancelledAt": "Cancelled"
+    },
+    "cancelReason": "Cancellation reason",
+    "noReason": "No reason",
+    "lines": "Products",
+    "notFound": "We could not find this order.",
+    "backToList": "Go to orders",
+    "conflict": "This order changed while you were viewing it.",
+    "reload": "Reload",
+    "actions": {
+      "convert": "Convert to order",
+      "view": "View order {{number}}",
+      "viewQuote": "View source quote",
+      "startProgress": "Start processing",
+      "deliver": "Mark as delivered",
+      "cancel": "Cancel order"
+    },
+    "convert": {
+      "title": "Convert {{quote}} into an order",
+      "description": "Order {{order}} will be created with the approved lines and amounts. A quote can only have one order."
+    },
+    "deliver": {
+      "title": "Mark {{number}} as delivered?",
+      "description": "The order will be delivered and cannot be changed."
+    },
+    "cancel": {
+      "title": "Cancel order {{number}}",
+      "description": "Order {{number}} will be cancelled. Quote {{quote}} stays Approved and cannot be converted again.",
+      "reason": "Reason (optional)",
+      "back": "Back"
+    },
+    "toast": {
+      "created": "Order {{number}} created.",
+      "inProgress": "Order {{number}} in progress.",
+      "delivered": "Order {{number}} delivered.",
+      "cancelled": "Order {{number}} cancelled."
+    }
   },
   "customers": {
     "title": "Customers",

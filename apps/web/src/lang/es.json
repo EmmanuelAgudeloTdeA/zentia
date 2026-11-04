@@ -117,7 +117,12 @@
     "SHARE_CHANNEL_UNAVAILABLE": "El cliente no tiene el dato de contacto de ese canal.",
     "INTERACTION_QUOTE_MISMATCH": "La cotización no pertenece a este cliente.",
     "INTERACTION_FUTURE_DATE": "La fecha no puede ser posterior a hoy.",
-    "NOTIFICATION_NOT_FOUND": "La notificación no existe."
+    "NOTIFICATION_NOT_FOUND": "La notificación no existe.",
+    "QUOTE_NOT_APPROVED": "Solo se pueden convertir cotizaciones aprobadas.",
+    "ORDER_ALREADY_EXISTS": "Esta cotización ya tiene un pedido.",
+    "ORDER_NOT_FOUND": "No encontramos este pedido.",
+    "ORDER_INVALID_TRANSITION": "El pedido no admite ese cambio de estado.",
+    "ORDER_CONFLICT": "Este pedido cambió mientras lo veías. Recarga para ver la versión actual."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
@@ -213,6 +218,12 @@
       "WHATSAPP": "WhatsApp",
       "MEETING": "Reunión",
       "OTHER": "Otro"
+    },
+    "OrderStatus": {
+      "PENDING": "Pendiente",
+      "IN_PROGRESS": "En proceso",
+      "DELIVERED": "Entregado",
+      "CANCELLED": "Cancelado"
     }
   },
   "nav": {
@@ -221,7 +232,8 @@
     "customers": "Clientes",
     "products": "Productos",
     "quotes": "Cotizaciones",
-    "notifications": "Notificaciones"
+    "notifications": "Notificaciones",
+    "orders": "Pedidos"
   },
   "quotes": {
     "title": "Cotizaciones",
@@ -492,6 +504,69 @@
     "unread": "Sin leer",
     "QUOTE_EXPIRING": "{{quoteNumber}} de {{customerName}} vence el {{expiresAt}}.",
     "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} de {{customerName}} lleva {{days}} días sin seguimiento."
+  },
+  "orders": {
+    "title": "Pedidos",
+    "tableCaption": "Lista de pedidos",
+    "number": "Número",
+    "sourceQuote": "Cotización de origen",
+    "customer": "Cliente",
+    "owner": "Dueño",
+    "total": "Total",
+    "createdAt": "Creado el",
+    "status": "Estado",
+    "filters": {
+      "all": "Todos",
+      "status": "Estado",
+      "search": "Buscar por número o cliente"
+    },
+    "noInventoryNotice": "Los pedidos no mueven inventario ni generan facturas.",
+    "empty": {
+      "title": "Aún no hay pedidos. Se crean desde una cotización aprobada.",
+      "filteredTitle": "Ningún pedido coincide con los filtros."
+    },
+    "dates": {
+      "title": "Fechas",
+      "createdAt": "Creado",
+      "inProgressAt": "En proceso",
+      "deliveredAt": "Entregado",
+      "cancelledAt": "Cancelado"
+    },
+    "cancelReason": "Motivo de cancelación",
+    "noReason": "Sin motivo",
+    "lines": "Productos",
+    "notFound": "No encontramos este pedido.",
+    "backToList": "Ir a pedidos",
+    "conflict": "Este pedido cambió mientras lo veías.",
+    "reload": "Recargar",
+    "actions": {
+      "convert": "Convertir en pedido",
+      "view": "Ver pedido {{number}}",
+      "viewQuote": "Ver cotización de origen",
+      "startProgress": "Iniciar proceso",
+      "deliver": "Marcar como entregado",
+      "cancel": "Cancelar pedido"
+    },
+    "convert": {
+      "title": "Convertir {{quote}} en pedido",
+      "description": "Se creará el pedido {{order}} con las líneas y valores aprobados. Una cotización solo puede tener un pedido."
+    },
+    "deliver": {
+      "title": "¿Marcar {{number}} como entregado?",
+      "description": "El pedido quedará entregado y no se podrá cambiar."
+    },
+    "cancel": {
+      "title": "Cancelar pedido {{number}}",
+      "description": "El pedido {{number}} quedará cancelado. La cotización {{quote}} seguirá Aprobada y no se podrá convertir otra vez.",
+      "reason": "Motivo (opcional)",
+      "back": "Volver"
+    },
+    "toast": {
+      "created": "Pedido {{number}} creado.",
+      "inProgress": "Pedido {{number}} en proceso.",
+      "delivered": "Pedido {{number}} entregado.",
+      "cancelled": "Pedido {{number}} cancelado."
+    }
   },
   "customers": {
     "title": "Clientes",

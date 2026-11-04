@@ -5,6 +5,7 @@ export {
   ArrowRightIcon,
   BanIcon,
   BellIcon,
+  BoxIcon,
   CalendarIcon,
   CheckCircleIcon,
   CheckIcon,

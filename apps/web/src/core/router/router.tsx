@@ -5,6 +5,7 @@ import * as companySettings from '../../features/company-settings';
 import * as customers from '../../features/customers';
 import * as home from '../../features/home';
 import * as notifications from '../../features/notifications';
+import * as orders from '../../features/orders';
 import * as quotes from '../../features/quotes';
 import * as users from '../../features/users';
 import { NotFoundPage, PrivateLayout, PublicLayout, SessionLayout } from '../layout';
@@ -21,8 +22,10 @@ const FEATURES: readonly FeatureModule[] = [
   home,
   auth,
   quotes,
+  orders,
   customers,
   catalog,
+  notifications,
   users,
   companySettings,
 ];
