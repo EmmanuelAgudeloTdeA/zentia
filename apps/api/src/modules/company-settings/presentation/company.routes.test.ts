@@ -289,9 +289,9 @@ describe('GET /api/company/branding', () => {
     expect(response.headers['cache-control']).toBe('no-cache');
   });
 
-  it('applies the general rate limit to the public branding and logo routes', async () => {
+  it('applies the resource rate limit to the public branding and logo routes', async () => {
     const server = app();
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 120; i++) {
       expect((await request(server).get('/api/company/branding')).status).toBe(200);
     }
     expect((await request(server).get('/api/company/branding')).status).toBe(429);
