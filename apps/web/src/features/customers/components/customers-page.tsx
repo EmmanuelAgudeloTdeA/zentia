@@ -1,4 +1,9 @@
-import { ACTIVE_STATUS_FILTERS, formatPhoneForDisplay, type CustomerDto } from '@zentia/shared';
+import {
+  ACTIVE_STATUS_FILTERS,
+  formatPhoneForDisplay,
+  SEARCH_MAX_LENGTH,
+  type CustomerDto,
+} from '@zentia/shared';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
@@ -114,6 +119,7 @@ export function CustomersPage() {
             label={t('customers.search')}
             type="search"
             className="lg:w-96"
+            maxLength={SEARCH_MAX_LENGTH}
             value={filters.q}
             onChange={(event) => filters.setQ(event.target.value)}
             endAdornment={<SearchIcon size={16} className="mr-2 text-neutral-400" />}

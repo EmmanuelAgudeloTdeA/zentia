@@ -3,6 +3,7 @@ import type {
   CreateCustomerRequest,
   CustomerDto,
   CustomerListDto,
+  DocumentMatchesDto,
   UpdateCustomerRequest,
 } from '@zentia/shared';
 import { request } from '../../../core/http-client';
@@ -20,6 +21,8 @@ export const customersService = {
       query: { ...query },
       ...(signal ? { signal } : {}),
     }),
+  documentMatches: (documentId: string) =>
+    request<DocumentMatchesDto>('GET', '/customers/document-matches', { query: { documentId } }),
   get: (id: string) => request<CustomerDto>('GET', `/customers/${id}`),
   create: (body: CreateCustomerRequest) => request<CustomerDto>('POST', '/customers', { body }),
   update: (id: string, body: UpdateCustomerRequest) =>

@@ -23,6 +23,13 @@ import {
   type ProfileField,
 } from './settings-forms';
 
+/** El único refine de los porcentajes es el tope de 100 %. */
+const PERCENT_LIMIT_MESSAGES = {
+  discountLimitSeller: 'validation.too_big',
+  discountLimitManager: 'validation.too_big',
+  discountLimitAdmin: 'validation.too_big',
+};
+
 type HandleSubmit<T> = (
   onValid: (values: T) => void,
 ) => (event?: BaseSyntheticEvent) => Promise<void>;
@@ -163,6 +170,7 @@ export function SettingsEditor({ settings, onSaved }: SettingsEditorProps) {
       } catch (error) {
         const placed = applyServerIssues(error, parameters.setError, PARAMETER_FIELDS, {
           expiringAlertDays: EXPIRING_ALERT_DAYS_LT_VALIDITY,
+          ...PERCENT_LIMIT_MESSAGES,
         });
         if (placed) failed = true;
         else fail(error);
