@@ -3,10 +3,15 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router';
 import { useSessionStore } from '../../../core/auth';
+import { errorKey } from '../../../core/errors';
 import { formatDateTime } from '../../../core/format';
 import { NOTIFICATIONS_PATH, useNotificationsStore } from '../../../core/notifications';
-import { BellIcon, Button, Skeleton } from '../../../shared/ui';
-import { notificationsService, refreshUnreadCount } from '../services/notifications.service';
+import { BellIcon, Button, Skeleton, toast } from '../../../shared/ui';
+import {
+  markNotificationRead,
+  notificationsService,
+  refreshUnreadCount,
+} from '../services/notifications.service';
 import { useNotificationText } from './notification-text';
 
 const POLL_MS = 60_000;
@@ -60,17 +65,19 @@ export function NotificationBell() {
 
   if (!enabled) return null;
 
-  const openNotification = async (notification: NotificationDto) => {
+  const openNotification = (notification: NotificationDto) => {
     setOpen(false);
-    if (!notification.readAt) {
-      useNotificationsStore.getState().decrement();
-      void notificationsService.markRead(notification.id).catch(() => undefined);
-    }
+    if (!notification.readAt) void markNotificationRead(notification.id);
     navigate(`/quotes/${notification.quote.id}`);
   };
 
   const markAll = async () => {
-    await notificationsService.markAllRead();
+    try {
+      await notificationsService.markAllRead();
+    } catch (error) {
+      toast.error(t(errorKey(error)));
+      return;
+    }
     useNotificationsStore.getState().setUnreadCount(0);
     setItems(
       (current) =>
@@ -130,7 +137,7 @@ export function NotificationBell() {
                   <li key={item.id}>
                     <button
                       type="button"
-                      onClick={() => void openNotification(item)}
+                      onClick={() => openNotification(item)}
                       className={`flex w-full gap-2 px-4 py-3 text-left hover:bg-neutral-50 ${
                         item.readAt ? '' : 'bg-primary-50'
                       } ${item.quote.status === 'SENT' ? '' : 'opacity-60'}`}

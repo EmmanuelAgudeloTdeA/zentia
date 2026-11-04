@@ -136,6 +136,61 @@ describe.skipIf(!databaseUrl)('Prisma follow-up (integration)', () => {
     expect(await repo.countUnread(ownerId)).toBe(3);
   });
 
+  it('excludes expired quotes', async () => {
+    await prisma.quote.update({ where: { id: quoteId }, data: { status: 'EXPIRED' } });
+    expect(await candidates()).toEqual([]);
+  });
+
+  it('ignores interactions linked to another quote of the same customer', async () => {
+    const sibling = await prisma.quote.create({
+      data: {
+        number: 8,
+        customerId,
+        ownerId,
+        createdById: ownerId,
+        status: 'SENT',
+        shippingTaxable: false,
+        subtotal: 0,
+        linesVat: 0,
+        shippingVat: 0,
+        total: 0,
+        sentAt: new Date('2026-10-31T03:00:00.000Z'),
+        expiresAt: new Date('2026-11-06T00:00:00.000Z'),
+      },
+    });
+    await prisma.interaction.create({
+      data: {
+        customerId,
+        quoteId: sibling.id,
+        type: 'CALL',
+        note: 'x',
+        occurredAt: new Date('2026-11-03T15:00:00.000Z'),
+        authorId: ownerId,
+      },
+    });
+    const byQuote = new Map((await candidates()).map((c) => [c.quoteId, c.lastInteractionDay]));
+    expect(byQuote.get(quoteId)).toBeNull();
+    expect(byQuote.get(sibling.id)).toBe('2026-11-03');
+  });
+
+  it('opens a new no follow-up cycle when the quote is resent', async () => {
+    const repo = new PrismaNotificationRepository(prisma);
+    const params = { expiringAlertDays: 3, followUpDays: 5 };
+    const noFollowUp = async (today: string) =>
+      alertsFor(await candidates(), today, params).filter((a) => a.type === 'QUOTE_NO_FOLLOW_UP');
+    expect(await repo.insertMany(await noFollowUp('2026-11-04'))).toBe(1);
+    await prisma.quote.update({
+      where: { id: quoteId },
+      data: {
+        sentAt: new Date('2026-11-05T15:00:00.000Z'),
+        expiresAt: new Date('2026-11-20T00:00:00.000Z'),
+      },
+    });
+    const next = await noFollowUp('2026-11-10');
+    expect(next).toMatchObject([{ referenceDate: '2026-11-05' }]);
+    expect(await repo.insertMany(next)).toBe(1);
+  });
+
   it('transfers unread notifications inside the transaction and rolls back with it', async () => {
     const repo = new PrismaNotificationRepository(prisma);
     const target = await prisma.user.create({

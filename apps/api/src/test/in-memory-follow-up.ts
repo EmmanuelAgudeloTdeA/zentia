@@ -26,6 +26,7 @@ export function createInMemoryFollowUp(
     number: 1,
     status: 'SENT',
   }),
+  ownerOf: (quoteId: string) => string | undefined = () => undefined,
 ) {
   const interactions: Stored<
     Parameters<InteractionRepository['create']>[0] & { createdAt: Date }
@@ -50,11 +51,21 @@ export function createInMemoryFollowUp(
         createdAt: stored.createdAt,
       };
     },
-    async list({ customerId, quoteId, skip, take }) {
-      const matches = interactions.filter(
-        (item) =>
-          (!customerId || item.customerId === customerId) && (!quoteId || item.quoteId === quoteId),
-      );
+    async list({ customerId, quoteId, visibleToOwnerId, skip, take }) {
+      const matches = interactions
+        .filter(
+          (item) =>
+            (!customerId || item.customerId === customerId) &&
+            (!quoteId || item.quoteId === quoteId) &&
+            (!visibleToOwnerId ||
+              item.quoteId === null ||
+              ownerOf(item.quoteId) === visibleToOwnerId),
+        )
+        .sort(
+          (a, b) =>
+            b.occurredAt.getTime() - a.occurredAt.getTime() ||
+            b.createdAt.getTime() - a.createdAt.getTime(),
+        );
       return {
         items: matches.slice(skip, skip + take).map((stored) => ({
           id: stored.id,

@@ -51,6 +51,9 @@ function toNotificationDto(
   };
 }
 
+// Tolerancia al reloj del navegador adelantado (el diálogo envía la hora local truncada al minuto).
+const FUTURE_TOLERANCE_MS = 60_000;
+
 /** RN-35: registro de solo agregar; la nota es texto libre y nunca va al LLM (RN-37). */
 export class RegisterInteractionUseCase {
   constructor(private readonly deps: FollowUpDependencies) {}
@@ -59,7 +62,9 @@ export class RegisterInteractionUseCase {
     const customer = await this.deps.customers.getById(input.customerId);
     const now = this.deps.clock.now();
     const occurredAt = input.occurredAt ? new Date(input.occurredAt) : now;
-    if (occurredAt.getTime() > now.getTime()) throw new AppError('INTERACTION_FUTURE_DATE', 400);
+    if (occurredAt.getTime() > now.getTime() + FUTURE_TOLERANCE_MS) {
+      throw new AppError('INTERACTION_FUTURE_DATE', 400);
+    }
     if (input.quoteId) {
       const quote = await this.deps.quotes.getForActor(input.quoteId, actor);
       if (quote.customer.id !== customer.id) throw new AppError('INTERACTION_QUOTE_MISMATCH', 400);
@@ -194,7 +199,7 @@ export class MarkAllNotificationsReadUseCase {
 export function createFollowUpJobs(
   deps: Pick<FollowUpDependencies, 'jobLock'>,
   expireQuotes: { execute: () => Promise<number> },
-  alerts: RunFollowUpAlertsUseCase,
+  alerts: { execute: () => Promise<number> },
 ): ScheduledJob[] {
   const locked = (name: string, run: () => Promise<number>) => async () =>
     (await deps.jobLock.withLock(name, run)) ?? 0;

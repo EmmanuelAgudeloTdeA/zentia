@@ -562,7 +562,8 @@
     "loadError": "Notifications could not be loaded.",
     "unread": "Unread",
     "QUOTE_EXPIRING": "{{quoteNumber}} for {{customerName}} expires on {{expiresAt}}.",
-    "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} for {{customerName}} has gone {{days}} days without follow-up.",
+    "QUOTE_NO_FOLLOW_UP_one": "{{quoteNumber}} for {{customerName}} has gone {{count}} day without follow-up.",
+    "QUOTE_NO_FOLLOW_UP_other": "{{quoteNumber}} for {{customerName}} has gone {{count}} days without follow-up.",
     "sort": {
       "label": "Sort by",
       "probability": "Closing probability",

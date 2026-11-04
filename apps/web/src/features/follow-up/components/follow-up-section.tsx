@@ -85,13 +85,14 @@ export function FollowUpSection({
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState<unknown>(null);
   const [dialog, setDialog] = useState(false);
+  const quoteId = quote?.id;
 
   const load = useCallback(
     async (nextPage: number) => {
       if (nextPage === 1) setStatus('loading');
       try {
         const result = await interactionsService.list({
-          ...(quote ? { quoteId: quote.id } : { customerId }),
+          ...(quoteId ? { quoteId } : { customerId }),
           page: nextPage,
           pageSize: PAGE_SIZE,
         });
@@ -104,7 +105,7 @@ export function FollowUpSection({
         setStatus('error');
       }
     },
-    [customerId, quote],
+    [customerId, quoteId],
   );
 
   useEffect(() => {
