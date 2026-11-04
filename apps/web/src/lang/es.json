@@ -51,10 +51,6 @@
       "en": "EN"
     }
   },
-  "home": {
-    "title": "Bienvenido a {{appName}}",
-    "description": "Gestión de cotizaciones comerciales para pymes."
-  },
   "notFound": {
     "title": "Página no encontrada",
     "description": "La dirección no existe o cambió.",
@@ -122,7 +118,8 @@
     "ORDER_ALREADY_EXISTS": "Esta cotización ya tiene un pedido.",
     "ORDER_NOT_FOUND": "No encontramos este pedido.",
     "ORDER_INVALID_TRANSITION": "El pedido no admite ese cambio de estado.",
-    "ORDER_CONFLICT": "Este pedido cambió mientras lo veías. Recarga para ver la versión actual."
+    "ORDER_CONFLICT": "Este pedido cambió mientras lo veías. Recarga para ver la versión actual.",
+    "DASHBOARD_INVALID_PERIOD": "El período no es válido: revisa las fechas (máximo 366 días)."
   },
   "validation": {
     "invalid_type": "El valor no es válido.",
@@ -233,7 +230,64 @@
     "products": "Productos",
     "quotes": "Cotizaciones",
     "notifications": "Notificaciones",
-    "orders": "Pedidos"
+    "orders": "Pedidos",
+    "dashboard": "Tablero"
+  },
+  "dashboard": {
+    "title": "Tablero",
+    "greeting": {
+      "morning": "Buenos días, {{name}}",
+      "afternoon": "Buenas tardes, {{name}}",
+      "evening": "Buenas noches, {{name}}"
+    },
+    "context": {
+      "pending_one": "Tienes {{count}} cotización pendiente de seguimiento.",
+      "pending_other": "Tienes {{count}} cotizaciones pendientes de seguimiento.",
+      "allClear": "Todo al día: no hay cotizaciones pendientes de seguimiento."
+    },
+    "currentStateHint": "Estado actual",
+    "periodHint": "Período: {{from}} – {{to}}",
+    "noData": "Sin datos",
+    "kpi": {
+      "active": "Activas",
+      "pendingFollowUp": "Pendientes de seguimiento",
+      "pendingHint": "Sin seguimiento hace {{days}} días o más",
+      "approved": "Aprobadas",
+      "rejected": "Rechazadas",
+      "expired": "Vencidas",
+      "quotedAmount": "Monto cotizado",
+      "quotedHint": "Sin anuladas",
+      "approvedAmount": "Monto aprobado",
+      "approvedHint": "de {{amount}} cotizados",
+      "conversionRate": "Conversión",
+      "closedHint_one": "{{count}} cerrada en el período",
+      "closedHint_other": "{{count}} cerradas en el período",
+      "noClosedHint": "No hay cotizaciones cerradas en el período"
+    },
+    "period": {
+      "label": "Período",
+      "thisMonth": "Este mes",
+      "lastMonth": "Mes anterior",
+      "last90Days": "Últimos 90 días",
+      "custom": "Personalizado",
+      "from": "Desde",
+      "to": "Hasta",
+      "invalidOrder": "La fecha inicial no puede ser posterior a la final.",
+      "tooLong": "El período no puede superar 366 días."
+    },
+    "seller": {
+      "label": "Vendedor",
+      "all": "Todos"
+    },
+    "charts": {
+      "closing": "Cierres del período",
+      "amounts": "Cotizado frente a aprobado"
+    },
+    "empty": {
+      "title": "Aún no hay cotizaciones enviadas. Los indicadores aparecen desde el primer envío.",
+      "period": "No hay cotizaciones enviadas en este período."
+    },
+    "viewQuotes": "Ver cotizaciones"
   },
   "quotes": {
     "title": "Cotizaciones",

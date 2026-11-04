@@ -3,7 +3,7 @@ import * as auth from '../../features/auth';
 import * as catalog from '../../features/catalog';
 import * as companySettings from '../../features/company-settings';
 import * as customers from '../../features/customers';
-import * as home from '../../features/home';
+import * as dashboard from '../../features/dashboard';
 import * as notifications from '../../features/notifications';
 import * as orders from '../../features/orders';
 import * as quotes from '../../features/quotes';
@@ -19,7 +19,7 @@ interface FeatureModule {
 }
 
 const FEATURES: readonly FeatureModule[] = [
-  home,
+  dashboard,
   auth,
   quotes,
   orders,

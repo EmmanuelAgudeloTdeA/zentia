@@ -51,10 +51,6 @@
       "en": "EN"
     }
   },
-  "home": {
-    "title": "Welcome to {{appName}}",
-    "description": "Commercial quote management for small businesses."
-  },
   "notFound": {
     "title": "Page not found",
     "description": "The address does not exist or has changed.",
@@ -122,7 +118,8 @@
     "ORDER_ALREADY_EXISTS": "This quote already has an order.",
     "ORDER_NOT_FOUND": "We could not find this order.",
     "ORDER_INVALID_TRANSITION": "The order does not allow that status change.",
-    "ORDER_CONFLICT": "This order changed while you were viewing it. Reload to see the current version."
+    "ORDER_CONFLICT": "This order changed while you were viewing it. Reload to see the current version.",
+    "DASHBOARD_INVALID_PERIOD": "The period is not valid: check the dates (up to 366 days)."
   },
   "validation": {
     "invalid_type": "The value is not valid.",
@@ -233,7 +230,64 @@
     "products": "Products",
     "quotes": "Quotes",
     "notifications": "Notifications",
-    "orders": "Orders"
+    "orders": "Orders",
+    "dashboard": "Dashboard"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "greeting": {
+      "morning": "Good morning, {{name}}",
+      "afternoon": "Good afternoon, {{name}}",
+      "evening": "Good evening, {{name}}"
+    },
+    "context": {
+      "pending_one": "You have {{count}} quote pending follow-up.",
+      "pending_other": "You have {{count}} quotes pending follow-up.",
+      "allClear": "All caught up: no quotes pending follow-up."
+    },
+    "currentStateHint": "Current state",
+    "periodHint": "Period: {{from}} – {{to}}",
+    "noData": "No data",
+    "kpi": {
+      "active": "Active",
+      "pendingFollowUp": "Pending follow-up",
+      "pendingHint": "No follow-up for {{days}} days or more",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "expired": "Expired",
+      "quotedAmount": "Quoted amount",
+      "quotedHint": "Excluding voided",
+      "approvedAmount": "Approved amount",
+      "approvedHint": "of {{amount}} quoted",
+      "conversionRate": "Conversion",
+      "closedHint_one": "{{count}} closed in the period",
+      "closedHint_other": "{{count}} closed in the period",
+      "noClosedHint": "No closed quotes in the period"
+    },
+    "period": {
+      "label": "Period",
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "last90Days": "Last 90 days",
+      "custom": "Custom",
+      "from": "From",
+      "to": "To",
+      "invalidOrder": "The start date cannot be after the end date.",
+      "tooLong": "The period cannot exceed 366 days."
+    },
+    "seller": {
+      "label": "Seller",
+      "all": "All"
+    },
+    "charts": {
+      "closing": "Closings in the period",
+      "amounts": "Quoted vs approved"
+    },
+    "empty": {
+      "title": "No quotes have been sent yet. Indicators appear from the first send.",
+      "period": "No quotes were sent in this period."
+    },
+    "viewQuotes": "View quotes"
   },
   "quotes": {
     "title": "Quotes",
