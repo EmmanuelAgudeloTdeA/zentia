@@ -6,6 +6,7 @@ import type { UsersInfrastructure } from '../modules/users/index.js';
 import { createInMemoryCatalog, type InMemoryCatalog } from './in-memory-catalog.js';
 import { createInMemoryCustomers, type InMemoryCustomers } from './in-memory-customers.js';
 import { createInMemoryFollowUp, type InMemoryFollowUp } from './in-memory-follow-up.js';
+import { createFakeDashboard } from './in-memory-dashboard.js';
 import { createInMemoryOrders } from './in-memory-orders.js';
 import { createInMemoryQuotes, type InMemoryQuotes } from './in-memory-quotes.js';
 import { createInMemoryAuth, TEST_JWT_SECRET, type InMemoryAuth } from './in-memory-auth.js';
@@ -23,6 +24,7 @@ interface TestAppOptions {
   catalog?: InMemoryCatalog;
   quotes?: InMemoryQuotes;
   followUp?: InMemoryFollowUp;
+  dashboard?: ReturnType<typeof createFakeDashboard>;
   clock?: Clock;
 }
 
@@ -59,6 +61,7 @@ export function createTestApp({
   catalog,
   quotes,
   followUp,
+  dashboard,
   clock,
 }: TestAppOptions = {}) {
   const env = loadEnv({
@@ -87,6 +90,7 @@ export function createTestApp({
       orders: createInMemoryOrders((id) => quotesInfrastructure.quotes.findById(id), userName)
         .infrastructure,
       followUp: (followUp ?? createInMemoryFollowUp()).infrastructure,
+      dashboard: (dashboard ?? createFakeDashboard()).infrastructure,
     },
     ...(clock ? { clock } : {}),
   });
