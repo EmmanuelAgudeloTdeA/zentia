@@ -12,3 +12,4 @@ export * from './products.schema.js';
 export * from './quotes.schema.js';
 export * from './documents.schema.js';
 export * from './follow-up.schema.js';
+export * from './orders.schema.js';
