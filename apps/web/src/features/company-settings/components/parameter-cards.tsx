@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useFormState, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { SectionCard, Select, Switch, TextField } from '../../../shared/ui';
+import { CalibrationCard } from '../../ai';
 import {
   integerInput,
   percentInput,
@@ -92,6 +93,7 @@ export function ValidityCard({
           error={fieldError('coldStartThreshold')}
           {...register('coldStartThreshold', integerInput)}
         />
+        <CalibrationCard />
       </div>
     </SectionCard>
   );

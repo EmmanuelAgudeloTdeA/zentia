@@ -1,5 +1,6 @@
 import type { RequestHandler } from 'express';
 import type { Clock } from '../core/clock/index.js';
+import type { Logger } from 'pino';
 import type { Env } from '../core/env/index.js';
 import type { ModuleDefinition, ModuleDependencies } from '../core/modules/index.js';
 import { getPrisma } from '../core/prisma/index.js';
@@ -23,6 +24,16 @@ import {
   createPrismaCustomersInfrastructure,
   type CustomersInfrastructure,
 } from './customers/index.js';
+import {
+  createAiModules,
+  createCalibrationSection,
+  createNotificationProbabilityProvider,
+  createPrismaAiInfrastructure,
+  createTopProbabilitySection,
+  followUpAssistantContributor,
+  type AiDependencies,
+  type AiInfrastructure,
+} from './ai/index.js';
 import {
   createDashboardModule,
   createPrismaDashboardInfrastructure,
@@ -70,11 +81,13 @@ export interface InfrastructureOverrides {
   followUp?: FollowUpInfrastructure;
   orders?: OrdersInfrastructure;
   dashboard?: DashboardInfrastructure;
+  ai?: AiInfrastructure;
 }
 
 export interface CreateModulesOptions {
   env: Env;
   clock: Clock;
+  logger: Logger;
   publicLimiter: RequestHandler;
   overrides?: InfrastructureOverrides;
 }
@@ -82,6 +95,7 @@ export interface CreateModulesOptions {
 export function createModules({
   env,
   clock,
+  logger,
   publicLimiter,
   overrides = {},
 }: CreateModulesOptions): ModuleDefinition[] {
@@ -129,21 +143,46 @@ export function createModules({
     settings: companySettings.settingsReader,
     customers: customers.customerReader,
     catalog: catalog.catalogReader,
-    actionContributors: [documentActions, createOrderActionsContributor(ordersInfrastructure)],
+    actionContributors: [
+      documentActions,
+      createOrderActionsContributor(ordersInfrastructure),
+      followUpAssistantContributor,
+    ],
     reassignedListeners: [createTransferNotificationsListener(followUpInfrastructure)],
   });
+  const documentsInfrastructure = overrides.documents ?? createDocumentsInfrastructure();
   const documents = createDocumentsModule({
     ...dependencies,
-    ...(overrides.documents ?? createDocumentsInfrastructure()),
+    ...documentsInfrastructure,
     quotes: quotes.quoteReader,
     sendQuote: quotes.sendQuote,
     settings: companySettings.settingsReader,
     customers: customers.customerReader,
     clock,
   });
+  const aiDependencies: AiDependencies = {
+    ...(overrides.ai ??
+      createPrismaAiInfrastructure(
+        getPrisma(),
+        {
+          provider: env.LLM_PROVIDER,
+          model: env.LLM_MODEL,
+          apiKey: env.LLM_API_KEY || undefined,
+          timeoutMs: env.LLM_TIMEOUT_MS,
+        },
+        documentsInfrastructure.translator,
+        logger,
+      )),
+    quotes: quotes.quoteReader,
+    customers: customers.customerReader,
+    settings: companySettings.settingsReader,
+    translator: documentsInfrastructure.translator,
+    clock,
+  };
   const followUp = createFollowUpModules({
     ...dependencies,
     ...followUpInfrastructure,
+    probabilityProvider: createNotificationProbabilityProvider(aiDependencies),
     clock,
     settings: companySettings.settingsReader,
     customers: customers.customerReader,
@@ -171,7 +210,11 @@ export function createModules({
       ...(overrides.dashboard ?? createPrismaDashboardInfrastructure(getPrisma())),
       clock,
       settings: companySettings.settingsReader,
-      sections: [],
+      sections: [
+        createTopProbabilitySection(aiDependencies),
+        createCalibrationSection(aiDependencies),
+      ],
     }),
+    ...createAiModules({ ...dependencies, ...aiDependencies }),
   ];
 }

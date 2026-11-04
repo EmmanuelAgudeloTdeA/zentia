@@ -43,7 +43,7 @@ export function NotificationBell() {
     setItems(null);
     setFailed(false);
     notificationsService
-      .list({ page: 1, pageSize: 10 })
+      .list({ sort: 'date', page: 1, pageSize: 10 })
       .then((result) => setItems(result.items))
       .catch(() => setFailed(true));
     const onPointerDown = (event: PointerEvent) => {

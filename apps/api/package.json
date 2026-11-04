@@ -12,10 +12,12 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "db:seed": "tsx --conditions=development src/seed.ts"
+    "db:seed": "tsx --conditions=development src/seed.ts",
+    "seed:demo": "tsx --conditions=development src/seed-demo.ts"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",
+    "@google/genai": "^2.32.0",
     "@prisma/client": "~6.19.3",
     "@zentia/shared": "workspace:*",
     "bcryptjs": "^3.0.3",

@@ -6,6 +6,7 @@ export interface CommercialParameters {
   discountLimits: Record<Role, string>;
   validityDays: number;
   expiringAlertDays: number;
+  followUpDays: number;
   shippingTaxable: boolean;
   documentLocale: DocumentLocale;
 }
@@ -14,6 +15,7 @@ const FALLBACK: CommercialParameters = {
   discountLimits: { SELLER: '10', MANAGER: '30', ADMIN: '30' },
   validityDays: 15,
   expiringAlertDays: 3,
+  followUpDays: 5,
   shippingTaxable: false,
   documentLocale: 'es',
 };
@@ -27,6 +29,7 @@ function fromSettings(settings: CompanySettingsDto): CommercialParameters {
     },
     validityDays: settings.validityDays,
     expiringAlertDays: settings.expiringAlertDays,
+    followUpDays: settings.followUpDays,
     shippingTaxable: settings.shippingTaxable,
     documentLocale: settings.documentLocale,
   };

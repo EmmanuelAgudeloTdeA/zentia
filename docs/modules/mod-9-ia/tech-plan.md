@@ -119,3 +119,16 @@ Extensiones registradas en otros módulos:
 | Usar el mensaje no cambia el estado | Abrir WhatsApp o correo desde el asistente no toca la cotización; se ofrece registrar la interacción. |
 | Rate limit propio | 10 solicitudes por usuario por minuto, para cuidar el límite del nivel gratuito. |
 | Contacto en la respuesta | `contact` devuelve el teléfono y el correo del cliente (ya visibles para el usuario) para armar los enlaces con el texto editado; nunca se envían al LLM. |
+
+## Notas de implementación (H9.1, H9.2 y H9.3)
+| Punto | Implementación |
+|---|---|
+| Vacíos del ui-brief | V1: la calibración se muestra en Ajustes (junto al umbral) y como sección del tablero para `MANAGER`/`ADMIN`. V2: WhatsApp o correo deshabilitados con explicación si falta el dato del cliente. V3: confirmación antes de reemplazar un mensaje editado. V4/V5: `ai.assistant.documentLocaleNotice`, `notifications.sort.fallbackNotice` y `ai.probability.rulesEstimateShort`. |
+| `> Y` y `≥ Y` | El factor `NO_FOLLOW_UP` de la heurística usa "más de Y días" (RN-40); `highlighted` del asistente usa la regla de M6 (`≥ Y`, RN-33). Las dos fuentes coinciden, no es una contradicción. |
+| Destacado al abrir el detalle | El front calcula la regla de M6 con `shared/rules` (última interacción de la cotización o del cliente sin cotización y `sentAt`); al sugerir el mensaje manda el valor del back. |
+| Orden de alertas (M6) | Punto de extensión `NotificationProbabilityProvider` en `follow-up`. Con `sort=probability` se traen las notificaciones filtradas del usuario, se ordenan (probabilidad desc → fecha desc, las no `SENT` al final) y luego se paginan. Si la probabilidad falla, se ordena por fecha y el DTO responde `sort: 'date'`, lo que muestra el aviso. La campana pide `sort=date`. |
+| Bloques del tablero (M8) | `DashboardSection` puede devolver `null` (se omite). M9 registra `topProbability` (top 5 `SENT` con el alcance y el filtro de vendedor) y `calibration`. |
+| Proveedor | `LLM_PROVIDER=gemini|none` (defecto `none` → siempre plantilla), `LLM_MODEL` (defecto `gemini-2.5-flash`, cambia por entorno), `LLM_API_KEY`, `LLM_TIMEOUT_MS=4000`. `GeminiProvider` usa `AbortSignal.timeout` y `retryOptions.attempts: 1`; solo registra proveedor, modelo, latencia, resultado y tipo de error. |
+| Anonimización | El prompt solo lleva días sin respuesta, rango de monto (`ai.amountBucket.*`), hasta 5 categorías y el idioma. El texto devuelto se limpia: se reemplazan `{{CLIENTE}}`/`{{VENDEDOR}}`, se quitan otros marcadores y se recorta a 600 caracteres. |
+| Seed de demo | `pnpm --filter @zentia/api seed:demo` (`src/seed-demo.ts`). Usa Prisma directo (los casos de uso fijan las fechas en "ahora") con `shared/calc` y el consecutivo real de `QuoteSequence`. Marca todo como sintético (`[DEMO]`, documento `DEMO…`, `synthetic: true` en el snapshot), es idempotente y se niega a correr en producción sin `ALLOW_DEMO_SEED=true`. `countClosed` excluye a los clientes `DEMO…`. |
+| Gemini real | Sin clave en el entorno del proyecto; el adaptador se prueba con un cliente simulado (modelo, `AbortSignal` y mapeo de errores). |

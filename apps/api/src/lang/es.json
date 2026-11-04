@@ -50,5 +50,20 @@
       "body": "{{message}}\n\nAdjunto el PDF de la cotización."
     }
   },
-  "ai": {}
+  "ai": {
+    "prompt": {
+      "followUp": "Redacta en español un mensaje breve y cordial de seguimiento comercial para un cliente que no ha respondido una cotización desde hace {{days}} días. Monto aproximado de la cotización: {{amountRange}}. Categorías de productos: {{categories}}. Saluda al cliente escribiendo literalmente {{CLIENTE}} y firma escribiendo literalmente {{VENDEDOR}}. No inventes precios, fechas, descuentos ni datos que no se te den. Máximo 500 caracteres, sin asunto ni comillas. Responde solo con el mensaje."
+    },
+    "fallback": {
+      "followUp": "Hola {{CLIENTE}}, te escribo para saber si pudiste revisar la cotización que te enviamos hace {{days}} días. Si tienes preguntas o necesitas algún ajuste, con gusto te ayudo.\n\nQuedo atento,\n{{VENDEDOR}}"
+    },
+    "amountBucket": {
+      "LT_1M": "menos de 1 millón de pesos",
+      "1M_5M": "entre 1 y 5 millones de pesos",
+      "5M_20M": "entre 5 y 20 millones de pesos",
+      "20M_100M": "entre 20 y 100 millones de pesos",
+      "GTE_100M": "más de 100 millones de pesos"
+    },
+    "noCategories": "productos varios"
+  }
 }

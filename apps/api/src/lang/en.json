@@ -50,5 +50,20 @@
       "body": "{{message}}\n\nThe quote PDF is attached."
     }
   },
-  "ai": {}
+  "ai": {
+    "prompt": {
+      "followUp": "Write in English a short, friendly sales follow-up message for a customer who has not replied to a quote for {{days}} days. Approximate quote amount: {{amountRange}}. Product categories: {{categories}}. Greet the customer by writing literally {{CLIENTE}} and sign by writing literally {{VENDEDOR}}. Do not invent prices, dates, discounts or any data not given to you. Up to 500 characters, no subject line or quotes. Reply with the message only."
+    },
+    "fallback": {
+      "followUp": "Hi {{CLIENTE}}, I'm reaching out to see whether you had a chance to review the quote we sent you {{days}} days ago. If you have any questions or need any changes, I'll be glad to help.\n\nBest regards,\n{{VENDEDOR}}"
+    },
+    "amountBucket": {
+      "LT_1M": "less than 1 million Colombian pesos",
+      "1M_5M": "between 1 and 5 million Colombian pesos",
+      "5M_20M": "between 5 and 20 million Colombian pesos",
+      "20M_100M": "between 20 and 100 million Colombian pesos",
+      "GTE_100M": "more than 100 million Colombian pesos"
+    },
+    "noCategories": "assorted products"
+  }
 }

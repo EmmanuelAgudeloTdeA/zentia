@@ -29,6 +29,12 @@ import {
   type ActionMenuItem,
   type DataTableColumn,
 } from '../../../shared/ui';
+import {
+  FollowUpAssistantPanel,
+  ProbabilityCell,
+  useFollowUpHighlight,
+  useProbabilities,
+} from '../../ai';
 import { FollowUpSection } from '../../follow-up';
 import { QuoteOrderAction } from '../../orders';
 import { useCommercialParameters } from '../hooks/use-commercial-parameters';
@@ -94,6 +100,23 @@ export function QuoteDetailPage() {
   const [sharing, setSharing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<unknown>(null);
+  const [followUpVersion, setFollowUpVersion] = useState(0);
+  const loaded = state.status === 'ready' ? state.data : null;
+  const sentIds = useMemo(
+    () => (loaded?.status === 'SENT' ? [loaded.id] : []),
+    [loaded?.id, loaded?.status],
+  );
+  const probabilities = useProbabilities(sentIds);
+  const highlight = useFollowUpHighlight(
+    {
+      id,
+      customerId: loaded?.customer.id ?? '',
+      status: loaded?.status ?? '',
+      sentAt: loaded?.sentAt ?? null,
+    },
+    params.ready ? params.followUpDays : null,
+    followUpVersion,
+  );
 
   if (state.status === 'loading') {
     return (
@@ -245,6 +268,9 @@ export function QuoteDetailPage() {
           <span className="flex flex-wrap items-center gap-3">
             <span className="font-mono">{number}</span>
             <QuoteStatusBadge status={quote.status} />
+            {quote.status === 'SENT' ? (
+              <ProbabilityCell quoteId={quote.id} state={probabilities} />
+            ) : null}
           </span>
         }
         description={quote.customer.name}
@@ -369,6 +395,7 @@ export function QuoteDetailPage() {
           </section>
 
           <FollowUpSection
+            key={followUpVersion}
             customerId={quote.customer.id}
             customerName={quote.customer.name}
             quote={{ id: quote.id, displayNumber: quote.displayNumber }}
@@ -379,7 +406,21 @@ export function QuoteDetailPage() {
           </SectionCard>
         </div>
 
-        <div className="lg:sticky lg:top-4">
+        <div className="flex flex-col gap-5 lg:sticky lg:top-4">
+          {allowed.has('followUpAssistant') ? (
+            <div className={highlight?.highlighted ? 'order-first' : 'order-last'}>
+              <FollowUpAssistantPanel
+                quote={quote}
+                highlight={highlight}
+                documentLocale={params.documentLocale}
+                onStale={reloadAll}
+                onInteractionSaved={() => {
+                  setFollowUpVersion((value) => value + 1);
+                  void history.reload();
+                }}
+              />
+            </div>
+          ) : null}
           <TotalsSummary
             rows={[
               {

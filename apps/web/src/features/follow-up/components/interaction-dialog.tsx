@@ -23,6 +23,9 @@ interface InteractionDialogProps {
   customerName: string;
   /** Abierto desde una cotización: queda preseleccionada. */
   quote?: { id: string; displayNumber: string };
+  /** Prellenado desde el asistente de seguimiento (M9). */
+  defaultType?: InteractionType;
+  defaultNote?: string;
   onClose: () => void;
   onSaved: (interaction: InteractionDto) => void;
 }
@@ -31,13 +34,15 @@ export function InteractionDialog({
   customerId,
   customerName,
   quote,
+  defaultType,
+  defaultNote,
   onClose,
   onSaved,
 }: InteractionDialogProps) {
   const { t } = useTranslation();
-  const [type, setType] = useState<InteractionType | ''>('');
+  const [type, setType] = useState<InteractionType | ''>(defaultType ?? '');
   const [occurredAt, setOccurredAt] = useState(() => localDateTime(new Date()));
-  const [note, setNote] = useState('');
+  const [note, setNote] = useState(defaultNote ?? '');
   const [quoteId, setQuoteId] = useState(quote?.id ?? '');
   const [quotes, setQuotes] = useState<QuoteSummaryDto[] | null>(null);
   const [submitted, setSubmitted] = useState(false);

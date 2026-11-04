@@ -16,7 +16,13 @@ export interface FollowUpInfrastructure {
   jobLock: JobLock;
 }
 
+/** Punto de extensión de M9: probabilidad de cierre por cotización (solo las Enviadas). */
+export type NotificationProbabilityProvider = (
+  quoteIds: readonly string[],
+) => Promise<Map<string, number>>;
+
 export interface FollowUpDependencies extends FollowUpInfrastructure {
+  probabilityProvider?: NotificationProbabilityProvider | undefined;
   clock: Clock;
   settings: SettingsReader;
   customers: CustomerReader;

@@ -14,3 +14,4 @@ export * from './documents.schema.js';
 export * from './follow-up.schema.js';
 export * from './orders.schema.js';
 export * from './dashboard.schema.js';
+export * from './ai.schema.js';

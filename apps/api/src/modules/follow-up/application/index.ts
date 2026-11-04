@@ -1,4 +1,8 @@
-export type { FollowUpDependencies, FollowUpInfrastructure } from './follow-up-dependencies.js';
+export type {
+  FollowUpDependencies,
+  FollowUpInfrastructure,
+  NotificationProbabilityProvider,
+} from './follow-up-dependencies.js';
 export {
   CountUnreadUseCase,
   createFollowUpJobs,

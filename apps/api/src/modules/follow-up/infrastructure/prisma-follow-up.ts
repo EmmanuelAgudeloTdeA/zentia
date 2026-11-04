@@ -139,6 +139,11 @@ export class PrismaNotificationRepository implements NotificationRepository {
     return { items, total };
   }
 
+  async listAll(userId: string, { unreadOnly }: { unreadOnly: boolean }): Promise<Notification[]> {
+    const { items } = await this.list(userId, { unreadOnly, skip: 0, take: 1000 });
+    return items;
+  }
+
   countUnread(userId: string): Promise<number> {
     return this.db.notification.count({ where: { userId, readAt: null } });
   }

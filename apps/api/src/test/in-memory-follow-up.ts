@@ -106,6 +106,9 @@ export function createInMemoryFollowUp(
         total: matches.length,
       };
     },
+    async listAll(userId, { unreadOnly }) {
+      return (await notificationRepo.list(userId, { unreadOnly, skip: 0, take: 1000 })).items;
+    },
     async countUnread(userId) {
       return notifications.filter((n) => n.userId === userId && !n.readAt).length;
     },
