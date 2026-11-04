@@ -187,6 +187,7 @@ model Quote {
   order           Order?
 
   @@index([ownerId, status])
+  @@index([ownerId, firstSentAt])
   @@index([status, expiresAt])
   @@index([firstSentAt])
   @@index([customerId])

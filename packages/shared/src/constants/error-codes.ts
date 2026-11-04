@@ -55,6 +55,7 @@ export const ERROR_CODES = [
   'ORDER_NOT_FOUND',
   'ORDER_INVALID_TRANSITION',
   'ORDER_CONFLICT',
+  'DASHBOARD_INVALID_PERIOD',
 ] as const;
 
 export type ErrorCode = (typeof ERROR_CODES)[number];

@@ -120,3 +120,15 @@ WHERE <scope> AND q."firstSentAt" >= :fromTs AND q."firstSentAt" < :toTsExclusiv
 | Rango máximo de 366 días | Limita el costo de las consultas. |
 | Página de inicio | El dashboard es la ruta `/` para los tres roles. |
 | Bloque de probabilidad | Punto de extensión `DashboardSection`; M9 lo llena en H9.3. |
+
+## 9. Notas de implementación (H8.1 y H8.2)
+| Punto | Implementación |
+|---|---|
+| Vacíos del ui-brief | V1: el tablero no incluye el listado; hay un enlace "Ver cotizaciones". V2: saludo por hora (`dashboard.greeting.*`, con `{{name}}`) y contexto (`dashboard.context.pending_one/_other`, `allClear`). V3: Activas, Aprobadas, Rechazadas y Vencidas abren el listado de M4 con el filtro de estado (el barril de `quotes` exporta `useQuoteFiltersStore`). V4: la conversión sin cerradas muestra "Sin datos". |
+| Regla "sin seguimiento" en SQL | `GREATEST(fecha Bogotá de la última interacción de la cotización o del cliente sin cotización, fecha Bogotá de sentAt) + Y <= hoy`. `GREATEST` ignora la interacción nula. Es equivalente a `isWithoutFollowUp` de `shared/rules` y la prueba de integración lo verifica con interacciones de la cotización y del cliente. |
+| Cohorte | `firstSentAt` en `[from 05:00 UTC, (to + 1) 05:00 UTC)`: America/Bogota es UTC−5 todo el año. Se compara contra `timestamp` sin zona (Prisma guarda UTC), con el borde del día probado en integración. |
+| DTO | Se agregan `current.followUpDays` (para "Sin seguimiento hace Y días") y `period.closed` (para "N cerradas en el período"). |
+| Reglas en `shared` | `periodPresets`, `resolvePeriod` (máximo 366 días) y `conversionRate` (`Decimal`, half-up, 2 decimales) se comparten entre el back y el front. |
+| Gráficos | `recharts` en `dashboard-charts.tsx`, cargado con `React.lazy` (chunk aparte); colores con los tokens de estado. |
+| Página de inicio | `features/dashboard` reemplaza a `features/home` en la ruta índice y en la navegación ("Tablero"). |
+| Punto de extensión | `DashboardSection[]` vacío; M9 agrega "Mayor probabilidad de cierre". |

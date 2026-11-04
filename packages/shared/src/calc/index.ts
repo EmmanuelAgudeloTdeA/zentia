@@ -9,3 +9,4 @@ export {
   type QuoteTotalsInput,
   type QuoteTotalsStrings,
 } from './quote-totals.js';
+export { conversionRate } from './conversion-rate.js';

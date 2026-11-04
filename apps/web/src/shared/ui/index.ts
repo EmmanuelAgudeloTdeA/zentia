@@ -11,6 +11,7 @@ export { EmptyState } from './empty-state';
 export { ErrorMessage } from './error-message';
 export { FilterChip } from './filter-chip';
 export * from './icons';
+export { KpiCard } from './kpi-card';
 export { MoneyField } from './money-field';
 export { NumberField } from './number-field';
 export { PageLoader } from './page-loader';

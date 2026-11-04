@@ -24,6 +24,11 @@ import {
   type CustomersInfrastructure,
 } from './customers/index.js';
 import {
+  createDashboardModule,
+  createPrismaDashboardInfrastructure,
+  type DashboardInfrastructure,
+} from './dashboard/index.js';
+import {
   createDocumentsInfrastructure,
   createDocumentsModule,
   documentActions,
@@ -64,6 +69,7 @@ export interface InfrastructureOverrides {
   documents?: DocumentsInfrastructure;
   followUp?: FollowUpInfrastructure;
   orders?: OrdersInfrastructure;
+  dashboard?: DashboardInfrastructure;
 }
 
 export interface CreateModulesOptions {
@@ -159,6 +165,13 @@ export function createModules({
       ...ordersInfrastructure,
       quotes: quotes.quoteReader,
       clock,
+    }),
+    createDashboardModule({
+      ...dependencies,
+      ...(overrides.dashboard ?? createPrismaDashboardInfrastructure(getPrisma())),
+      clock,
+      settings: companySettings.settingsReader,
+      sections: [],
     }),
   ];
 }
