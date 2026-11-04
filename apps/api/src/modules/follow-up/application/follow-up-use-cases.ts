@@ -31,8 +31,12 @@ function toInteractionDto(interaction: Interaction): InteractionDto {
   };
 }
 
-function toNotificationDto(notification: Notification): NotificationDto {
+function toNotificationDto(
+  notification: Notification,
+  probability: number | null = null,
+): NotificationDto {
   return {
+    probability,
     id: notification.id,
     type: notification.type,
     params: notification.params,
@@ -105,16 +109,58 @@ export class RunFollowUpAlertsUseCase {
 export class ListNotificationsUseCase {
   constructor(private readonly deps: FollowUpDependencies) {}
 
-  async execute(
-    actor: Actor,
-    { unreadOnly, page, pageSize }: NotificationListFilter,
-  ): Promise<NotificationListDto> {
+  async execute(actor: Actor, filter: NotificationListFilter): Promise<NotificationListDto> {
+    const { unreadOnly, page, pageSize } = filter;
+    const skip = (page - 1) * pageSize;
+    const provider = this.deps.probabilityProvider;
+    if (filter.sort === 'probability' && provider) {
+      try {
+        return await this.byProbability(actor, filter, provider);
+      } catch {
+        // Si no se puede calcular la probabilidad, se responde por fecha (S9.3.1, ui-brief V5).
+      }
+    }
     const result = await this.deps.notifications.list(actor.id, {
       unreadOnly,
-      skip: (page - 1) * pageSize,
+      skip,
       take: pageSize,
     });
-    return { items: result.items.map(toNotificationDto), total: result.total, page, pageSize };
+    const probabilities = provider
+      ? await provider(result.items.map((item) => item.quote.id)).catch(
+          () => new Map<string, number>(),
+        )
+      : new Map<string, number>();
+    return {
+      sort: 'date',
+      items: result.items.map((item) =>
+        toNotificationDto(item, probabilities.get(item.quote.id) ?? null),
+      ),
+      total: result.total,
+      page,
+      pageSize,
+    };
+  }
+
+  /** Probabilidad desc y luego fecha desc; las de cotizaciones que ya no están Enviadas, al final. */
+  private async byProbability(
+    actor: Actor,
+    { unreadOnly, page, pageSize }: NotificationListFilter,
+    provider: NonNullable<FollowUpDependencies['probabilityProvider']>,
+  ): Promise<NotificationListDto> {
+    const all = await this.deps.notifications.listAll(actor.id, { unreadOnly });
+    const probabilities = await provider([...new Set(all.map((item) => item.quote.id))]);
+    const rank = (item: Notification) => probabilities.get(item.quote.id) ?? -1;
+    const sorted = [...all].sort(
+      (a, b) => rank(b) - rank(a) || b.createdAt.getTime() - a.createdAt.getTime(),
+    );
+    const items = sorted.slice((page - 1) * pageSize, page * pageSize);
+    return {
+      sort: 'probability',
+      items: items.map((item) => toNotificationDto(item, probabilities.get(item.quote.id) ?? null)),
+      total: all.length,
+      page,
+      pageSize,
+    };
   }
 }
 

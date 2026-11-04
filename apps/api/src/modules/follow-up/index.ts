@@ -17,7 +17,10 @@ import {
   createNotificationsRouter,
 } from './presentation/index.js';
 
-export type { FollowUpInfrastructure } from './application/index.js';
+export type {
+  FollowUpInfrastructure,
+  NotificationProbabilityProvider,
+} from './application/index.js';
 export { createTransferNotificationsListener } from './application/index.js';
 export { createPrismaFollowUpInfrastructure } from './infrastructure/index.js';
 

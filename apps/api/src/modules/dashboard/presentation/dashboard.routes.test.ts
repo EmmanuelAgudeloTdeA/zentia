@@ -47,7 +47,13 @@ describe('GET /api/dashboard/summary', () => {
         approvedAmount: '5375000',
         conversionRate: '37.50',
       },
-      sections: [],
+      sections: [
+        { key: 'topProbability', items: [] },
+        {
+          key: 'calibration',
+          items: [{ closedCount: 0, threshold: 30, readyForCalibration: false }],
+        },
+      ],
     });
     expect(dashboard.calls[1]?.args).toEqual([
       new Date('2026-11-01T05:00:00.000Z'),

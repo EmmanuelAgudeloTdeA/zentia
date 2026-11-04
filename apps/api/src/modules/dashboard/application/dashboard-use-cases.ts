@@ -45,7 +45,7 @@ export interface DashboardFilters {
 export type DashboardSection = (
   actor: Actor,
   filters: DashboardFilters,
-) => Promise<DashboardSectionDto>;
+) => Promise<DashboardSectionDto | null>;
 
 export interface DashboardInfrastructure {
   dashboard: DashboardReadRepository;
@@ -97,7 +97,7 @@ export class GetDashboardSummaryUseCase {
         closed: stats.approved + stats.rejected + stats.expired,
         conversionRate: conversionRate(stats.approved, stats.rejected, stats.expired),
       },
-      sections,
+      sections: sections.filter((section): section is DashboardSectionDto => section !== null),
     };
   }
 }

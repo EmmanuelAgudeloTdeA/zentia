@@ -40,6 +40,8 @@ export interface NotificationRepository {
     userId: string,
     options: { unreadOnly: boolean; skip: number; take: number },
   ): Promise<{ items: Notification[]; total: number }>;
+  /** Todas las del usuario (para ordenar por probabilidad antes de paginar). */
+  listAll(userId: string, options: { unreadOnly: boolean }): Promise<Notification[]>;
   countUnread(userId: string): Promise<number>;
   /** false si no existe o no es del usuario. */
   markRead(id: string, userId: string, at: Date): Promise<boolean>;

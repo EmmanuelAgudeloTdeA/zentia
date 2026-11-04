@@ -87,6 +87,8 @@ export const notificationDtoSchema = z.object({
 export type NotificationDto = z.infer<typeof notificationDtoSchema>;
 
 export const notificationListDtoSchema = z.object({
+  /** Orden aplicado: `date` si se pidió así o si no se pudo calcular la probabilidad. */
+  sort: z.enum(['probability', 'date']),
   items: z.array(notificationDtoSchema),
   total: z.int(),
   page: z.int(),
