@@ -98,7 +98,7 @@ docker run -p 3000:3000 \
 
 - **Staging:** el mismo blueprint con otro nombre; después del primer despliegue, ejecutar `ALLOW_DEMO_SEED=true node dist/seed-demo.js` desde la consola del servicio. Producción nunca lleva datos sintéticos.
 - **Una sola instancia** por empresa (`SCHEDULER_ENABLED=true`): con varias, los jobs se duplicarían.
-- **Planes gratuitos** suspenden el servicio por inactividad: el primer acceso tarda y los jobs no corren mientras está suspendido (la pasada de recuperación al arrancar los pone al día). Para uso real, un plan sin suspensión.
+- **Plan gratuito** (el que usa `render.yaml`): el servicio se suspende por inactividad, así que el primer acceso tarda y los jobs no corren mientras está suspendido (la pasada de recuperación al arrancar los pone al día); no hay consola _Shell_ y la base gratuita vence a los 30 días. Para uso real, cambiar `plan` a uno de pago (p. ej. `starter` y `basic-256mb`).
 
 ## Scripts (raíz)
 
