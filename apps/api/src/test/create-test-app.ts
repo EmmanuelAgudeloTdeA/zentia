@@ -5,6 +5,7 @@ import { createLogger } from '../core/logger/index.js';
 import type { UsersInfrastructure } from '../modules/users/index.js';
 import { createInMemoryCatalog, type InMemoryCatalog } from './in-memory-catalog.js';
 import { createInMemoryCustomers, type InMemoryCustomers } from './in-memory-customers.js';
+import { createInMemoryFollowUp, type InMemoryFollowUp } from './in-memory-follow-up.js';
 import { createInMemoryQuotes, type InMemoryQuotes } from './in-memory-quotes.js';
 import { createInMemoryAuth, TEST_JWT_SECRET, type InMemoryAuth } from './in-memory-auth.js';
 import {
@@ -20,6 +21,7 @@ interface TestAppOptions {
   customers?: InMemoryCustomers;
   catalog?: InMemoryCatalog;
   quotes?: InMemoryQuotes;
+  followUp?: InMemoryFollowUp;
   clock?: Clock;
 }
 
@@ -55,6 +57,7 @@ export function createTestApp({
   customers,
   catalog,
   quotes,
+  followUp,
   clock,
 }: TestAppOptions = {}) {
   const env = loadEnv({
@@ -79,6 +82,7 @@ export function createTestApp({
       catalog: catalog ?? createInMemoryCatalog(),
       quotes:
         quotes ?? createInMemoryQuotes(quoteLookups(authInfrastructure, customersInfrastructure)),
+      followUp: (followUp ?? createInMemoryFollowUp()).infrastructure,
     },
     ...(clock ? { clock } : {}),
   });

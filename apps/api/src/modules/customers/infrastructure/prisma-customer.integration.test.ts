@@ -17,6 +17,8 @@ describe.skipIf(!databaseUrl)('PrismaCustomerRepository (integration)', () => {
   });
 
   beforeEach(async () => {
+    await prisma.notification.deleteMany();
+    await prisma.interaction.deleteMany();
     await prisma.quoteEvent.deleteMany();
     await prisma.quoteVersion.deleteMany();
     await prisma.quote.deleteMany();

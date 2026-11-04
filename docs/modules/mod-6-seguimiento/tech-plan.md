@@ -142,3 +142,15 @@ Las interacciones no tienen `updatedAt`: son de solo agregar.
 | Polling de la campana | Cada 60 s con la pestaña visible (sin push, RN-34). |
 | `referenceDate` como `DATE` en Bogotá (decisión 79) | Se calcula con `Clock` y la zona del proceso; los tests fijan el reloj en el cambio de día. |
 | Varias instancias | `SCHEDULER_ENABLED` + advisory lock + idempotencia (deuda de `node-cron`). |
+
+## 9. Notas de implementación (H6.1, H6.2 y H6.3)
+| Punto | Implementación |
+|---|---|
+| Vacíos del ui-brief | G1: el detalle de la cotización muestra solo sus interacciones y un enlace "Ver historial del cliente". G2: la notificación ya traspasada se marca como leída al abrirla y el detalle muestra "Cotización no encontrada". G3: el diálogo lista todas las cotizaciones accesibles del cliente, con las Enviadas primero. G4: "Notificaciones" está en el menú de usuario y en la campana, no en la barra principal. |
+| Regla de seguimiento | `followUpReferenceDate`, `isWithoutFollowUp`, `isExpiringSoon` y `daysBetweenDays` viven en `packages/shared/src/rules` para que M8 y M9 las reutilicen; `alertsFor` (dominio de `follow-up`) las aplica. |
+| Lectura para alertas | `FollowUpReadRepository.sentQuotesWithActiveOwner()` trae las Enviadas con dueño activo y las fechas en Bogotá (`(ts AT TIME ZONE 'UTC') AT TIME ZONE 'America/Bogota'`, porque Prisma guarda UTC); las reglas se aplican en la aplicación. |
+| Idempotencia | `createMany({ skipDuplicates: true })` sobre el único `(quoteId, type, referenceDate)`. |
+| Lock de jobs | `pg_try_advisory_xact_lock(hashtext(name))` dentro de una transacción interactiva: se libera solo al terminar. |
+| Scheduler | `core/scheduler` (`NodeCronScheduler`, zona `America/Bogota`, `noOverlap`) y `runJob` con log de inicio, cantidad, duración y error. Los módulos exponen `jobs` en `ModuleDefinition`; `createApplication()` los devuelve y `main.ts` los registra si `SCHEDULER_ENABLED=true` (por defecto `false`) y hace la pasada de recuperación al arrancar. |
+| Traspaso al reasignar | `NotificationRepository.transferUnread(client, quoteId, to)` con el cliente de la transacción de M4 (`QuotesTransaction.client`), registrado como `QuoteReassignedListener`. |
+| Notificaciones en el front | Store en `core/notifications` (contador); `NotificationBell` en el encabezado con polling cada 60 s si la pestaña está visible y al navegar; `NotificationsPage` en `/notifications`. |

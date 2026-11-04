@@ -4,6 +4,7 @@ import * as catalog from '../../features/catalog';
 import * as companySettings from '../../features/company-settings';
 import * as customers from '../../features/customers';
 import * as home from '../../features/home';
+import * as notifications from '../../features/notifications';
 import * as quotes from '../../features/quotes';
 import * as users from '../../features/users';
 import { NotFoundPage, PrivateLayout, PublicLayout, SessionLayout } from '../layout';
@@ -30,6 +31,7 @@ const navItems = FEATURES.flatMap((feature) => feature.navItems);
 const headerEnd = (
   <>
     <quotes.NewQuoteButton />
+    <notifications.NotificationBell />
     <auth.UserMenu />
   </>
 );

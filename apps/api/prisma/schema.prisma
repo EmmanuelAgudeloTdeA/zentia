@@ -30,6 +30,8 @@ model User {
   createdQuotes      Quote[]        @relation("QuoteCreator")
   quoteVersions      QuoteVersion[]
   quoteEvents        QuoteEvent[]
+  interactions       Interaction[]
+  notifications      Notification[]
 
   @@index([role, isActive])
 }
@@ -90,18 +92,19 @@ model CompanySettings {
 
 /// CHECK en la migración: phone IS NOT NULL OR email IS NOT NULL.
 model Customer {
-  id          String   @id @default(uuid()) @db.Uuid
-  name        String   @db.VarChar(150)
-  nameKey     String   @db.VarChar(150)
-  documentId  String   @unique @db.VarChar(20)
-  phone       String?  @db.VarChar(15)
-  email       String?  @db.VarChar(150)
-  isActive    Boolean  @default(true)
-  createdById String   @db.Uuid
-  createdBy   User     @relation(fields: [createdById], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  quotes      Quote[]
+  id           String        @id @default(uuid()) @db.Uuid
+  name         String        @db.VarChar(150)
+  nameKey      String        @db.VarChar(150)
+  documentId   String        @unique @db.VarChar(20)
+  phone        String?       @db.VarChar(15)
+  email        String?       @db.VarChar(150)
+  isActive     Boolean       @default(true)
+  createdById  String        @db.Uuid
+  createdBy    User          @relation(fields: [createdById], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  quotes       Quote[]
+  interactions Interaction[]
 
   @@index([isActive, nameKey])
   @@index([phone])
@@ -178,6 +181,8 @@ model Quote {
   items           QuoteItem[]
   versions        QuoteVersion[]
   events          QuoteEvent[]
+  interactions    Interaction[]
+  notifications   Notification[]
 
   @@index([ownerId, status])
   @@index([status, expiresAt])
@@ -234,4 +239,52 @@ model QuoteEvent {
   createdAt DateTime       @default(now())
 
   @@index([quoteId, createdAt])
+}
+
+enum InteractionType {
+  CALL
+  EMAIL
+  WHATSAPP
+  MEETING
+  OTHER
+}
+
+enum NotificationType {
+  QUOTE_EXPIRING
+  QUOTE_NO_FOLLOW_UP
+}
+
+/// Registro de solo agregar (sin updatedAt). CHECK en la migración: nota de 1 a 2000 caracteres.
+model Interaction {
+  id         String          @id @default(uuid()) @db.Uuid
+  customerId String          @db.Uuid
+  customer   Customer        @relation(fields: [customerId], references: [id])
+  quoteId    String?         @db.Uuid
+  quote      Quote?          @relation(fields: [quoteId], references: [id])
+  type       InteractionType
+  note       String          @db.VarChar(2000)
+  occurredAt DateTime
+  authorId   String          @db.Uuid
+  author     User            @relation(fields: [authorId], references: [id])
+  createdAt  DateTime        @default(now())
+
+  @@index([customerId, occurredAt])
+  @@index([quoteId, occurredAt])
+}
+
+/// Alerta para el dueño actual; el único (quoteId, type, referenceDate) evita duplicados por ciclo.
+model Notification {
+  id            String           @id @default(uuid()) @db.Uuid
+  userId        String           @db.Uuid
+  user          User             @relation(fields: [userId], references: [id])
+  quoteId       String           @db.Uuid
+  quote         Quote            @relation(fields: [quoteId], references: [id])
+  type          NotificationType
+  params        Json
+  referenceDate DateTime         @db.Date
+  readAt        DateTime?
+  createdAt     DateTime         @default(now())
+
+  @@unique([quoteId, type, referenceDate])
+  @@index([userId, readAt])
 }

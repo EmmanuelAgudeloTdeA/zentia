@@ -6,6 +6,7 @@ import type { Logger } from 'pino';
 import { pinoHttp } from 'pino-http';
 import { SystemClock, type Clock } from './core/clock/index.js';
 import type { Env } from './core/env/index.js';
+import type { ScheduledJob } from './core/scheduler/index.js';
 import { createGeneralLimiter, errorHandler, notFoundHandler } from './core/http/index.js';
 import {
   buildOpenApiDocument,
@@ -21,12 +22,21 @@ export interface AppOptions {
   overrides?: InfrastructureOverrides;
 }
 
-export function createApp({
+export interface Application {
+  app: Express;
+  jobs: ScheduledJob[];
+}
+
+export function createApp(options: AppOptions): Express {
+  return createApplication(options).app;
+}
+
+export function createApplication({
   env,
   logger,
   clock = new SystemClock(),
   overrides,
-}: AppOptions): Express {
+}: AppOptions): Application {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', env.TRUST_PROXY);
@@ -75,5 +85,5 @@ export function createApp({
 
   app.use('/api', api);
   app.use(errorHandler);
-  return app;
+  return { app, jobs: modules.flatMap((module) => module.jobs ?? []) };
 }
