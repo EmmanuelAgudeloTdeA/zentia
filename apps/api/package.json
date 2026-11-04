@@ -31,6 +31,7 @@
     "pdfmake": "^0.3.13",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
+    "prisma": "~6.19.3",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.6.7"
   },
@@ -41,7 +42,6 @@
     "@types/pdfmake": "^0.3.3",
     "@types/supertest": "^7.2.1",
     "@types/swagger-ui-express": "^4.1.8",
-    "prisma": "~6.19.3",
     "supertest": "^7.3.1",
     "tsx": "^4.23.15",
     "typescript": "~6.0.3",
