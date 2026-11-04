@@ -47,4 +47,24 @@ describe('API base', () => {
     );
     expect(response.status).toBe(404);
   });
+
+  it('documents the common error body as the ApiError component', async () => {
+    const response = await request(createTestApp()).get('/api/docs/openapi.json');
+    expect(response.body.components.schemas).toHaveProperty('ApiError');
+  });
+
+  it('serves the Swagger UI when docs are enabled', async () => {
+    const response = await request(createTestApp()).get('/api/docs/');
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toMatch(/text\/html/);
+    expect(response.text).toContain('swagger-ui');
+  });
+
+  it('answers 404 for the Swagger UI when docs are disabled', async () => {
+    const response = await request(createTestApp({ env: { DOCS_ENABLED: 'false' } })).get(
+      '/api/docs/',
+    );
+    expect(response.status).toBe(404);
+    expect(response.body).toEqual({ error: { code: 'NOT_FOUND' } });
+  });
 });
