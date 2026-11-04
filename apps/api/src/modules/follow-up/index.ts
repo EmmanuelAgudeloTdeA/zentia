@@ -30,7 +30,7 @@ export type FollowUpModuleOptions = ModuleDependencies &
 /** Dos recursos (`/interactions` y `/notifications`) y los jobs diarios. */
 export function createFollowUpModules({
   requireAuth,
-  publicLimiter: _publicLimiter,
+  resourceLimiter: _resourceLimiter,
   expireQuotes,
   ...deps
 }: FollowUpModuleOptions): ModuleDefinition[] {

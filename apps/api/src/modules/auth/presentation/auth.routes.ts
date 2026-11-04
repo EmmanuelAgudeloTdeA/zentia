@@ -17,7 +17,7 @@ export interface AuthRouterDependencies {
   logout: LogoutUseCase;
   changePassword: ChangeOwnPasswordUseCase;
   loginLimiter: RequestHandler;
-  publicLimiter: RequestHandler;
+  sessionLimiter: RequestHandler;
   requireAuth: RequireAuth;
 }
 
@@ -37,7 +37,7 @@ export function createAuthRouter(deps: AuthRouterDependencies): Router {
     sendSession(res, session);
   });
 
-  router.post('/refresh', deps.publicLimiter, async (req, res) => {
+  router.post('/refresh', deps.sessionLimiter, async (req, res) => {
     try {
       sendSession(res, await deps.refresh.execute(readRefreshCookie(req)));
     } catch (error) {
@@ -46,7 +46,7 @@ export function createAuthRouter(deps: AuthRouterDependencies): Router {
     }
   });
 
-  router.post('/logout', deps.publicLimiter, async (req, res) => {
+  router.post('/logout', async (req, res) => {
     try {
       await deps.logout.execute(readRefreshCookie(req));
     } catch (error) {

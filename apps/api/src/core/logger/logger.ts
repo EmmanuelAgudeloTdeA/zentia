@@ -1,4 +1,4 @@
-import { pino, type Logger, type LevelWithSilent } from 'pino';
+import { pino, type DestinationStream, type Logger, type LevelWithSilent } from 'pino';
 
 export const REDACT_PATHS = [
   'req.headers.authorization',
@@ -9,6 +9,7 @@ export const REDACT_PATHS = [
   '*.data',
 ];
 
-export function createLogger(level: LevelWithSilent): Logger {
-  return pino({ level, redact: { paths: REDACT_PATHS, censor: '[REDACTED]' } });
+export function createLogger(level: LevelWithSilent, destination?: DestinationStream): Logger {
+  const options = { level, redact: { paths: REDACT_PATHS, censor: '[REDACTED]' } };
+  return destination ? pino(options, destination) : pino(options);
 }

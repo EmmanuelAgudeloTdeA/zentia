@@ -42,8 +42,13 @@ export function UserMenu() {
 
   const onLogout = async () => {
     setOpen(false);
-    await logout();
-    navigate(LOGIN_PATH, { replace: true });
+    try {
+      await logout();
+    } catch {
+      // La sesión local ya se limpió; el servidor responde 204 salvo fallo de red.
+    } finally {
+      navigate(LOGIN_PATH, { replace: true });
+    }
   };
 
   return (

@@ -1,6 +1,6 @@
 import express from 'express';
 import request from 'supertest';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { errorHandler } from '../../../core/http/index.js';
 import { createTestApp } from '../../../test/create-test-app.js';
 import { createInMemoryAuth, FixedClock, type InMemoryAuth } from '../../../test/in-memory-auth.js';
@@ -42,6 +42,18 @@ describe('POST /api/auth/login', () => {
     expect(cookie).toMatch(/SameSite=Strict/i);
     expect(cookie).toMatch(/Path=\/api\/auth/i);
     expect(cookie).toMatch(/Expires=/i);
+  });
+
+  it('sets the refresh cookie to expire 7 days after login', async () => {
+    await auth.addUser({ email: EMAIL, password: PASSWORD });
+    const clock = new FixedClock();
+    const response = await request(createTestApp({ auth, clock }))
+      .post('/api/auth/login')
+      .send({ email: EMAIL, password: PASSWORD });
+
+    const expires = /Expires=([^;]+)/i.exec(refreshCookieOf(response))?.[1] ?? '';
+    const sevenDays = 7 * 24 * 60 * 60_000;
+    expect(new Date(expires).getTime() - clock.now().getTime()).toBe(sevenDays);
   });
 
   it('answers INVALID_CREDENTIALS without revealing which field failed', async () => {
@@ -143,6 +155,43 @@ describe('refresh and logout', () => {
   });
 });
 
+describe('public rate limits', () => {
+  async function loginCookie(app: express.Express) {
+    await auth.addUser({ email: EMAIL, password: PASSWORD });
+    const response = await request(app)
+      .post('/api/auth/login')
+      .send({ email: EMAIL, password: PASSWORD });
+    return refreshCookieOf(response).split(';')[0] ?? '';
+  }
+
+  it('logout answers 204 and clears the cookie even after the refresh limit is exhausted', async () => {
+    const app = createTestApp({ auth });
+    const cookie = await loginCookie(app);
+    for (let attempt = 0; attempt < 60; attempt += 1) {
+      await request(app).post('/api/auth/refresh');
+    }
+    expect((await request(app).post('/api/auth/refresh')).status).toBe(429);
+
+    const logout = await request(app).post('/api/auth/logout').set('Cookie', cookie);
+    expect(logout.status).toBe(204);
+    expect(refreshCookieOf(logout)).toMatch(/Expires=Thu, 01 Jan 1970/);
+  });
+
+  it('keeps refresh available after the public resources limit is exhausted', async () => {
+    const app = createTestApp({ auth });
+    const cookie = await loginCookie(app);
+    for (let attempt = 0; attempt < 120; attempt += 1) {
+      await request(app).get(attempt % 2 === 0 ? '/api/company/branding' : '/api/health');
+    }
+    const blocked = await request(app).get('/api/company/branding');
+    expect(blocked.status).toBe(429);
+    expect(blocked.body).toEqual({ error: { code: 'RATE_LIMITED' } });
+
+    const refresh = await request(app).post('/api/auth/refresh').set('Cookie', cookie);
+    expect(refresh.status).toBe(200);
+  });
+});
+
 describe('POST /api/auth/change-password', () => {
   it('is allowed with mustChangePassword and returns a new session', async () => {
     await auth.addUser({ email: EMAIL, password: PASSWORD, mustChangePassword: true });
@@ -213,6 +262,30 @@ describe('requireAuth guard', () => {
     const inactive = await request(app).get('/private').set('Authorization', `Bearer ${token}`);
     expect(inactive.status).toBe(401);
     expect(inactive.body.error.code).toBe('USER_INACTIVE');
+  });
+
+  it('reuses the actor of an outer guard without a second lookup, keeping role checks', async () => {
+    const user = await auth.addUser({ email: EMAIL, password: PASSWORD });
+    const token = await auth.accessTokens.sign(user.id);
+    const findById = vi.spyOn(auth.users, 'findById');
+    const requireAuth = createRequireAuth(new AuthenticateRequestUseCase(auth));
+    const app = express();
+    app.use(requireAuth());
+    app.get('/nested', requireAuth(), (_req, res) => {
+      res.json({ ok: true });
+    });
+    app.get('/admin', requireAuth({ roles: ['ADMIN'] }), (_req, res) => {
+      res.json({ ok: true });
+    });
+    app.use(errorHandler);
+
+    const nested = await request(app).get('/nested').set('Authorization', `Bearer ${token}`);
+    expect(nested.status).toBe(200);
+    expect(findById).toHaveBeenCalledOnce();
+
+    const admin = await request(app).get('/admin').set('Authorization', `Bearer ${token}`);
+    expect(admin.status).toBe(403);
+    expect(admin.body.error.code).toBe('FORBIDDEN');
   });
 
   it('answers PASSWORD_CHANGE_REQUIRED unless the route allows it', async () => {

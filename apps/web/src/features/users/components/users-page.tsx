@@ -61,6 +61,7 @@ function StatusBadge({ active }: { active: boolean }) {
 export function UsersPage() {
   const { t } = useTranslation();
   const currentUserId = useSessionStore((state) => state.user?.id);
+  const syncSessionUser = useSessionStore((state) => state.syncUser);
   const filters = useUsersFiltersStore();
   const { state, reload, refresh, replaceUser } = useUsers();
   const [dialog, setDialog] = useState<DialogState>(null);
@@ -76,7 +77,9 @@ export function UsersPage() {
     setBusy(true);
     setActionError(null);
     try {
-      replaceUser(await usersService.update(user.id, { isActive }));
+      const updated = await usersService.update(user.id, { isActive });
+      replaceUser(updated);
+      syncSessionUser(updated);
       toast.success(t(isActive ? 'users.toast.activated' : 'users.toast.deactivated'));
       setDialog(null);
     } catch (error) {
@@ -109,6 +112,7 @@ export function UsersPage() {
 
   const onUpdated = (user: UserDto) => {
     replaceUser(user);
+    syncSessionUser(user);
     toast.success(t('users.toast.updated'));
     setDialog(null);
   };

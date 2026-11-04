@@ -153,4 +153,19 @@ describe('UserMenu', () => {
     expect(logout).toHaveBeenCalledOnce();
     expect(useSessionStore.getState().status).toBe('anonymous');
   });
+
+  it('still clears the session and goes to the login when logout fails', async () => {
+    signIn('ADMIN');
+    const logout = vi
+      .spyOn(authService, 'logout')
+      .mockRejectedValue(new ApiError('NETWORK_ERROR', 0));
+    const router = renderApp('/');
+
+    fireEvent.click(screen.getByRole('button', { name: new RegExp(es.userMenu.label) }));
+    fireEvent.click(screen.getByRole('menuitem', { name: es.auth.logout }));
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(LOGIN_PATH));
+    expect(logout).toHaveBeenCalledOnce();
+    expect(useSessionStore.getState().status).toBe('anonymous');
+  });
 });

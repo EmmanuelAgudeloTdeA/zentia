@@ -9,12 +9,16 @@ function bearerToken(header: string | undefined): string | undefined {
 }
 
 export function createRequireAuth(authenticate: AuthenticateRequestUseCase): RequireAuth {
+  const authenticateBearer = (header: string | undefined) => {
+    const token = bearerToken(header);
+    if (!token) throw new AppError('UNAUTHENTICATED', 401);
+    return authenticate.execute(token);
+  };
+  // Routers anidados (p. ej. bajo /quotes) reutilizan el actor ya cargado: una sola consulta por petición.
   return ({ roles, allowPasswordChangeRequired = false } = {}): RequestHandler =>
     async (req, _res, next) => {
       try {
-        const token = bearerToken(req.headers.authorization);
-        if (!token) throw new AppError('UNAUTHENTICATED', 401);
-        const actor = await authenticate.execute(token);
+        const actor = req.actor ?? (await authenticateBearer(req.headers.authorization));
         if (actor.mustChangePassword && !allowPasswordChangeRequired) {
           throw new AppError('PASSWORD_CHANGE_REQUIRED', 403);
         }

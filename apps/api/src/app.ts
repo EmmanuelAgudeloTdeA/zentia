@@ -8,7 +8,8 @@ import { SystemClock, type Clock } from './core/clock/index.js';
 import type { Env } from './core/env/index.js';
 import type { ScheduledJob } from './core/scheduler/index.js';
 import {
-  createGeneralLimiter,
+  createResourceLimiter,
+  createSessionLimiter,
   createStaticWebMiddleware,
   errorHandler,
   notFoundHandler,
@@ -68,7 +69,8 @@ export function createApplication({
     env,
     clock,
     logger,
-    publicLimiter: createGeneralLimiter(),
+    sessionLimiter: createSessionLimiter(),
+    resourceLimiter: createResourceLimiter(),
     ...(overrides ? { overrides } : {}),
   });
   for (const module of modules) {

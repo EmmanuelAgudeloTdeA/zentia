@@ -1,0 +1,94 @@
+# Checklist QA – M1 Acceso y usuarios
+
+## Depende de
+- `docs/modules/mod-1-acceso-usuarios/epics.md` (criterios de aceptación de H1.1, H1.2 y H1.3).
+- `CLAUDE.md` (tokens, guard, rutas públicas con rate limit, usuarios y política de contraseñas).
+- M0: `docs/qa/checklists/mod-0-fundacion.md`.
+
+**Estado:** todos los criterios tienen prueba automatizada; las pruebas `*.integration.test.ts` solo corren con `TEST_DATABASE_URL` (CI, job `checks`).
+
+Formato: `- [x] <story>.<criterio> <criterio> — <archivo de prueba> › <describe> › <prueba>`.
+
+## H1.1 Autenticación
+
+### S1.1.1 Login
+- [x] S1.1.1.1a Login válido → 200 `{ accessToken, user }` y cookie `httpOnly`, `Secure`, `SameSite=Strict`, `Path=/api/auth` — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › POST /api/auth/login › returns the session and a hardened refresh cookie
+- [x] S1.1.1.1b La cookie de refresh dura 7 días — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › POST /api/auth/login › sets the refresh cookie to expire 7 days after login
+- [x] S1.1.1.1c Access token de 15 min que solo lleva `sub` — `apps/api/src/modules/auth/infrastructure/security-adapters.test.ts` › JoseAccessTokens › signs a token whose only identity claim is sub; `apps/api/src/core/env/load-env.test.ts` › loadEnv › applies defaults (`ACCESS_TOKEN_TTL` = 900 s)
+- [x] S1.1.1.2a Correo inexistente, contraseña incorrecta o usuario inactivo → 401 `INVALID_CREDENTIALS` — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › LoginUseCase › answers INVALID_CREDENTIALS for an unknown email, wrong password or inactive user; `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › POST /api/auth/login › answers INVALID_CREDENTIALS without revealing which field failed
+- [x] S1.1.1.2b Tiempo de respuesta similar (sin enumerar usuarios) — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › LoginUseCase › verifies against a dummy hash when the user does not exist
+- [x] S1.1.1.3 Más de 5 intentos fallidos por IP + correo en 15 min → 429 `RATE_LIMITED` — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › POST /api/auth/login › limits failed attempts per IP and email to 5 every 15 minutes
+- [x] S1.1.1.4 El seed crea el primer `ADMIN` con `mustChangePassword` solo si no existe — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › SeedFirstAdminUseCase › creates the first admin with mustChangePassword only once; › rejects missing variables or a password outside the policy
+- [x] S1.1.1.5 Login en layout público, errores traducidos y redirección a `/change-password` si aplica — `apps/web/src/features/auth/components/auth-pages.test.tsx` › LoginPage › shows field validation from lang/ before calling the API; › translates INVALID_CREDENTIALS; › sends users with a temporary password to the change-password page
+
+### S1.1.2 Refresh token
+- [x] S1.1.2.1 Refresh válido → 200, revoca el token usado y emite otro de la misma familia — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › RefreshSessionUseCase › rotates the token inside the same family; `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › refresh and logout › rotates the cookie on refresh
+- [x] S1.1.2.2 Reuso fuera de la gracia → 401 `REFRESH_TOKEN_REUSED` y revoca la familia; dentro → 409 `REFRESH_IN_PROGRESS` — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › refresh and logout › detects reuse after the grace window and clears the cookie; `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › RefreshSessionUseCase › revokes the whole family when a rotated token is reused after the window; `apps/api/src/modules/auth/domain/auth-domain.test.ts` › assessRefreshToken › tolerates a rotated token within the 10 s grace window
+- [x] S1.1.2.3 Cookie ausente, desconocida o expirada, o usuario inactivo → 401 `INVALID_REFRESH_TOKEN` — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › RefreshSessionUseCase › rejects a missing, unknown or expired token; › rejects the token of a deactivated user; `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › refresh and logout › answers INVALID_REFRESH_TOKEN without a cookie
+- [x] S1.1.2.4a Al recargar, el front recupera la sesión con un refresh; si falla, muestra el login — `apps/web/src/features/auth/services/session.service.test.ts` › session service › bootstraps to anonymous when there is no valid cookie; `apps/web/src/core/router/protected-route.test.tsx` › ProtectedRoute › redirects to the login when there is no session and keeps the requested route
+- [x] S1.1.2.4b Un 429 en el refresh del arranque se reintenta una vez en vez de cerrar la sesión — `apps/web/src/features/auth/services/session.service.test.ts` › session service › retries the bootstrap refresh once after RATE_LIMITED instead of going anonymous
+- [x] S1.1.2.4c El refresh tiene su propio rate limit, separado de branding, logo y health — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › public rate limits › keeps refresh available after the public resources limit is exhausted
+- [x] S1.1.2.5a Renovación única ante 401 `TOKEN_EXPIRED` con reintento — `apps/web/src/features/auth/services/session.service.test.ts` › session service › renews an expired access token and retries the request; `apps/web/src/core/http-client/http-client.test.ts` › http-client › sends the access token and retries once when onUnauthorized resolves true
+- [x] S1.1.2.5b Un solo refresh a la vez (peticiones y pestañas concurrentes) — `apps/web/src/features/auth/services/session.service.test.ts` › session service › refreshes only once for concurrent callers; › retries once after REFRESH_IN_PROGRESS
+- [x] S1.1.2.5c 401 `USER_INACTIVE` cierra la sesión sin intentar refresh — `apps/web/src/features/auth/services/session.service.test.ts` › session service › clears the session without refreshing on USER_INACTIVE
+
+### S1.1.3 Logout
+- [x] S1.1.3.1 Logout con la cookie de refresh revoca la familia y borra la cookie — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › LogoutUseCase › revokes the family and never fails; `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › refresh and logout › logout always answers 204 and invalidates the cookie
+- [x] S1.1.3.2 Responde siempre 204 (cookie ausente, inválida o expirada), sin rate limit — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › refresh and logout › logout always answers 204 and invalidates the cookie; › public rate limits › logout answers 204 and clears the cookie even after the refresh limit is exhausted
+- [x] S1.1.3.3 Tras el logout, un refresh con la cookie anterior → 401 — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › refresh and logout › logout always answers 204 and invalidates the cookie
+- [x] S1.1.3.4 El front limpia el store y redirige a `/login`, también si el logout falla — `apps/web/src/features/auth/components/auth-pages.test.tsx` › UserMenu › logs out and goes to the login; › still clears the session and goes to the login when logout fails
+
+### S1.1.4 Cambiar mi contraseña
+- [x] S1.1.4.1 Exige `currentPassword`; incorrecta → 400 `INVALID_CURRENT_PASSWORD` — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › ChangeOwnPasswordUseCase › rejects a wrong current password; `apps/web/src/features/auth/components/auth-pages.test.tsx` › ChangePasswordPage › maps INVALID_CURRENT_PASSWORD to the current password field
+- [x] S1.1.4.2 Política 10–72 bytes, letra y número, distinta del correo y de la actual — `packages/shared/src/schemas/password-policy.test.ts` › checkPasswordPolicy › accepts a password with 10+ bytes, a letter and a number; › measures length in UTF-8 bytes; › requires at least one letter and one number; › rejects a password equal to the email, ignoring case and spaces; `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › ChangeOwnPasswordUseCase › rejects the same password and one equal to the email
+- [x] S1.1.4.3 Éxito: `mustChangePassword = false`, revoca todos los refresh y abre familia nueva — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › ChangeOwnPasswordUseCase › clears mustChangePassword, revokes every session and opens a new family; `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › POST /api/auth/change-password › is allowed with mustChangePassword and returns a new session
+- [x] S1.1.4.4 Con `mustChangePassword` el front solo permite el cambio y el logout — `apps/web/src/core/router/protected-route.test.tsx` › ProtectedRoute › only allows the change-password page while mustChangePassword is set; `apps/web/src/features/auth/components/auth-pages.test.tsx` › ChangePasswordPage › hides navigation and the voluntary actions while the change is mandatory
+- [x] S1.1.4.5 Disponible para los tres roles (solo exige autenticación) — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › POST /api/auth/change-password › is allowed with mustChangePassword and returns a new session (usuario `SELLER`); › requires an access token
+
+## H1.2 Roles y permisos
+
+### S1.2.1 Guard por rol
+- [x] S1.2.1.1 Sin token 401 `UNAUTHENTICATED`, expirado `TOKEN_EXPIRED`, firma inválida `TOKEN_INVALID` — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › requireAuth guard › answers UNAUTHENTICATED, TOKEN_INVALID and TOKEN_EXPIRED
+- [x] S1.2.1.2a El guard carga el usuario por PK; inexistente o inactivo → 401 `USER_INACTIVE` — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › AuthenticateRequestUseCase › loads role and flags from the store, not from the token; › answers TOKEN_INVALID and USER_INACTIVE; `apps/api/src/modules/users/presentation/users.routes.test.ts` › ADMIN user management › blocks a deactivated user from the next request
+- [x] S1.2.1.2b Una sola consulta por petición aunque haya guards anidados (p. ej. `/quotes/*`), sin saltarse el rol — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › requireAuth guard › reuses the actor of an outer guard without a second lookup, keeping role checks
+- [x] S1.2.1.3a Rol no permitido → 403 `FORBIDDEN`; un cambio de rol aplica en la siguiente petición — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › requireAuth guard › answers USER_INACTIVE and applies role changes on the next request
+- [x] S1.2.1.3b El front recarga el usuario (rol) una vez ante un 403 `FORBIDDEN` — `apps/web/src/features/auth/services/session.service.test.ts` › session service › reloads the session once on FORBIDDEN to pick up a role change
+- [x] S1.2.1.4 Con `mustChangePassword` solo pasa `change-password`; el resto → 403 `PASSWORD_CHANGE_REQUIRED` — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › requireAuth guard › answers PASSWORD_CHANGE_REQUIRED unless the route allows it; `apps/web/src/features/auth/services/session.service.test.ts` › session service › flags the session when the API requires a password change
+- [x] S1.2.1.5 `ProtectedRoute` acepta `roles` y la navegación oculta lo no permitido — `apps/web/src/core/router/protected-route.test.tsx` › ProtectedRoute › shows the forbidden page when the role is not allowed; `apps/web/src/core/layout/layout.test.tsx` › PrivateLayout › renders texts from lang/ and filters navigation by role
+
+### S1.2.2 Cotizaciones propias vs todas
+- [x] S1.2.2.1 `OWN` para `SELLER`, `ALL` para `MANAGER` y `ADMIN` — `apps/api/src/modules/auth/domain/auth-domain.test.ts` › access scope › resolves OWN for sellers and ALL for managers and admins
+- [x] S1.2.2.2 `assertCanAccess` con `OWN` solo para recursos propios; si no, el código "no encontrado" del módulo — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › assertCanAccess › throws the module not-found code for a foreign resource under OWN scope; `apps/api/src/modules/auth/domain/auth-domain.test.ts` › access scope › lets a seller access only their own resources
+- [x] S1.2.2.3 `scopeFilter` devuelve `{}` o `{ ownerId }` — `apps/api/src/modules/auth/domain/auth-domain.test.ts` › access scope › builds the listing filter by scope
+- [x] S1.2.2.4 Se exporta por el barril de `auth` y no se reimplementa — CI › checks › `pnpm lint` (`no-restricted-imports` prohíbe imports profundos); revisión estática: `apps/api/src/modules/auth/index.ts`
+- [x] S1.2.2.5 Pruebas unitarias para los tres roles con recursos propios y ajenos — `apps/api/src/modules/auth/domain/auth-domain.test.ts` › access scope › lets a seller access only their own resources; › lets managers and admins access any resource
+
+## H1.3 Gestión de usuarios
+
+### S1.3.1 Crear, editar y desactivar usuario
+- [x] S1.3.1.1 `POST /users` (solo `ADMIN`) con correo normalizado, contraseña temporal única y `mustChangePassword`; correo repetido → 409 `EMAIL_TAKEN` — `apps/api/src/modules/users/presentation/users.routes.test.ts` › ADMIN user management › creates a user, returns the temporary password once and never exposes the hash; `apps/api/src/modules/users/application/users-use-cases.test.ts` › CreateUserUseCase › answers EMAIL_TAKEN for a registered email; `packages/shared/src/schemas/users.schema.test.ts` › createUserRequestSchema › normalizes the email and trims the name
+- [x] S1.3.1.2 `PATCH /users/:id` cambia nombre, correo, rol e `isActive`; inexistente → 404 `USER_NOT_FOUND` — `apps/api/src/modules/users/application/users-use-cases.test.ts` › UpdateUserUseCase › answers USER_NOT_FOUND and EMAIL_TAKEN; `apps/api/src/modules/users/presentation/users.routes.test.ts` › ADMIN user management › protects the admin themselves and answers USER_NOT_FOUND for unknown ids
+- [x] S1.3.1.3 Desactivar revoca los refresh tokens y conserva los datos; no existe `DELETE` — `apps/api/src/modules/users/application/users-use-cases.test.ts` › UpdateUserUseCase › updates the data and revokes all sessions when deactivating; › keeps the sessions when only the data changes
+- [x] S1.3.1.4 El administrador no puede desactivarse ni quitarse `ADMIN` (`CANNOT_MODIFY_SELF`) y siempre queda un `ADMIN` activo (`LAST_ADMIN`) — `apps/api/src/modules/users/domain/user-admin-rules.test.ts` › checkAdminProtection › forbids an admin to deactivate or demote themselves; › forbids leaving zero active admins; `apps/web/src/features/users/components/users-page.test.tsx` › UsersPage › shows LAST_ADMIN inside the deactivate confirmation
+- [x] S1.3.1.5a Formulario con schemas de `shared` y diálogo de contraseña temporal con copia — `apps/web/src/features/users/components/users-page.test.tsx` › UsersPage › creates a user and shows the temporary password once; › shows EMAIL_TAKEN on the email field
+- [x] S1.3.1.5b Editar el propio usuario actualiza la sesión (nombre, correo y rol del menú); editar a otro no la toca — `apps/web/src/features/users/components/users-page.test.tsx` › UsersPage › updates the session user when editing oneself; › leaves the session user untouched when editing someone else
+
+### S1.3.2 Listar usuarios
+- [x] S1.3.2.1 `GET /users` (solo `ADMIN`) paginado y filtrable por texto, rol y estado — `apps/api/src/modules/users/presentation/users.routes.test.ts` › ADMIN user management › lists with filters and pagination; › role guard › only lets ADMIN manage users; `apps/api/src/modules/auth/infrastructure/prisma-auth.integration.test.ts` › lists with case-insensitive search, filters and pagination
+- [x] S1.3.2.2 Nunca devuelve `passwordHash` ni datos de tokens — `apps/api/src/modules/users/presentation/users.routes.test.ts` › ADMIN user management › creates a user, returns the temporary password once and never exposes the hash
+- [x] S1.3.2.3 `GET /users/options` (`MANAGER`, `ADMIN`) con usuarios activos `{ id, name, role }` — `apps/api/src/modules/users/presentation/users.routes.test.ts` › role guard › serves /users/options to MANAGER and ADMIN but not to SELLER; `apps/api/src/modules/users/application/users-use-cases.test.ts` › user queries › lists with filters and pagination, and options only include active users
+- [x] S1.3.2.4 Tabla con nombre, correo, rol y estado traducidos y acciones — `apps/web/src/features/users/components/users-page.test.tsx` › UsersPage › lists users with translated role and status; › offers deactivate for others, activate for inactive users and never deactivate on the own row
+
+### S1.3.3 Restablecer contraseña
+- [x] S1.3.3.1 `POST /users/:id/reset-password` (solo `ADMIN`) devuelve la temporal una vez y fija `mustChangePassword` — `apps/api/src/modules/users/application/users-use-cases.test.ts` › ResetPasswordUseCase › sets a temporary password, forces the change and revokes the sessions; `apps/api/src/modules/users/infrastructure/crypto-temporary-passwords.test.ts` › CryptoTemporaryPasswords › generates 12 unambiguous characters that meet the password policy
+- [x] S1.3.3.2 Revoca todos los refresh tokens — `apps/api/src/modules/users/application/users-use-cases.test.ts` › ResetPasswordUseCase › sets a temporary password, forces the change and revokes the sessions
+- [x] S1.3.3.3 El usuario restablecido solo puede cambiar la contraseña (con la temporal) o cerrar sesión — `apps/api/src/modules/users/presentation/users.routes.test.ts` › ADMIN user management › resets a password and forces the change on the next request
+- [x] S1.3.3.4 Un administrador puede restablecer su propia contraseña — `apps/api/src/modules/users/application/users-use-cases.test.ts` › ResetPasswordUseCase › works for the admin themselves and answers USER_NOT_FOUND
+
+## Reglas críticas de CLAUDE.md
+- [x] Refresh opaco guardado como hash SHA-256 — `apps/api/src/modules/auth/infrastructure/security-adapters.test.ts` › CryptoSecureTokens › generates 32-byte opaque tokens and hashes them with SHA-256
+- [x] `tokenHash` único y rotación una sola vez — `apps/api/src/modules/auth/infrastructure/prisma-auth.integration.test.ts` › enforces a unique tokenHash; › rotates a token only once
+- [x] bcrypt detrás de `PasswordHasher` con costo configurable (defecto 12) — `apps/api/src/modules/auth/infrastructure/security-adapters.test.ts` › BcryptPasswordHasher › hashes and verifies; `apps/api/src/core/env/load-env.test.ts` › loadEnv › applies defaults
+- [x] El guard usa `role`, `isActive` y `mustChangePassword` de la BD, no del token — `apps/api/src/modules/auth/application/auth-use-cases.test.ts` › AuthenticateRequestUseCase › loads role and flags from the store, not from the token
+- [x] Rutas públicas con rate limit propio: login (IP + correo), refresh (sesión) y branding/logo/health (recursos) — `apps/api/src/modules/auth/presentation/auth.routes.test.ts` › POST /api/auth/login › limits failed attempts per IP and email to 5 every 15 minutes; › public rate limits › keeps refresh available after the public resources limit is exhausted
+- [x] Correo normalizado en el login — `packages/shared/src/schemas/password-policy.test.ts` › auth schemas › normalizes the login email

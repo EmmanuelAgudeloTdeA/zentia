@@ -23,7 +23,15 @@ function toAppError(error: unknown): { appError: AppError; issues?: Issues } {
   if (hasType(error) && error.type === 'entity.too.large') {
     return { appError: new AppError('PAYLOAD_TOO_LARGE', 413) };
   }
+  if (isClientBodyError(error)) return { appError: new AppError('VALIDATION_ERROR', 400) };
   return { appError: new AppError('INTERNAL_ERROR', 500) };
+}
+
+/** Otros rechazos de body-parser (charset o encoding no soportados, cuerpo incompleto). */
+function isClientBodyError(error: unknown): boolean {
+  if (!hasType(error) || !('status' in error)) return false;
+  const { status } = error as { status: unknown };
+  return typeof status === 'number' && status >= 400 && status < 500;
 }
 
 export const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {

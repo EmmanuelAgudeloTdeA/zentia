@@ -25,7 +25,7 @@ export type DocumentsModuleOptions = ModuleDependencies & DocumentsDependencies;
 
 export function createDocumentsModule({
   requireAuth,
-  publicLimiter: _publicLimiter,
+  resourceLimiter: _resourceLimiter,
   ...deps
 }: DocumentsModuleOptions): ModuleDefinition {
   return {

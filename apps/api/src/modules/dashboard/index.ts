@@ -11,7 +11,7 @@ export { createPrismaDashboardInfrastructure } from './infrastructure/index.js';
 
 export function createDashboardModule({
   requireAuth,
-  publicLimiter: _publicLimiter,
+  resourceLimiter: _resourceLimiter,
   ...deps
 }: ModuleDependencies & DashboardDependencies): ModuleDefinition {
   return {

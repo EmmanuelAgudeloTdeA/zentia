@@ -37,7 +37,7 @@ export interface CompanySettingsModule {
 
 export function createCompanySettingsModule({
   infrastructure,
-  publicLimiter,
+  resourceLimiter,
   requireAuth,
 }: CompanySettingsModuleOptions): CompanySettingsModule {
   return {
@@ -54,7 +54,7 @@ export function createCompanySettingsModule({
         updateParameters: new UpdateParametersUseCase(infrastructure),
         uploadLogo: new UploadLogoUseCase(infrastructure),
         deleteLogo: new DeleteLogoUseCase(infrastructure),
-        publicLimiter,
+        resourceLimiter,
         requireAuth,
       }),
       openapi: createCompanyOpenApi(),
