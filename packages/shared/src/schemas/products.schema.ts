@@ -2,7 +2,11 @@ import { z } from 'zod';
 import { normalizeCategoryLabel } from '../normalize/index.js';
 import { vatRateSchema } from './company-settings.schema.js';
 import { positiveMoneyString } from './decimal.schema.js';
-import { activeStatusFilterSchema, paginationQueryShape } from './pagination.schema.js';
+import {
+  activeStatusFilterSchema,
+  paginationQueryShape,
+  SEARCH_MAX_LENGTH,
+} from './pagination.schema.js';
 
 export const PRODUCT_NAME_MAX_LENGTH = 150;
 export const CATEGORY_MAX_LENGTH = 80;
@@ -34,7 +38,7 @@ export type UpdateProductRequest = z.input<typeof updateProductRequestSchema>;
 export type ProductChanges = z.output<typeof updateProductRequestSchema>;
 
 export const listProductsQuerySchema = z.object({
-  q: z.string().trim().max(100).optional(),
+  q: z.string().trim().max(SEARCH_MAX_LENGTH).optional(),
   category: z.string().trim().max(CATEGORY_MAX_LENGTH).optional(),
   status: activeStatusFilterSchema.default('active'),
   ...paginationQueryShape,

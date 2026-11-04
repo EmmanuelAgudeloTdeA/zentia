@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { customerSearchTerms, prepareContact } from './customer.js';
+import { customerSearchTerms, documentIdPrefixes, prepareContact } from './customer.js';
 
 describe('prepareContact', () => {
   it('normalizes the phone and keeps the email', () => {
@@ -39,5 +39,13 @@ describe('customerSearchTerms', () => {
       documentId: '9001234',
       phoneDigits: '9001234',
     });
+  });
+});
+
+describe('documentIdPrefixes', () => {
+  it('lists the prefixes from the minimum length and ignores short documents', () => {
+    expect(documentIdPrefixes('9001234')).toEqual(['90012', '900123']);
+    expect(documentIdPrefixes('90012')).toEqual([]);
+    expect(documentIdPrefixes('9001')).toBeNull();
   });
 });

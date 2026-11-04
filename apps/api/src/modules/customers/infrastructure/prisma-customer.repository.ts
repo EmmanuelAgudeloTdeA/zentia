@@ -75,10 +75,28 @@ export class PrismaCustomerRepository implements CustomerRepository {
       ...(or.length > 0 ? { OR: or } : {}),
     };
     const [rows, total] = await Promise.all([
-      this.db.customer.findMany({ where, include, orderBy: { nameKey: 'asc' }, skip, take }),
+      this.db.customer.findMany({
+        where,
+        include,
+        orderBy: [{ nameKey: 'asc' }, { id: 'asc' }],
+        skip,
+        take,
+      }),
       this.db.customer.count({ where }),
     ]);
     return { items: rows.map(toCustomer), total };
+  }
+
+  async findDocumentMatches(documentId: string, prefixes: string[], limit: number) {
+    const rows = await this.db.customer.findMany({
+      where: {
+        OR: [{ documentId: { startsWith: documentId } }, { documentId: { in: prefixes } }],
+      },
+      include,
+      orderBy: [{ documentId: 'asc' }, { id: 'asc' }],
+      take: limit,
+    });
+    return rows.map(toCustomer);
   }
 }
 

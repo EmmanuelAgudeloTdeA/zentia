@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createCustomerRequestSchema,
+  documentMatchesQuerySchema,
   listCustomersQuerySchema,
   updateCustomerRequestSchema,
 } from './customers.schema.js';
@@ -47,5 +48,11 @@ describe('customer queries and updates', () => {
 
   it('accepts partial updates with isActive', () => {
     expect(updateCustomerRequestSchema.parse({ isActive: false })).toEqual({ isActive: false });
+  });
+
+  it('normalizes the document of the duplicate check', () => {
+    expect(documentMatchesQuerySchema.parse({ documentId: '900.123.456-7' })).toEqual({
+      documentId: '9001234567',
+    });
   });
 });

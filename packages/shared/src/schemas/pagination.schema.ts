@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const DEFAULT_PAGE_SIZE = 20;
 export const MAX_PAGE_SIZE = 100;
+export const SEARCH_MAX_LENGTH = 100;
 
 export const ACTIVE_STATUS_FILTERS = ['active', 'inactive', 'all'] as const;
 

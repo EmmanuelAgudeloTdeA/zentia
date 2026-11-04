@@ -55,7 +55,7 @@ export class InMemoryProductRepository implements ProductRepository {
       .filter((p) => status === 'all' || p.isActive === (status === 'active'))
       .filter((p) => !categoryKey || p.categoryKey === categoryKey)
       .filter((p) => !key || p.nameKey.includes(key) || p.categoryKey.includes(key))
-      .sort((a, b) => a.nameKey.localeCompare(b.nameKey));
+      .sort((a, b) => a.nameKey.localeCompare(b.nameKey) || a.id.localeCompare(b.id));
     return {
       items: matches.slice(skip, skip + take).map((p) => this.toProduct(p)),
       total: matches.length,

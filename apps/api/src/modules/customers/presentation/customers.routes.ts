@@ -1,5 +1,6 @@
 import {
   createCustomerRequestSchema,
+  documentMatchesQuerySchema,
   listCustomersQuerySchema,
   updateCustomerRequestSchema,
 } from '@zentia/shared';
@@ -9,6 +10,7 @@ import { AppError } from '../../../core/http/index.js';
 import type { RequireAuth } from '../../../core/modules/index.js';
 import type {
   CreateCustomerUseCase,
+  FindDocumentMatchesUseCase,
   GetCustomerUseCase,
   SearchCustomersUseCase,
   UpdateCustomerUseCase,
@@ -17,6 +19,7 @@ import type {
 export interface CustomersRouterDependencies {
   search: SearchCustomersUseCase;
   get: GetCustomerUseCase;
+  documentMatches: FindDocumentMatchesUseCase;
   create: CreateCustomerUseCase;
   update: UpdateCustomerUseCase;
   requireAuth: RequireAuth;
@@ -37,6 +40,11 @@ export function createCustomersRouter(deps: CustomersRouterDependencies): Router
 
   router.get('/', async (req, res) => {
     res.json(await deps.search.execute(listCustomersQuerySchema.parse(req.query)));
+  });
+
+  router.get('/document-matches', async (req, res) => {
+    const { documentId } = documentMatchesQuerySchema.parse(req.query);
+    res.json(await deps.documentMatches.execute(documentId));
   });
 
   router.get('/:id', async (req, res) => {

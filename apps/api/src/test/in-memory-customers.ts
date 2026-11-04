@@ -8,6 +8,8 @@ import type {
 
 type Stored = Customer & { nameKey: string };
 
+const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
+
 export class InMemoryCustomerRepository implements CustomerRepository {
   readonly customers = new Map<string, Stored>();
 
@@ -60,6 +62,14 @@ export class InMemoryCustomerRepository implements CustomerRepository {
     return stored ? this.toCustomer(stored) : null;
   }
 
+  async findDocumentMatches(documentId: string, prefixes: string[], limit: number) {
+    return [...this.customers.values()]
+      .filter((c) => c.documentId.startsWith(documentId) || prefixes.includes(c.documentId))
+      .sort((a, b) => compare(a.documentId, b.documentId) || compare(a.id, b.id))
+      .slice(0, limit)
+      .map((c) => this.toCustomer(c));
+  }
+
   async search({ terms, status, skip, take }: Parameters<CustomerRepository['search']>[0]) {
     const matches = [...this.customers.values()]
       .filter((c) => status === 'all' || c.isActive === (status === 'active'))
@@ -71,7 +81,7 @@ export class InMemoryCustomerRepository implements CustomerRepository {
           (terms.documentId !== null && c.documentId.includes(terms.documentId)) ||
           (terms.phoneDigits !== null && (c.phone ?? '').includes(terms.phoneDigits)),
       )
-      .sort((a, b) => a.nameKey.localeCompare(b.nameKey));
+      .sort((a, b) => compare(a.nameKey, b.nameKey) || compare(a.id, b.id));
     return {
       items: matches.slice(skip, skip + take).map((c) => this.toCustomer(c)),
       total: matches.length,

@@ -33,4 +33,6 @@ export interface CustomerRepository {
   findById(id: string): Promise<Customer | null>;
   findByDocumentId(documentId: string): Promise<Customer | null>;
   search(search: CustomerSearch): Promise<{ items: Customer[]; total: number }>;
+  /** Clientes (activos o no) cuyo documento empieza por `documentId` o es uno de `prefixes`. */
+  findDocumentMatches(documentId: string, prefixes: string[], limit: number): Promise<Customer[]>;
 }
