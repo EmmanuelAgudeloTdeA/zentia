@@ -1,0 +1,57 @@
+# Blueprint de Render: una instalación por empresa (servicio Docker + Postgres administrado).
+services:
+  - type: web
+    name: zentia
+    runtime: docker
+    plan: starter
+    region: oregon
+    branch: main
+    healthCheckPath: /api/health
+    # Despliega desde main solo cuando el CI de GitHub pasa.
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TZ
+        value: America/Bogota
+      - key: DATABASE_URL
+        fromDatabase:
+          name: zentia-db
+          property: connectionString
+      - key: TRUST_PROXY
+        value: '1'
+      - key: CORS_ORIGIN
+        sync: false
+      - key: DOCS_ENABLED
+        value: 'false'
+      - key: SCHEDULER_ENABLED
+        value: 'true'
+      - key: LOG_LEVEL
+        value: info
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: ACCESS_TOKEN_TTL
+        value: 15m
+      - key: REFRESH_TOKEN_TTL
+        value: 7d
+      - key: BCRYPT_COST
+        value: '12'
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: LLM_MODEL
+        value: gemini-2.5-flash
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_TIMEOUT_MS
+        value: '4000'
+      # Solo para el primer despliegue; después se eliminan en el panel.
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+databases:
+  - name: zentia-db
+    plan: basic-256mb
+    region: oregon
+    postgresMajorVersion: '17'

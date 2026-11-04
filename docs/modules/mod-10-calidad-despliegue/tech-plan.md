@@ -91,3 +91,15 @@ No agrega claves de UI. Los documentos de QA (`docs/qa/*.md`) no forman parte de
 | Safari en la matriz | Requiere un equipo con macOS o iOS; si el equipo no tiene uno, hay que conseguirlo para cerrar RNF-06. |
 | Participantes de RNF-01 | Personas sin formación técnica ajenas al desarrollo; reclutarlas es responsabilidad del equipo. |
 | Backups | Los del Postgres administrado (diarios); la restauración no se prueba en el MVP. |
+
+## 9. Notas de implementación (H10.1 y H10.2)
+| Punto | Implementación |
+|---|---|
+| CI recuperado de M0 | El pipeline de S0.1.4 no existía. `.github/workflows/ci.yml` corre en cada push a `main` y en cada PR: Postgres 17 de servicio, `prisma generate`, `prisma migrate deploy` sobre `zentia_test`, `lint`, `typecheck`, `format:check` y `test` con `TEST_DATABASE_URL` (integración y paridad i18n). Un segundo job hace `docker build`. |
+| Health | Puerto `HealthCheck` en `modules/health` y `PrismaHealthCheck` (`SELECT 1` con carrera contra 1 s). 200 `{status:"ok"}` o 503 `{status:"error"}` sin detalles, con el rate limit público. Las pruebas lo reemplazan por un doble. |
+| Web en el mismo origen | `createStaticWebMiddleware` en `core/http`, activado con la variable nueva `WEB_DIST_DIR` (la imagen usa `/app/web`; en desarrollo no se define y Vite sirve la web). Assets de `/assets` con caché de un año e `immutable`; el resto e `index.html` con `no-cache`; fallback SPA solo para `GET` que aceptan HTML fuera de `/api`. El CSP de helmet admite el build (scripts `self`, PDF por enlace de descarga, logo por `/api` o data URL). |
+| `prisma` en dependencias | La imagen ejecuta `migrate deploy`, así que el CLI pasa de `devDependencies` a `dependencies` de `apps/api`. |
+| Imagen | `node:24-slim` en dos etapas: build del monorepo y `pnpm deploy --prod --legacy` de la API (incluye `@zentia/shared` compilado) con `prisma generate`; runtime con `openssl`, usuario `node`, `TZ=America/Bogota`. `docker/entrypoint.sh` (`set -e`): `migrate deploy` → `dist/seed.js` → `exec dist/main.js`. Verificado: primer arranque migra y crea admin y configuración; el segundo no aplica nada; con la base pausada el health responde 503. |
+| Render | `render.yaml` con servicio Docker (`healthCheckPath: /api/health`, `autoDeployTrigger: checksPass`) y Postgres 17. Secretos con `sync: false`; `JWT_ACCESS_SECRET` con `generateValue`. Crear los servicios requiere la cuenta del equipo: pasos en el README. |
+| p95 | `apps/api/scripts/perf/p95.ts` (`pnpm --filter @zentia/api perf:p95 -- …`): crea datos `[PERF]`, mide N solicitudes secuenciales por escenario y espera 6,1 s entre llamadas del asistente para respetar su rate limit (10/min). Resultados locales en `docs/qa/rendimiento.md`; la medición oficial (staging con Gemini) queda pendiente del despliegue. |
+| Pendiente de personas o cuentas | Despliegue en Render, prueba de usabilidad (`docs/qa/usabilidad.md`) y matriz de navegadores (`docs/qa/navegadores.md`): protocolos y plantillas listos. La extensión de Chrome no respondió en esta sesión, por eso ninguna fila de la matriz se llenó. |

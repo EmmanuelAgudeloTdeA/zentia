@@ -2,6 +2,7 @@ import { createApp } from '../app.js';
 import type { Clock } from '../core/clock/index.js';
 import { loadEnv } from '../core/env/index.js';
 import { createLogger } from '../core/logger/index.js';
+import type { HealthCheck } from '../modules/health/index.js';
 import type { UsersInfrastructure } from '../modules/users/index.js';
 import { createInMemoryCatalog, type InMemoryCatalog } from './in-memory-catalog.js';
 import { createInMemoryCustomers, type InMemoryCustomers } from './in-memory-customers.js';
@@ -27,6 +28,7 @@ interface TestAppOptions {
   followUp?: InMemoryFollowUp;
   dashboard?: ReturnType<typeof createFakeDashboard>;
   ai?: FakeAi;
+  health?: HealthCheck;
   clock?: Clock;
 }
 
@@ -65,6 +67,7 @@ export function createTestApp({
   followUp,
   dashboard,
   ai,
+  health,
   clock,
 }: TestAppOptions = {}) {
   const env = loadEnv({
@@ -95,6 +98,7 @@ export function createTestApp({
       followUp: (followUp ?? createInMemoryFollowUp()).infrastructure,
       dashboard: (dashboard ?? createFakeDashboard()).infrastructure,
       ai: (ai ?? createFakeAi()).infrastructure,
+      health: health ?? { isHealthy: () => Promise.resolve(true) },
     },
     ...(clock ? { clock } : {}),
   });

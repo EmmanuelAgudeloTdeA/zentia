@@ -7,7 +7,12 @@ import { pinoHttp } from 'pino-http';
 import { SystemClock, type Clock } from './core/clock/index.js';
 import type { Env } from './core/env/index.js';
 import type { ScheduledJob } from './core/scheduler/index.js';
-import { createGeneralLimiter, errorHandler, notFoundHandler } from './core/http/index.js';
+import {
+  createGeneralLimiter,
+  createStaticWebMiddleware,
+  errorHandler,
+  notFoundHandler,
+} from './core/http/index.js';
 import {
   buildOpenApiDocument,
   createCoreRegistry,
@@ -85,6 +90,7 @@ export function createApplication({
   api.use(notFoundHandler);
 
   app.use('/api', api);
+  if (env.WEB_DIST_DIR) app.use(createStaticWebMiddleware(env.WEB_DIST_DIR));
   app.use(errorHandler);
   return { app, jobs: modules.flatMap((module) => module.jobs ?? []) };
 }
