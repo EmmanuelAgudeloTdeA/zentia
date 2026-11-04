@@ -108,6 +108,6 @@ export class UpdateQuoteUseCase {
 
     const quote = await this.deps.quotes.findById(id);
     if (!quote) throw new AppError('QUOTE_NOT_FOUND', 404);
-    return { quote: toQuoteDto(this.deps, quote, actor), ...result };
+    return { quote: await toQuoteDto(this.deps, quote, actor), ...result };
   }
 }

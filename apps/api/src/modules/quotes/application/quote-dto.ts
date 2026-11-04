@@ -18,18 +18,21 @@ export function toQuoteSummaryDto(quote: QuoteSummary): QuoteSummaryDto {
   };
 }
 
-export function toQuoteDto(
+export async function toQuoteDto(
   deps: Pick<QuotesDependencies, 'clock' | 'actionContributors'>,
   quote: Quote,
   actor: Actor,
-): QuoteDto {
+): Promise<QuoteDto> {
+  const contributed = await Promise.all(
+    deps.actionContributors.map((contribute) => contribute(quote, actor)),
+  );
   const actions = [
     ...allowedActions(
       { status: quote.status, ownerId: quote.owner.id, expiresAt: quote.expiresAt },
       actor,
       deps.clock.today(),
     ),
-    ...deps.actionContributors.flatMap((contribute) => contribute(quote, actor)),
+    ...contributed.flat(),
   ];
   return {
     ...toQuoteSummaryDto({ ...quote }),

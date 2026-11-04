@@ -14,5 +14,8 @@ export type QuoteReassignedListener = (
   tx: QuotesTransaction,
 ) => Promise<void>;
 
-/** Otros módulos (M5) suman acciones a `allowedActions`. */
-export type AllowedActionsContributor = (quote: Quote, actor: Actor) => string[];
+/** Otros módulos (M5, M7) suman acciones a `allowedActions`; pueden consultar sus datos. */
+export type AllowedActionsContributor = (
+  quote: Quote,
+  actor: Actor,
+) => string[] | Promise<string[]>;

@@ -40,7 +40,7 @@ export class GetQuoteUseCase {
   constructor(private readonly deps: QuotesDependencies) {}
 
   async execute(actor: Actor, id: string): Promise<QuoteDto> {
-    return toQuoteDto(this.deps, await loadVisible(this.deps, id, actor), actor);
+    return await toQuoteDto(this.deps, await loadVisible(this.deps, id, actor), actor);
   }
 }
 
@@ -103,6 +103,6 @@ export class RepositoryQuoteReader implements QuoteReader {
   }
 
   async getDtoForActor(id: string, actor: Actor): Promise<QuoteDto> {
-    return toQuoteDto(this.deps, await loadVisible(this.deps, id, actor), actor);
+    return await toQuoteDto(this.deps, await loadVisible(this.deps, id, actor), actor);
   }
 }
