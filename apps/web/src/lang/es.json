@@ -680,6 +680,13 @@
       "updated": "Cliente actualizado.",
       "activated": "Cliente activado.",
       "deactivated": "Cliente desactivado."
+    },
+    "quotes": {
+      "title": "Cotizaciones",
+      "ownOnly": "Solo ves las cotizaciones de las que eres dueño.",
+      "empty": "Este cliente aún no tiene cotizaciones.",
+      "updatedAt": "Actualizada el {{date}}",
+      "loadMore": "Ver más"
     }
   },
   "products": {

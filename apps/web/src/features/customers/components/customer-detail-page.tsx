@@ -20,6 +20,7 @@ import {
   UsersIcon,
 } from '../../../shared/ui';
 import { FollowUpSection } from '../../follow-up';
+import { CustomerQuotesSection } from '../../quotes';
 import { useCustomer } from '../hooks/use-customer';
 import { customersService } from '../services/customers.service';
 import { CustomerFormDialog } from './customer-form-dialog';
@@ -156,6 +157,10 @@ export function CustomerDetailPage() {
           </DataItem>
         </dl>
       </SectionCard>
+
+      <div className="mt-5">
+        <CustomerQuotesSection customerId={customer.id} />
+      </div>
 
       <div className="mt-5">
         <FollowUpSection
