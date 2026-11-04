@@ -32,7 +32,7 @@ async function draftQuote() {
     .post('/api/quotes')
     .set('Authorization', seller)
     .send({ customerId: customer.body.id, items: [{ productId: product.body.id, quantity: '1' }] });
-  return { seller, quote: quote.body };
+  return { seller, customerId: customer.body.id as string, quote: quote.body };
 }
 
 describe('documents routes', () => {
@@ -90,5 +90,51 @@ describe('documents routes', () => {
       .set('Authorization', seller)
       .send({ channel: 'WHATSAPP', updatedAt: shared.body.updatedAt });
     expect(again.body).toMatchObject({ status: 'SENT', sentAt: shared.body.sentAt });
+  });
+
+  it('hides share-links and share of a foreign quote from another seller', async () => {
+    const { quote } = await draftQuote();
+    const other = await bearer('SELLER', 'otro@empresa.co');
+    const links = await request(app)
+      .get(`/api/quotes/${quote.id}/share-links`)
+      .set('Authorization', other);
+    expect(links.status).toBe(404);
+    expect(links.body.error.code).toBe('QUOTE_NOT_FOUND');
+
+    const shared = await request(app)
+      .post(`/api/quotes/${quote.id}/share`)
+      .set('Authorization', other)
+      .send({ channel: 'WHATSAPP', updatedAt: quote.updatedAt });
+    expect(shared.status).toBe(404);
+    expect(shared.body.error.code).toBe('QUOTE_NOT_FOUND');
+  });
+
+  it('rejects an invalid PDF purpose', async () => {
+    const { seller, quote } = await draftQuote();
+    const response = await request(app)
+      .get(`/api/quotes/${quote.id}/pdf`)
+      .query({ purpose: 'print' })
+      .set('Authorization', seller);
+    expect(response.status).toBe(400);
+    expect(response.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
+  it('returns no links with the reason when the draft customer is inactive', async () => {
+    const { seller, customerId, quote } = await draftQuote();
+    await request(app)
+      .patch(`/api/customers/${customerId}`)
+      .set('Authorization', seller)
+      .send({ isActive: false });
+
+    const links = await request(app)
+      .get(`/api/quotes/${quote.id}/share-links`)
+      .set('Authorization', seller);
+    expect(links.status).toBe(200);
+    expect(links.body).toEqual({
+      whatsappUrl: null,
+      emailUrl: null,
+      missing: ['EMAIL'],
+      unavailableReason: 'CUSTOMER_INACTIVE',
+    });
   });
 });
