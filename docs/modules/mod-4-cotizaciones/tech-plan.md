@@ -291,3 +291,12 @@ Ajustes respecto a este plan y vacíos del ui-brief resueltos:
 | `customerRequest` | Se exige al editar una Enviada solo si hay cambios de contenido (sin cambios responde `changed: false` sin versión). En reactivar siempre es obligatorio. |
 | Puntos de extensión | `QuoteReassignedListener[]` (recibe la transacción con `client` de Prisma) y `AllowedActionsContributor[]`, vacíos hasta M6 y M5. El barril exporta `QuoteReader`, `SendQuoteUseCase` y `ExpireQuotesUseCase` (programado por M6). |
 | Front | `StatusBadge` genérico (lo reutiliza M7), `NumberField`, `TotalsSummary`, `formatDay`/`formatDateTime`/`todayInBogota`; botón "Nueva cotización" en el encabezado. La vista previa usa `calculateQuoteTotals` de `shared`. |
+
+## 10. Notas de implementación (auditoría)
+| Punto | Implementación |
+|---|---|
+| RN-14 | `checkDiscount` rechaza (403 `DISCOUNT_LIMIT_EXCEEDED`) cualquier cambio de descuento de un `SELLER` cuando el valor actual ya supera su límite, también para bajarlo; puede seguir editando líneas sin tocar el descuento. El editor ya lo mostraba de solo lectura. |
+| Duplicar (RN-28) | Las líneas toman el snapshot vigente del producto (nombre, categoría, precio y tarifa de IVA); del origen solo se copia la cantidad. |
+| Desborde de montos | Tras recalcular, cualquier monto con más de 15 dígitos (columna `Decimal(15,0)`) responde 400 `QUOTE_AMOUNT_TOO_LARGE` con `params: { maxDigits: 15 }`, en lugar de un 500 de Postgres. |
+| `sentFrom` / `sentTo` | `GET /quotes` acepta `sentFrom` y `sentTo` (`YYYY-MM-DD`, días de Bogotá, ambos incluidos; `sentFrom ≤ sentTo` o 400 `VALIDATION_ERROR`) y filtra por `firstSentAt` en `[from 05:00Z, to+1 05:00Z)` con `bogotaRangeUtc` de `shared/rules`, la misma regla de cohorte del tablero, para que sus tarjetas abran la lista con conteos iguales. En el front, la lista muestra un chip removible "Primer envío: …" y el barril exporta `openQuotesWithFilters`. |
+| Editor | Si fallan los parámetros comerciales en una cotización nueva, muestra un error con reintento y deshabilita guardar; guardar una Enviada sin cambios no abre el diálogo de lo solicitado por el cliente. |
