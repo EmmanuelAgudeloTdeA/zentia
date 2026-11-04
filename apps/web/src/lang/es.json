@@ -562,7 +562,8 @@
     "loadError": "No se pudieron cargar las notificaciones.",
     "unread": "Sin leer",
     "QUOTE_EXPIRING": "{{quoteNumber}} de {{customerName}} vence el {{expiresAt}}.",
-    "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} de {{customerName}} lleva {{days}} días sin seguimiento.",
+    "QUOTE_NO_FOLLOW_UP_one": "{{quoteNumber}} de {{customerName}} lleva {{count}} día sin seguimiento.",
+    "QUOTE_NO_FOLLOW_UP_other": "{{quoteNumber}} de {{customerName}} lleva {{count}} días sin seguimiento.",
     "sort": {
       "label": "Ordenar por",
       "probability": "Probabilidad de cierre",

@@ -8,6 +8,11 @@ export function useNotificationText() {
   return (notification: NotificationDto) => {
     const { params } = notification;
     const expiresAt = typeof params['expiresAt'] === 'string' ? formatDay(params['expiresAt']) : '';
-    return t(`notifications.${notification.type}`, { ...params, expiresAt });
+    const count = typeof params['days'] === 'number' ? params['days'] : undefined;
+    return t(`notifications.${notification.type}`, {
+      ...params,
+      expiresAt,
+      ...(count === undefined ? {} : { count }),
+    });
   };
 }

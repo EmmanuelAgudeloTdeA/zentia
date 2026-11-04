@@ -25,3 +25,13 @@ export async function refreshUnreadCount(): Promise<void> {
     useNotificationsStore.getState().setUnreadCount(null);
   }
 }
+
+/** Marca como leída y baja el contador solo si el back lo confirma; si falla, lo resincroniza. */
+export async function markNotificationRead(id: string): Promise<void> {
+  try {
+    await notificationsService.markRead(id);
+    useNotificationsStore.getState().decrement();
+  } catch {
+    await refreshUnreadCount();
+  }
+}

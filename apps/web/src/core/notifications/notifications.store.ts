@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { useSessionStore } from '../auth';
 
 export const NOTIFICATIONS_PATH = '/notifications';
 
@@ -17,3 +18,8 @@ export const useNotificationsStore = create<NotificationsState>()((set) => ({
       unreadCount: state.unreadCount ? state.unreadCount - 1 : state.unreadCount,
     })),
 }));
+
+// Al cambiar de usuario (logout o sesión expirada) no debe verse el contador del anterior.
+useSessionStore.subscribe((state, previous) => {
+  if (state.user?.id !== previous.user?.id) useNotificationsStore.getState().setUnreadCount(null);
+});

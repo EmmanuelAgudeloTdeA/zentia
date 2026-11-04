@@ -2,9 +2,9 @@ import { DEFAULT_PAGE_SIZE, type NotificationDto, type NotificationListDto } fro
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+import { errorKey } from '../../../core/errors';
 import { formatDateTime } from '../../../core/format';
 import { PageHeader } from '../../../core/layout';
-import { useNotificationsStore } from '../../../core/notifications';
 import {
   Alert,
   Button,
@@ -20,6 +20,7 @@ import {
 import { ProbabilityBadge } from '../../ai';
 import { QuoteStatusBadge } from '../../quotes';
 import {
+  markNotificationRead,
   notificationsService,
   refreshUnreadCount,
   type NotificationSort,
@@ -61,15 +62,17 @@ export function NotificationsPage() {
   }, [load]);
 
   const open = (notification: NotificationDto) => {
-    if (!notification.readAt) {
-      useNotificationsStore.getState().decrement();
-      void notificationsService.markRead(notification.id).catch(() => undefined);
-    }
+    if (!notification.readAt) void markNotificationRead(notification.id);
     navigate(`/quotes/${notification.quote.id}`);
   };
 
   const markAll = async () => {
-    await notificationsService.markAllRead();
+    try {
+      await notificationsService.markAllRead();
+    } catch (error) {
+      toast.error(t(errorKey(error)));
+      return;
+    }
     await refreshUnreadCount();
     toast.success(t('notifications.markedAll'));
     void load();
