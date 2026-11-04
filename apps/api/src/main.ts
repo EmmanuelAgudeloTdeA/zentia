@@ -4,7 +4,7 @@ import { createApplication } from './app.js';
 import { EnvValidationError, loadEnv, type Env } from './core/env/index.js';
 import { createLogger } from './core/logger/index.js';
 import { disconnectPrisma } from './core/prisma/index.js';
-import { NodeCronScheduler } from './core/scheduler/index.js';
+import { NodeCronScheduler, startScheduler } from './core/scheduler/index.js';
 
 function readEnv(): Env {
   try {
@@ -28,14 +28,12 @@ const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT, docs: env.DOCS_ENABLED }, 'API listening');
 });
 
-const scheduler = env.SCHEDULER_ENABLED ? new NodeCronScheduler(logger) : null;
-if (scheduler) {
-  for (const job of jobs) scheduler.register(job);
-  // Pasada de recuperación al arrancar, en orden: primero vencer y luego alertar.
-  void (async () => {
-    for (const job of jobs) await scheduler.runNow(job.name);
-  })();
-}
+const { scheduler, recovery } = startScheduler({
+  enabled: env.SCHEDULER_ENABLED,
+  create: () => new NodeCronScheduler(logger),
+  jobs,
+});
+void recovery;
 
 async function shutdown(signal: NodeJS.Signals): Promise<void> {
   logger.info({ signal }, 'Shutting down');

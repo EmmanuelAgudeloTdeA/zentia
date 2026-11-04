@@ -57,3 +57,24 @@ export class NodeCronScheduler implements Scheduler {
     for (const task of this.tasks) void task.stop();
   }
 }
+
+export interface SchedulerStartup {
+  scheduler: Scheduler | null;
+  /** Pasada de recuperación al arrancar; resuelve cuando terminan todos los jobs. */
+  recovery: Promise<void>;
+}
+
+/** Registra los jobs y lanza la pasada de recuperación en orden (vencer antes de alertar). */
+export function startScheduler(options: {
+  enabled: boolean;
+  create: () => Scheduler;
+  jobs: readonly ScheduledJob[];
+}): SchedulerStartup {
+  if (!options.enabled) return { scheduler: null, recovery: Promise.resolve() };
+  const scheduler = options.create();
+  for (const job of options.jobs) scheduler.register(job);
+  const recovery = (async () => {
+    for (const job of options.jobs) await scheduler.runNow(job.name);
+  })();
+  return { scheduler, recovery };
+}
