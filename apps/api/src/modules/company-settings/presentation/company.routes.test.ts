@@ -289,6 +289,15 @@ describe('GET /api/company/branding', () => {
     expect(response.headers['cache-control']).toBe('no-cache');
   });
 
+  it('applies the general rate limit to the public branding and logo routes', async () => {
+    const server = app();
+    for (let i = 0; i < 60; i++) {
+      expect((await request(server).get('/api/company/branding')).status).toBe(200);
+    }
+    expect((await request(server).get('/api/company/branding')).status).toBe(429);
+    expect((await request(server).get('/api/company/logo')).status).toBe(429);
+  });
+
   it('is documented in OpenAPI along with the other company routes', async () => {
     const response = await request(app()).get('/api/docs/openapi.json');
     expect(Object.keys(response.body.paths)).toEqual(

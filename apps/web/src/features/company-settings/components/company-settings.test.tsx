@@ -318,6 +318,21 @@ describe('BrandMark and branding', () => {
     expect(document.querySelector('img')?.getAttribute('src')).toBe('/brand/zentia-mark.png');
   });
 
+  it('shows only the logo in the header and keeps the name as its accessible label', async () => {
+    vi.spyOn(companyService, 'getBranding').mockResolvedValue({
+      name: 'Acme SAS',
+      hasLogo: true,
+      logoVersion: 5,
+    });
+    await loadBranding();
+    renderBrand(<BrandMark />);
+
+    const link = screen.getByRole('link', { name: 'Acme SAS' });
+    expect(link.getAttribute('title')).toBe('Acme SAS');
+    expect(screen.queryByText('Acme SAS')).toBeNull();
+    expect(link.querySelector('img')?.getAttribute('src')).toBe('/api/company/logo?v=5');
+  });
+
   it('keeps the app name if the branding request fails', async () => {
     vi.spyOn(companyService, 'getBranding').mockRejectedValue(new ApiError('NETWORK_ERROR', 0));
     await loadBranding();

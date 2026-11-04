@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { describe, expect, it } from 'vitest';
 import en from '../../lang/en.json';
@@ -43,12 +43,13 @@ describe('PrivateLayout', () => {
     expect(localStorage.getItem('zentia.locale')).toContain('"en"');
   });
 
-  it('opens the navigation drawer and closes it with Escape', () => {
+  it('opens the navigation drawer with the brand name and closes it with Escape', () => {
     renderPrivate();
     const toggle = screen.getByRole('button', { name: es.layout.nav.open });
 
     fireEvent.click(toggle);
-    expect(screen.getByRole('dialog', { name: es.layout.nav.label })).toBeTruthy();
+    const drawer = screen.getByRole('dialog', { name: es.layout.nav.label });
+    expect(within(drawer).getByText(es.app.name)).toBeTruthy();
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();

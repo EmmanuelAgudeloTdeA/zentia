@@ -181,6 +181,20 @@ describe('customers routes', () => {
     expect(await matches('700000000')).toEqual([]);
   });
 
+  it('documents the customer and product routes in OpenAPI', async () => {
+    const response = await request(createTestApp({ auth })).get('/api/docs/openapi.json');
+    expect(Object.keys(response.body.paths)).toEqual(
+      expect.arrayContaining([
+        '/customers',
+        '/customers/{id}',
+        '/customers/document-matches',
+        '/products',
+        '/products/{id}',
+        '/products/categories',
+      ]),
+    );
+  });
+
   it('requires authentication', async () => {
     expect((await request(createTestApp({ auth })).get('/api/customers')).status).toBe(401);
   });
