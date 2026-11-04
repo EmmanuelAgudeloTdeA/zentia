@@ -51,7 +51,7 @@ import {
   createTransferNotificationsListener,
   type FollowUpInfrastructure,
 } from './follow-up/index.js';
-import { createHealthModule } from './health/index.js';
+import { createHealthModule, PrismaHealthCheck, type HealthCheck } from './health/index.js';
 import {
   createOrderActionsContributor,
   createOrdersModules,
@@ -82,6 +82,7 @@ export interface InfrastructureOverrides {
   orders?: OrdersInfrastructure;
   dashboard?: DashboardInfrastructure;
   ai?: AiInfrastructure;
+  health?: HealthCheck;
 }
 
 export interface CreateModulesOptions {
@@ -190,7 +191,10 @@ export function createModules({
     expireQuotes: quotes.expireQuotes,
   });
   return [
-    createHealthModule(dependencies),
+    createHealthModule({
+      ...dependencies,
+      healthCheck: overrides.health ?? new PrismaHealthCheck(getPrisma()),
+    }),
     auth.module,
     users,
     companySettings.module,

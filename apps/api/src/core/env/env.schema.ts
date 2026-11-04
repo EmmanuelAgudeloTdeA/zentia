@@ -57,6 +57,8 @@ export const envSchema = z
     LLM_MODEL: z.string().min(1).default('gemini-2.5-flash'),
     LLM_API_KEY: z.string().optional(),
     LLM_TIMEOUT_MS: z.coerce.number().int().min(500).max(30_000).default(4000),
+    /** Carpeta de la web compilada; sin ella la API no sirve estáticos (desarrollo con Vite). */
+    WEB_DIST_DIR: z.string().optional(),
   })
   .transform((env) => ({
     ...env,
