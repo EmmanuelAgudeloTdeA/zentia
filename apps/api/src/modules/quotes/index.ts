@@ -33,6 +33,7 @@ export type {
   QuoteReassignedListener,
   QuotesInfrastructure,
   QuotesTransaction,
+  SendQuoteUseCase,
 } from './application/index.js';
 export type { Quote, QuoteItem } from './domain/index.js';
 export {

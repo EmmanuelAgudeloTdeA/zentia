@@ -1,5 +1,54 @@
 {
-  "pdf": {},
-  "share": {},
+  "pdf": {
+    "title": "Cotización",
+    "number": "Número",
+    "issueDate": "Fecha de emisión",
+    "expiresAt": "Válida hasta",
+    "projectedExpiry": "{{date}} (prevista)",
+    "company": {
+      "taxId": "NIT {{taxId}}"
+    },
+    "customer": {
+      "title": "Cliente",
+      "documentId": "Documento",
+      "phone": "Teléfono",
+      "email": "Correo"
+    },
+    "table": {
+      "product": "Producto",
+      "quantity": "Cantidad",
+      "unitPrice": "Precio unitario",
+      "vatRate": "IVA",
+      "amount": "Valor"
+    },
+    "totals": {
+      "subtotal": "Subtotal",
+      "discount": "Descuento ({{pct}} %)",
+      "linesVat": "IVA",
+      "shipping": "Envío",
+      "shippingVat": "IVA del envío",
+      "total": "Total"
+    },
+    "commercialTerms": "Condiciones comerciales",
+    "bankAccounts": "Cuentas para el pago",
+    "pricesNote": "Valores en pesos colombianos (COP).",
+    "page": "Página {{current}} de {{total}}",
+    "watermark": {
+      "DRAFT": "BORRADOR",
+      "VOIDED": "ANULADA"
+    },
+    "vatRate": {
+      "GENERAL_19": "19 %",
+      "REDUCED_5": "5 %",
+      "EXEMPT": "Exento"
+    }
+  },
+  "share": {
+    "message": "Hola {{customerName}}, te comparto la cotización {{quoteNumber}} de {{companyName}} por un total de {{total}}, válida hasta el {{expiresAt}}. Quedo atento a tus comentarios.\n{{sellerName}}",
+    "email": {
+      "subject": "Cotización {{quoteNumber}} – {{companyName}}",
+      "body": "{{message}}\n\nAdjunto el PDF de la cotización."
+    }
+  },
   "ai": {}
 }

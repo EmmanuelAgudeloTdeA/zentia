@@ -23,6 +23,12 @@ import {
   createPrismaCustomersInfrastructure,
   type CustomersInfrastructure,
 } from './customers/index.js';
+import {
+  createDocumentsInfrastructure,
+  createDocumentsModule,
+  documentActions,
+  type DocumentsInfrastructure,
+} from './documents/index.js';
 import { createHealthModule } from './health/index.js';
 import {
   createPrismaQuotesInfrastructure,
@@ -43,6 +49,7 @@ export interface InfrastructureOverrides {
   customers?: CustomersInfrastructure;
   catalog?: CatalogInfrastructure;
   quotes?: QuotesInfrastructure;
+  documents?: DocumentsInfrastructure;
 }
 
 export interface CreateModulesOptions {
@@ -99,6 +106,16 @@ export function createModules({
     settings: companySettings.settingsReader,
     customers: customers.customerReader,
     catalog: catalog.catalogReader,
+    actionContributors: [documentActions],
+  });
+  const documents = createDocumentsModule({
+    ...dependencies,
+    ...(overrides.documents ?? createDocumentsInfrastructure()),
+    quotes: quotes.quoteReader,
+    sendQuote: quotes.sendQuote,
+    settings: companySettings.settingsReader,
+    customers: customers.customerReader,
+    clock,
   });
   return [
     createHealthModule(dependencies),
@@ -108,5 +125,6 @@ export function createModules({
     customers.module,
     catalog.module,
     quotes.module,
+    documents,
   ];
 }
