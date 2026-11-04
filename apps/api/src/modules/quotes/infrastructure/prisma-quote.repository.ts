@@ -102,6 +102,14 @@ export class PrismaQuoteRepository implements QuoteRepository {
       ...(search.statuses.length > 0 ? { status: { in: [...search.statuses] } } : {}),
       ...(search.ownerId ? { ownerId: search.ownerId } : {}),
       ...(search.customerId ? { customerId: search.customerId } : {}),
+      ...(search.firstSentFrom || search.firstSentBefore
+        ? {
+            firstSentAt: {
+              ...(search.firstSentFrom ? { gte: search.firstSentFrom } : {}),
+              ...(search.firstSentBefore ? { lt: search.firstSentBefore } : {}),
+            },
+          }
+        : {}),
       ...(or.length > 0 ? { OR: or } : {}),
     };
     const [rows, total] = await Promise.all([

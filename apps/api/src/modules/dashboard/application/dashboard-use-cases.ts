@@ -1,4 +1,5 @@
 import {
+  bogotaDayStartUtc,
   conversionRate,
   resolvePeriod,
   type DashboardQuery,
@@ -57,10 +58,7 @@ export interface DashboardDependencies extends DashboardInfrastructure {
   sections: readonly DashboardSection[];
 }
 
-/** America/Bogota es UTC−5 todo el año (sin horario de verano): el día D empieza a las 05:00 UTC. */
-export function bogotaDayStartUtc(day: string): Date {
-  return new Date(`${day}T05:00:00.000Z`);
-}
+export { bogotaDayStartUtc };
 
 function nextDay(day: string): string {
   const date = new Date(`${day}T00:00:00.000Z`);

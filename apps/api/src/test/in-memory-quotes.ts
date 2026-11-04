@@ -84,6 +84,13 @@ export class InMemoryQuoteRepository implements QuoteRepository {
       .filter((q) => search.statuses.length === 0 || search.statuses.includes(q.status))
       .filter((q) => !search.ownerId || q.ownerId === search.ownerId)
       .filter((q) => !search.customerId || q.customerId === search.customerId)
+      .filter(
+        (q) =>
+          (!search.firstSentFrom ||
+            (q.firstSentAt !== null && q.firstSentAt >= search.firstSentFrom)) &&
+          (!search.firstSentBefore ||
+            (q.firstSentAt !== null && q.firstSentAt < search.firstSentBefore)),
+      )
       .filter((q) => {
         if (search.number === undefined && !search.customerKey) return true;
         const name = toSearchKey(this.lookups.customer(q.customerId).name);

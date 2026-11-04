@@ -5,6 +5,8 @@ export {
   isWithoutFollowUp,
 } from './follow-up.js';
 export {
+  bogotaDayStartUtc,
+  bogotaRangeUtc,
   DASHBOARD_MAX_PERIOD_DAYS,
   periodPresets,
   resolvePeriod,

@@ -49,3 +49,19 @@ export function resolvePeriod(
     1;
   return days > DASHBOARD_MAX_PERIOD_DAYS ? null : period;
 }
+
+/** America/Bogota es UTC−5 todo el año (sin horario de verano): el día D empieza a las 05:00 UTC. */
+export function bogotaDayStartUtc(day: string): Date {
+  return new Date(`${day}T05:00:00.000Z`);
+}
+
+/** Límites UTC `[desde, hasta)` de días de Bogotá con ambos extremos incluidos. */
+export function bogotaRangeUtc(
+  from: string | undefined,
+  to: string | undefined,
+): { fromUtc?: Date; toUtcExclusive?: Date } {
+  return {
+    ...(from ? { fromUtc: bogotaDayStartUtc(from) } : {}),
+    ...(to ? { toUtcExclusive: bogotaDayStartUtc(shift(to, 1)) } : {}),
+  };
+}

@@ -77,18 +77,26 @@ export type ChangeExpiryRequest = z.infer<typeof changeExpiryRequestSchema>;
 export type ReassignQuoteRequest = z.infer<typeof reassignQuoteRequestSchema>;
 export type ReactivateQuoteRequest = z.infer<typeof reactivateQuoteRequestSchema>;
 
-export const listQuotesQuerySchema = z.object({
-  /** CSV de estados: `DRAFT,SENT`. */
-  status: z
-    .string()
-    .optional()
-    .transform((value) => (value ? value.split(',').filter(Boolean) : []))
-    .pipe(z.array(quoteStatusSchema)),
-  customerId: z.uuid().optional(),
-  ownerId: z.uuid().optional(),
-  q: z.string().trim().max(100).optional(),
-  ...paginationQueryShape,
-});
+export const listQuotesQuerySchema = z
+  .object({
+    /** CSV de estados: `DRAFT,SENT`. */
+    status: z
+      .string()
+      .optional()
+      .transform((value) => (value ? value.split(',').filter(Boolean) : []))
+      .pipe(z.array(quoteStatusSchema)),
+    customerId: z.uuid().optional(),
+    ownerId: z.uuid().optional(),
+    q: z.string().trim().max(100).optional(),
+    /** Cohorte por `firstSentAt` en días de America/Bogota, ambos extremos incluidos (como el tablero). */
+    sentFrom: z.iso.date().optional(),
+    sentTo: z.iso.date().optional(),
+    ...paginationQueryShape,
+  })
+  .refine((query) => !query.sentFrom || !query.sentTo || query.sentFrom <= query.sentTo, {
+    path: ['sentTo'],
+    message: 'sentFrom must be on or before sentTo',
+  });
 
 export type ListQuotesQuery = z.input<typeof listQuotesQuerySchema>;
 export type QuoteListFilter = z.output<typeof listQuotesQuerySchema>;
