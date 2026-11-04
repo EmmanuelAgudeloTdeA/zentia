@@ -37,27 +37,27 @@ Si falta, la API se detiene al arrancar con `Invalid environment variables` y el
 
 ## Variables de entorno (`apps/api/.env`)
 
-| Variable                        | Descripción                                      | Valor por defecto                |
-| ------------------------------- | ------------------------------------------------ | -------------------------------- |
-| `NODE_ENV`                      | `development`, `test` o `production`             | `development`                    |
-| `PORT`                          | Puerto de la API                                 | `3000`                           |
-| `DATABASE_URL`                  | Conexión a PostgreSQL                            | — (obligatoria)                  |
-| `TZ`                            | Zona horaria del proceso                         | `America/Bogota`                 |
-| `LOG_LEVEL`                     | Nivel de log de pino                             | `info`                           |
-| `CORS_ORIGIN`                   | Orígenes permitidos, separados por coma          | `http://localhost:5173`          |
-| `DOCS_ENABLED`                  | Swagger en `/api/docs`                           | `true` (`false` en `production`) |
-| `TRUST_PROXY`                   | `false`, `true` o número de proxies              | `false`                          |
-| `JWT_ACCESS_SECRET`             | Secreto HS256 del access token (≥ 32 caracteres) | — (obligatoria)                  |
-| `ACCESS_TOKEN_TTL`              | Duración del access token                        | `15m`                            |
-| `REFRESH_TOKEN_TTL`             | Duración del refresh token                       | `7d`                             |
-| `BCRYPT_COST`                   | Costo de bcrypt (4–15)                           | `12`                             |
-| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Solo para el seed del primer administrador       | —                                |
-| `SCHEDULER_ENABLED`             | Jobs diarios (vencimiento y alertas)             | `false`                          |
-| `LLM_PROVIDER`                  | `gemini` o `none` (siempre plantilla)            | `none`                           |
-| `LLM_MODEL`, `LLM_API_KEY`      | Modelo y clave del asistente de IA               | `gemini-2.5-flash`, —            |
-| `LLM_TIMEOUT_MS`                | Tiempo límite del asistente                      | `4000`                           |
-| `WEB_DIST_DIR`                  | Web compilada que sirve la API (mismo origen)    | — (sin estáticos)                |
-| `ALLOW_DEMO_SEED`               | Permite `seed:demo` con `NODE_ENV=production`    | —                                |
+| Variable                        | Descripción                                                       | Valor por defecto                                     |
+| ------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------- |
+| `NODE_ENV`                      | `development`, `test` o `production`                              | `development`                                         |
+| `PORT`                          | Puerto de la API                                                  | `3000`                                                |
+| `DATABASE_URL`                  | Conexión a PostgreSQL                                             | — (obligatoria)                                       |
+| `TZ`                            | Zona horaria del proceso                                          | `America/Bogota`                                      |
+| `LOG_LEVEL`                     | Nivel de log de pino                                              | `info`                                                |
+| `CORS_ORIGIN`                   | Orígenes permitidos, separados por coma                           | `http://localhost:5173` (obligatoria en `production`) |
+| `DOCS_ENABLED`                  | Swagger en `/api/docs`                                            | `true` (`false` en `production`)                      |
+| `TRUST_PROXY`                   | `false`, `true` o número de proxies                               | `false`                                               |
+| `JWT_ACCESS_SECRET`             | Secreto HS256 del access token (≥ 32 caracteres)                  | — (obligatoria)                                       |
+| `ACCESS_TOKEN_TTL`              | Duración del access token                                         | `15m`                                                 |
+| `REFRESH_TOKEN_TTL`             | Duración del refresh token                                        | `7d`                                                  |
+| `BCRYPT_COST`                   | Costo de bcrypt (4–15)                                            | `12`                                                  |
+| `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Solo para el seed del primer administrador                        | —                                                     |
+| `SCHEDULER_ENABLED`             | Jobs diarios (vencimiento y alertas)                              | `false`                                               |
+| `LLM_PROVIDER`                  | `gemini` o `none` (siempre plantilla); sin clave usa la plantilla | `gemini`                                              |
+| `LLM_MODEL`, `LLM_API_KEY`      | Modelo y clave del asistente de IA                                | `gemini-2.5-flash`, —                                 |
+| `LLM_TIMEOUT_MS`                | Tiempo límite del asistente                                       | `4000`                                                |
+| `WEB_DIST_DIR`                  | Web compilada que sirve la API (mismo origen)                     | — (sin estáticos)                                     |
+| `ALLOW_DEMO_SEED`               | Permite `seed:demo` con `NODE_ENV=production`                     | —                                                     |
 
 La API valida las variables al arrancar y se detiene si alguna falta o es inválida.
 

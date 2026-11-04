@@ -26,6 +26,8 @@ const durationSeconds = (fallback: string) =>
       return z.NEVER;
     });
 
+const DEV_CORS_ORIGIN = 'http://localhost:5173';
+
 export const envSchema = z
   .object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -37,9 +39,9 @@ export const envSchema = z
       .default('info'),
     CORS_ORIGIN: z
       .string()
-      .default('http://localhost:5173')
+      .optional()
       .transform((value) =>
-        value
+        (value ?? '')
           .split(',')
           .map((origin) => origin.trim())
           .filter(Boolean),
@@ -52,16 +54,22 @@ export const envSchema = z
     BCRYPT_COST: z.coerce.number().int().min(4).max(15).default(12),
     /** Jobs diarios (vencimiento y alertas); con varias instancias, el advisory lock evita duplicar trabajo. */
     SCHEDULER_ENABLED: booleanString.default(false),
-    /** `none` (o sin clave) usa siempre la plantilla de respaldo: desarrollo y pruebas sin red. */
-    LLM_PROVIDER: z.enum(['gemini', 'none']).default('none'),
+    /** Gemini Flash por defecto; sin `LLM_API_KEY` (o con `none`) usa siempre la plantilla de respaldo. */
+    LLM_PROVIDER: z.enum(['gemini', 'none']).default('gemini'),
     LLM_MODEL: z.string().min(1).default('gemini-2.5-flash'),
     LLM_API_KEY: z.string().optional(),
     LLM_TIMEOUT_MS: z.coerce.number().int().min(500).max(30_000).default(4000),
     /** Carpeta de la web compilada; sin ella la API no sirve estáticos (desarrollo con Vite). */
     WEB_DIST_DIR: z.string().optional(),
   })
+  .superRefine((env, ctx) => {
+    if (env.NODE_ENV === 'production' && env.CORS_ORIGIN.length === 0) {
+      ctx.addIssue({ code: 'custom', path: ['CORS_ORIGIN'], message: 'Required in production' });
+    }
+  })
   .transform((env) => ({
     ...env,
+    CORS_ORIGIN: env.CORS_ORIGIN.length > 0 ? env.CORS_ORIGIN : [DEV_CORS_ORIGIN],
     DOCS_ENABLED: env.DOCS_ENABLED ?? env.NODE_ENV !== 'production',
   }));
 

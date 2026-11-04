@@ -6,6 +6,8 @@ const base = {
   JWT_ACCESS_SECRET: 'x'.repeat(32),
 };
 
+const production = { NODE_ENV: 'production', CORS_ORIGIN: 'https://zentia.example.co' };
+
 describe('loadEnv', () => {
   it('applies defaults', () => {
     const env = loadEnv(base);
@@ -23,7 +25,32 @@ describe('loadEnv', () => {
   });
 
   it('disables docs by default in production', () => {
-    expect(loadEnv({ ...base, NODE_ENV: 'production' }).DOCS_ENABLED).toBe(false);
+    expect(loadEnv({ ...base, ...production }).DOCS_ENABLED).toBe(false);
+  });
+
+  it('requires CORS_ORIGIN in production', () => {
+    try {
+      loadEnv({ ...base, NODE_ENV: 'production' });
+      expect.unreachable();
+    } catch (error) {
+      expect(error).toBeInstanceOf(EnvValidationError);
+      expect((error as EnvValidationError).variables).toEqual(['CORS_ORIGIN']);
+    }
+    expect(
+      loadEnv({ ...base, NODE_ENV: 'production', CORS_ORIGIN: 'https://a.co, https://b.co' })
+        .CORS_ORIGIN,
+    ).toEqual(['https://a.co', 'https://b.co']);
+  });
+
+  it('defaults CORS_ORIGIN to the Vite dev server outside production', () => {
+    expect(loadEnv(base).CORS_ORIGIN).toEqual(['http://localhost:5173']);
+  });
+
+  it('defaults LLM_PROVIDER to gemini (Gemini Flash)', () => {
+    const env = loadEnv(base);
+    expect(env.LLM_PROVIDER).toBe('gemini');
+    expect(env.LLM_MODEL).toBe('gemini-2.5-flash');
+    expect(env.LLM_API_KEY).toBeUndefined();
   });
 
   it('names invalid variables without exposing their values', () => {
