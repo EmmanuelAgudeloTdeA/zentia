@@ -28,6 +28,17 @@ describe('API base', () => {
     const response = await request(createTestApp()).get('/api/docs/openapi.json');
     expect(response.status).toBe(200);
     expect(response.body.paths).toHaveProperty('/health');
+    for (const path of [
+      '/quotes/{id}/pdf',
+      '/quotes/{id}/share-links',
+      '/quotes/{id}/share',
+      '/quotes/{id}/order',
+      '/orders',
+      '/orders/{id}',
+      '/orders/{id}/status',
+    ]) {
+      expect(response.body.paths).toHaveProperty([path]);
+    }
   });
 
   it('hides the docs when DOCS_ENABLED is false', async () => {

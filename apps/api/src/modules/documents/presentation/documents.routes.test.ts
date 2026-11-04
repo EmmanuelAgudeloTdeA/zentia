@@ -136,5 +136,12 @@ describe('documents routes', () => {
       missing: ['EMAIL'],
       unavailableReason: 'CUSTOMER_INACTIVE',
     });
+
+    const shared = await request(app)
+      .post(`/api/quotes/${quote.id}/share`)
+      .set('Authorization', seller)
+      .send({ channel: 'WHATSAPP', updatedAt: quote.updatedAt });
+    expect(shared.status).toBe(400);
+    expect(shared.body.error.code).toBe('CUSTOMER_INACTIVE');
   });
 });

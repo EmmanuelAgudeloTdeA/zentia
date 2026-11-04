@@ -233,6 +233,22 @@ describe('GetShareLinksUseCase', () => {
       /^mailto:jose%2Bcompras@acme\.co\?subject=Cotizaci%C3%B3n%20COT-0012/,
     );
     expect(links.emailUrl).toContain('%0D%0A');
+    const decoded = decodeURIComponent(links.emailUrl ?? '');
+    expect(decoded).toContain('Cotización COT-0012 – Ñandú SAS');
+    expect(decoded).toContain('Adjunto el PDF de la cotización.');
+  });
+
+  it('writes the message in the documentLocale', async () => {
+    deps.settings = {
+      ...deps.settings,
+      getDocumentProfile: async () => ({ ...profile, documentLocale: 'en' }),
+    };
+    const links = await new GetShareLinksUseCase(deps).execute(actor, quote.id);
+    const text = decodeURIComponent(links.whatsappUrl?.split('text=')[1] ?? '');
+    expect(text).toContain('COT-0012');
+    expect(text).toContain('COP 5,375,000');
+    expect(text).toContain('11/18/2026');
+    expect(text).not.toContain('Hola');
   });
 
   it('returns no links outside DRAFT and SENT', async () => {
