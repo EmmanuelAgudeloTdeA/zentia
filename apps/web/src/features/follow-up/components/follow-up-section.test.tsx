@@ -40,12 +40,13 @@ function section() {
 }
 
 describe('FollowUpSection', () => {
-  it('does not refetch when the parent re-renders with an equivalent quote', async () => {
+  it('shows the translated type and does not refetch on equivalent parent re-renders', async () => {
     const list = vi
       .spyOn(interactionsService, 'list')
       .mockResolvedValue({ items: [interaction(1)], total: 1, page: 1, pageSize: 10 });
     const { rerender } = render(section());
     expect(await screen.findByText('Nota 1')).toBeTruthy();
+    expect(screen.getByText(es.enums.InteractionType.CALL)).toBeTruthy();
     rerender(section());
     rerender(section());
     await waitFor(() => expect(list).toHaveBeenCalledTimes(1));
