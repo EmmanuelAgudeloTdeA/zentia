@@ -50,9 +50,8 @@ export function BrandMark() {
   const brandName = useBrandName();
 
   return (
-    <Link to="/" className="flex min-w-0 items-center gap-3 rounded-md text-white">
+    <Link to="/" aria-label={brandName} title={brandName} className="flex shrink-0 rounded-full">
       <BrandLogo />
-      <span className="truncate text-h3">{brandName}</span>
     </Link>
   );
 }
