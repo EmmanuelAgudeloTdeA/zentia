@@ -2,9 +2,11 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import type { NotificationDto } from '@zentia/shared';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useSessionStore } from '../../../core/auth';
 import { PrivateLayout } from '../../../core/layout';
 import { useNotificationsStore } from '../../../core/notifications';
 import es from '../../../lang/es.json';
+import { toast } from '../../../shared/ui';
 import { signIn } from '../../../test/session-fixture';
 import { notificationsService } from '../services/notifications.service';
 import { NotificationBell } from './notification-bell';
@@ -94,7 +96,107 @@ describe('NotificationBell', () => {
   });
 });
 
+describe('NotificationBell (audit)', () => {
+  const listResult = (items: NotificationDto[]) => ({
+    items,
+    total: items.length,
+    page: 1,
+    pageSize: 10,
+    sort: 'date' as const,
+  });
+
+  it('does not poll while the tab is hidden', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+    const count = vi.spyOn(notificationsService, 'unreadCount').mockResolvedValue({ count: 0 });
+    renderAt('/');
+    await waitFor(() => expect(count).toHaveBeenCalledTimes(1));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(180_000);
+    });
+    expect(count).toHaveBeenCalledTimes(1);
+    visibility.mockRestore();
+  });
+
+  it('asks the panel for the latest 10 notifications sorted by date', async () => {
+    vi.spyOn(notificationsService, 'unreadCount').mockResolvedValue({ count: 1 });
+    const list = vi
+      .spyOn(notificationsService, 'list')
+      .mockResolvedValue(listResult([notification()]));
+    renderAt('/');
+    fireEvent.click(await screen.findByRole('button', { name: 'Notificaciones (1 sin leer)' }));
+    await waitFor(() => expect(list).toHaveBeenCalledWith({ sort: 'date', page: 1, pageSize: 10 }));
+  });
+
+  it('sets the count to 0 after marking all as read', async () => {
+    vi.spyOn(notificationsService, 'unreadCount').mockResolvedValue({ count: 2 });
+    vi.spyOn(notificationsService, 'list').mockResolvedValue(listResult([notification()]));
+    const markAll = vi.spyOn(notificationsService, 'markAllRead').mockResolvedValue(undefined);
+    renderAt('/');
+    fireEvent.click(await screen.findByRole('button', { name: 'Notificaciones (2 sin leer)' }));
+    fireEvent.click(await screen.findByRole('button', { name: es.notifications.markAllRead }));
+    await waitFor(() => expect(useNotificationsStore.getState().unreadCount).toBe(0));
+    expect(markAll).toHaveBeenCalledTimes(1);
+    expect(screen.queryByTestId('unread-count')).toBeNull();
+  });
+
+  it('shows a translated toast and keeps the count when marking all fails', async () => {
+    vi.spyOn(notificationsService, 'unreadCount').mockResolvedValue({ count: 2 });
+    vi.spyOn(notificationsService, 'list').mockResolvedValue(listResult([notification()]));
+    vi.spyOn(notificationsService, 'markAllRead').mockRejectedValue(new Error('offline'));
+    const error = vi.spyOn(toast, 'error');
+    renderAt('/');
+    fireEvent.click(await screen.findByRole('button', { name: 'Notificaciones (2 sin leer)' }));
+    fireEvent.click(await screen.findByRole('button', { name: es.notifications.markAllRead }));
+    await waitFor(() => expect(error).toHaveBeenCalledWith(es.errors.UNKNOWN));
+    expect(useNotificationsStore.getState().unreadCount).toBe(2);
+  });
+
+  it('does not lower the count when marking one as read fails', async () => {
+    vi.spyOn(notificationsService, 'unreadCount').mockResolvedValue({ count: 3 });
+    vi.spyOn(notificationsService, 'list').mockResolvedValue(listResult([notification()]));
+    const markRead = vi
+      .spyOn(notificationsService, 'markRead')
+      .mockRejectedValue(new Error('offline'));
+    const router = renderAt('/');
+    fireEvent.click(await screen.findByRole('button', { name: 'Notificaciones (3 sin leer)' }));
+    fireEvent.click(await screen.findByText('COT-0012 de Acme SAS vence el 06/11/2026.'));
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/quotes/${QUOTE_ID}`));
+    await waitFor(() => expect(markRead).toHaveBeenCalled());
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(useNotificationsStore.getState().unreadCount).toBe(3);
+  });
+
+  it('clears the count when the session is cleared (next user in the same tab)', async () => {
+    useNotificationsStore.getState().setUnreadCount(5);
+    useSessionStore.getState().clearSession();
+    expect(useNotificationsStore.getState().unreadCount).toBeNull();
+  });
+});
+
 describe('NotificationsPage', () => {
+  it('uses the singular for a single day without follow-up', async () => {
+    vi.spyOn(notificationsService, 'unreadCount').mockResolvedValue({ count: 0 });
+    vi.spyOn(notificationsService, 'list').mockResolvedValue({
+      items: [
+        notification({
+          type: 'QUOTE_NO_FOLLOW_UP',
+          params: { quoteId: QUOTE_ID, quoteNumber: 'COT-0012', customerName: 'Acme SAS', days: 1 },
+        }),
+      ],
+      total: 1,
+      page: 1,
+      pageSize: 20,
+      sort: 'probability',
+    });
+    renderAt('/notifications');
+    expect(
+      await screen.findByText('COT-0012 de Acme SAS lleva 1 día sin seguimiento.'),
+    ).toBeTruthy();
+  });
+
   it('renders texts with their markers and dims resolved quotes', async () => {
     vi.spyOn(notificationsService, 'unreadCount').mockResolvedValue({ count: 1 });
     vi.spyOn(notificationsService, 'list').mockResolvedValue({
