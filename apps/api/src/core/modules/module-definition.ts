@@ -1,6 +1,7 @@
 import type { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import type { Role } from '@zentia/shared';
 import type { RequestHandler, Router } from 'express';
+import type { ScheduledJob } from '../scheduler/index.js';
 
 export interface RequireAuthOptions {
   roles?: readonly Role[];
@@ -22,4 +23,6 @@ export interface ModuleDefinition {
   openapi: OpenAPIRegistry;
   /** Parsers propios de rutas concretas; se montan antes del `express.json()` global. */
   bodyParsers?: Router;
+  /** Jobs diarios del módulo; `main.ts` los registra si `SCHEDULER_ENABLED`. */
+  jobs?: readonly ScheduledJob[];
 }

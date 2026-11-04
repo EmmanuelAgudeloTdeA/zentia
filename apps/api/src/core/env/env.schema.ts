@@ -50,6 +50,8 @@ export const envSchema = z
     ACCESS_TOKEN_TTL: durationSeconds('15m'),
     REFRESH_TOKEN_TTL: durationSeconds('7d'),
     BCRYPT_COST: z.coerce.number().int().min(4).max(15).default(12),
+    /** Jobs diarios (vencimiento y alertas); con varias instancias, el advisory lock evita duplicar trabajo. */
+    SCHEDULER_ENABLED: booleanString.default(false),
   })
   .transform((env) => ({
     ...env,

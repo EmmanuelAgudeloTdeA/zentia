@@ -29,6 +29,12 @@ import {
   documentActions,
   type DocumentsInfrastructure,
 } from './documents/index.js';
+import {
+  createFollowUpModules,
+  createPrismaFollowUpInfrastructure,
+  createTransferNotificationsListener,
+  type FollowUpInfrastructure,
+} from './follow-up/index.js';
 import { createHealthModule } from './health/index.js';
 import {
   createPrismaQuotesInfrastructure,
@@ -50,6 +56,7 @@ export interface InfrastructureOverrides {
   catalog?: CatalogInfrastructure;
   quotes?: QuotesInfrastructure;
   documents?: DocumentsInfrastructure;
+  followUp?: FollowUpInfrastructure;
 }
 
 export interface CreateModulesOptions {
@@ -98,6 +105,8 @@ export function createModules({
     ...dependencies,
     infrastructure: overrides.catalog ?? createPrismaCatalogInfrastructure(getPrisma()),
   });
+  const followUpInfrastructure =
+    overrides.followUp ?? createPrismaFollowUpInfrastructure(getPrisma());
   const quotes = createQuotesModule({
     ...dependencies,
     infrastructure:
@@ -107,6 +116,7 @@ export function createModules({
     customers: customers.customerReader,
     catalog: catalog.catalogReader,
     actionContributors: [documentActions],
+    reassignedListeners: [createTransferNotificationsListener(followUpInfrastructure)],
   });
   const documents = createDocumentsModule({
     ...dependencies,
@@ -117,6 +127,15 @@ export function createModules({
     customers: customers.customerReader,
     clock,
   });
+  const followUp = createFollowUpModules({
+    ...dependencies,
+    ...followUpInfrastructure,
+    clock,
+    settings: companySettings.settingsReader,
+    customers: customers.customerReader,
+    quotes: quotes.quoteReader,
+    expireQuotes: quotes.expireQuotes,
+  });
   return [
     createHealthModule(dependencies),
     auth.module,
@@ -126,5 +145,6 @@ export function createModules({
     catalog.module,
     quotes.module,
     documents,
+    ...followUp,
   ];
 }
