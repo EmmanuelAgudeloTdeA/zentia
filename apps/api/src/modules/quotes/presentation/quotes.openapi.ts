@@ -51,9 +51,14 @@ export function createQuotesOpenApi(): OpenAPIRegistry {
     path: '/quotes',
     tags,
     security,
-    summary: 'Listar cotizaciones (vendedor: solo las propias); status en CSV',
+    summary:
+      'Listar cotizaciones (vendedor: solo las propias); status en CSV; sentFrom/sentTo filtran por firstSentAt (días de Bogotá)',
     request: { query: listQuotesQuerySchema },
-    responses: { 200: json('Página de cotizaciones', quoteListDtoSchema), ...GUARD },
+    responses: {
+      200: json('Página de cotizaciones', quoteListDtoSchema),
+      400: errorResponse('VALIDATION_ERROR'),
+      ...GUARD,
+    },
   });
 
   registry.registerPath({
@@ -66,7 +71,7 @@ export function createQuotesOpenApi(): OpenAPIRegistry {
     responses: {
       201: quoteResponse,
       400: errorResponse(
-        'VALIDATION_ERROR, CUSTOMER_INACTIVE, PRODUCT_INACTIVE, PRODUCT_NOT_FOUND, DUPLICATE_PRODUCT_LINE',
+        'VALIDATION_ERROR, CUSTOMER_INACTIVE, PRODUCT_INACTIVE, PRODUCT_NOT_FOUND, DUPLICATE_PRODUCT_LINE, QUOTE_AMOUNT_TOO_LARGE',
       ),
       ...GUARD,
     },
@@ -92,7 +97,7 @@ export function createQuotesOpenApi(): OpenAPIRegistry {
     responses: {
       200: json('Resultado de la edición', updateQuoteResultSchema),
       400: errorResponse(
-        'CUSTOMER_REQUEST_REQUIRED, QUOTE_CUSTOMER_LOCKED, CUSTOMER_INACTIVE, ...',
+        'CUSTOMER_REQUEST_REQUIRED, QUOTE_CUSTOMER_LOCKED, CUSTOMER_INACTIVE, QUOTE_AMOUNT_TOO_LARGE, ...',
       ),
       409: errorResponse('QUOTE_NOT_EDITABLE, QUOTE_CONFLICT'),
       ...GUARD,
@@ -181,7 +186,7 @@ export function createQuotesOpenApi(): OpenAPIRegistry {
     request: { params, body: body(reactivateQuoteRequestSchema) },
     responses: {
       200: json('Cotización reactivada', reactivateQuoteResultSchema),
-      400: errorResponse('CUSTOMER_REQUEST_REQUIRED'),
+      400: errorResponse('CUSTOMER_REQUEST_REQUIRED, QUOTE_AMOUNT_TOO_LARGE'),
       409: errorResponse('QUOTE_INVALID_TRANSITION, QUOTE_CONFLICT'),
       ...GUARD,
     },
@@ -196,7 +201,7 @@ export function createQuotesOpenApi(): OpenAPIRegistry {
     request: { params },
     responses: {
       201: json('Borrador nuevo', duplicateQuoteResultSchema),
-      400: errorResponse('CUSTOMER_INACTIVE, QUOTE_EMPTY'),
+      400: errorResponse('CUSTOMER_INACTIVE, QUOTE_EMPTY, QUOTE_AMOUNT_TOO_LARGE'),
       409: errorResponse('QUOTE_NOT_DUPLICABLE'),
       ...GUARD,
     },

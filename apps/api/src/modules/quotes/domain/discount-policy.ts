@@ -33,6 +33,10 @@ export function checkDiscount({
   const limit = limits[actorRole];
   if (next.gt(limit)) return { ok: false, limit: limit.toString() };
   const sellerLimit = limits.SELLER;
+  // RN-14: un vendedor no modifica un descuento que ya supera su límite, ni siquiera para bajarlo.
+  if (actorRole === 'SELLER' && new Decimal(from).gt(sellerLimit)) {
+    return { ok: false, limit: limit.toString() };
+  }
   const override =
     status === 'DRAFT' && actorRole !== 'SELLER' && next.gt(sellerLimit)
       ? {

@@ -108,6 +108,8 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
   const [confirmDiscard, setConfirmDiscard] = useState(false);
 
   const sent = quote?.status === 'SENT';
+  // Una cotización nueva toma el IVA del envío de los parámetros: sin ellos, la vista previa no es confiable.
+  const parametersFailed = !quote && params.error !== null;
   const shippingTaxable = quote?.shippingTaxable ?? params.shippingTaxable;
   const myLimit = params.discountLimits[role];
   const sellerLimit = params.discountLimits.SELLER;
@@ -223,8 +225,14 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
 
   const submit = () => {
     setSubmitted(true);
+    if (parametersFailed) return;
     if (errors.customer || errors.lines || errors.discount || !quantitiesValid || customerBlocked)
       return;
+    if (sent && quote && !dirty) {
+      toast.info(t('quotes.toast.noChanges'));
+      navigate(quotePath(quote.id));
+      return;
+    }
     if (sent) setAskRequest(true);
     else void save();
   };
@@ -520,6 +528,18 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
             totalLabel={t('quotes.totals.total')}
             total={formatCop(totals.total)}
           />
+          {parametersFailed ? (
+            <Alert
+              tone="danger"
+              action={
+                <Button variant="secondary" size="sm" onClick={params.retry}>
+                  {t('common.retry')}
+                </Button>
+              }
+            >
+              {t('quotes.editor.parametersError')}
+            </Alert>
+          ) : null}
           {conflict ? (
             <Alert
               tone="warning"
@@ -538,7 +558,7 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
             <Button variant="secondary" onClick={cancel} disabled={saving}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={submit} loading={saving && !askRequest}>
+            <Button onClick={submit} loading={saving && !askRequest} disabled={parametersFailed}>
               {quote ? t('quotes.editor.saveChanges') : t('quotes.editor.saveDraft')}
             </Button>
           </div>
@@ -554,7 +574,12 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
           <Button variant="secondary" size="sm" onClick={cancel} disabled={saving}>
             {t('common.cancel')}
           </Button>
-          <Button size="sm" onClick={submit} loading={saving && !askRequest}>
+          <Button
+            size="sm"
+            onClick={submit}
+            loading={saving && !askRequest}
+            disabled={parametersFailed}
+          >
             {quote ? t('quotes.editor.saveChanges') : t('quotes.editor.saveDraft')}
           </Button>
         </div>

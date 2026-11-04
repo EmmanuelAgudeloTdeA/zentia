@@ -58,6 +58,25 @@ describe('checkDiscount', () => {
     ).toEqual({ ok: true, override: null });
   });
 
+  it('RN-14: a seller cannot change a discount above the seller limit, not even to lower it', () => {
+    for (const status of ['DRAFT', 'SENT'] as const) {
+      expect(checkDiscount({ limits, actorRole: 'SELLER', from: '20', to: '5', status })).toEqual({
+        ok: false,
+        limit: '10',
+      });
+      expect(checkDiscount({ limits, actorRole: 'SELLER', from: '20', to: '0', status })).toEqual({
+        ok: false,
+        limit: '10',
+      });
+    }
+    expect(
+      checkDiscount({ limits, actorRole: 'SELLER', from: '10', to: '5', status: 'DRAFT' }),
+    ).toEqual({ ok: true, override: null });
+    expect(
+      checkDiscount({ limits, actorRole: 'MANAGER', from: '20', to: '5', status: 'SENT' }),
+    ).toEqual({ ok: true, override: null });
+  });
+
   it('copies the discount on duplicate only within the actor limit', () => {
     expect(discountForDuplicate('25', 'SELLER', limits)).toEqual({ discountPct: '0', reset: true });
     expect(discountForDuplicate('25.50', 'MANAGER', limits)).toEqual({

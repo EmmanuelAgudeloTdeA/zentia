@@ -1,4 +1,5 @@
 import {
+  bogotaRangeUtc,
   toSearchKey,
   type HistoryEntryDto,
   type QuoteDto,
@@ -23,7 +24,10 @@ export class ListQuotesUseCase {
     const q = filter.q?.trim();
     const numberMatch = q ? NUMBER_PATTERN.exec(q) : null;
     const scope = scopeFilter(actor);
+    const { fromUtc, toUtcExclusive } = bogotaRangeUtc(filter.sentFrom, filter.sentTo);
     const result = await this.deps.quotes.list({
+      firstSentFrom: fromUtc,
+      firstSentBefore: toUtcExclusive,
       statuses: filter.status,
       customerId: filter.customerId,
       ownerId: scope.ownerId ?? filter.ownerId,

@@ -35,4 +35,14 @@ describe('quotes schemas', () => {
     expect(listQuotesQuerySchema.parse({}).status).toEqual([]);
     expect(listQuotesQuerySchema.safeParse({ status: 'DRAFT,NOPE' }).success).toBe(false);
   });
+
+  it('accepts a first-sent range only with valid dates and from <= to', () => {
+    const range = { sentFrom: '2026-10-01', sentTo: '2026-10-31' };
+    expect(listQuotesQuerySchema.parse(range)).toMatchObject(range);
+    expect(listQuotesQuerySchema.safeParse({ sentFrom: '2026-10-01' }).success).toBe(true);
+    expect(
+      listQuotesQuerySchema.safeParse({ sentFrom: '2026-10-31', sentTo: '2026-10-01' }).success,
+    ).toBe(false);
+    expect(listQuotesQuerySchema.safeParse({ sentTo: '2026-13-01' }).success).toBe(false);
+  });
 });

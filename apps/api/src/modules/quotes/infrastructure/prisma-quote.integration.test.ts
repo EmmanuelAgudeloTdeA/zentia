@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { bogotaRangeUtc } from '@zentia/shared';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import type { NewQuote } from '../application/index.js';
 import {
@@ -162,5 +163,91 @@ describe.skipIf(!databaseUrl)('Prisma quotes (integration)', () => {
       author: { name: 'Ana' },
     });
     expect(history.events.map((event) => event.actor?.name ?? null)).toEqual(['Ana', null]);
+  });
+
+  it('rolls back the version when addEvents fails in the same unit of work', async () => {
+    const id = await createInTx();
+    const author = (await prisma.user.findFirstOrThrow()).id;
+    await expect(
+      infra.unitOfWork.run(async (tx) => {
+        await tx.quotes.addVersion({
+          quoteId: id,
+          number: 1,
+          snapshot: { total: '2975000' } as never,
+          changes: null,
+          customerRequest: null,
+          authorId: author,
+        });
+        // actorId inexistente: la FK falla después de crear la versión.
+        await tx.quotes.addEvents([
+          {
+            quoteId: id,
+            type: 'STATE_CHANGED',
+            actorId: '00000000-0000-4000-8000-000000000000',
+            data: { from: 'DRAFT', to: 'SENT' },
+          },
+        ]);
+      }),
+    ).rejects.toThrow();
+    expect(await prisma.quoteVersion.count({ where: { quoteId: id } })).toBe(0);
+    expect(await prisma.quoteEvent.count({ where: { quoteId: id } })).toBe(0);
+  });
+
+  it('rejects a repeated version number for the same quote', async () => {
+    const id = await createInTx();
+    const repo = new PrismaQuoteRepository(prisma);
+    const author = (await prisma.user.findFirstOrThrow()).id;
+    const version = {
+      quoteId: id,
+      number: 1,
+      snapshot: { total: '2975000' } as never,
+      changes: null,
+      customerRequest: null,
+      authorId: author,
+    };
+    await repo.addVersion(version);
+    await expect(repo.addVersion(version)).rejects.toThrow();
+  });
+
+  it('lists by updatedAt desc', async () => {
+    const first = await createInTx();
+    const second = await createInTx();
+    const third = await createInTx();
+    const repo = new PrismaQuoteRepository(prisma);
+    await repo.update(first, { discountPct: '0' });
+    const { items, total } = await repo.list({ statuses: [], skip: 0, take: 10 });
+    expect(total).toBe(3);
+    expect(items.map((item) => item.id)).toEqual([first, third, second]);
+  });
+
+  it('filters the first-sent cohort with Bogota day boundaries [from 05:00Z, to+1 05:00Z)', async () => {
+    const repo = new PrismaQuoteRepository(prisma);
+    const sentAt = [
+      '2026-10-01T04:59:59.999Z',
+      '2026-10-01T05:00:00.000Z',
+      '2026-11-01T04:59:59.999Z',
+      '2026-11-01T05:00:00.000Z',
+    ];
+    const ids: string[] = [];
+    for (const at of sentAt) {
+      const id = await createInTx();
+      await repo.update(id, {
+        status: 'SENT',
+        sentAt: new Date(at),
+        firstSentAt: new Date(at),
+        expiresAt: '2026-12-31',
+      });
+      ids.push(id);
+    }
+    await createInTx();
+    const { fromUtc, toUtcExclusive } = bogotaRangeUtc('2026-10-01', '2026-10-31');
+    const { items } = await repo.list({
+      statuses: [],
+      firstSentFrom: fromUtc,
+      firstSentBefore: toUtcExclusive,
+      skip: 0,
+      take: 10,
+    });
+    expect(items.map((item) => item.id).sort()).toEqual([ids[1], ids[2]].sort());
   });
 });

@@ -14,6 +14,16 @@ export interface LineDraft {
   quantity: string;
 }
 
+/** Los montos se guardan como `Decimal(15,0)`: un valor más largo desbordaría la columna en Postgres. */
+export const MAX_AMOUNT_DIGITS = 15;
+const AMOUNT_LIMIT = new Decimal(10).pow(MAX_AMOUNT_DIGITS);
+
+function assertAmountsFit(amounts: readonly string[]): void {
+  if (amounts.some((amount) => new Decimal(amount).abs().gte(AMOUNT_LIMIT))) {
+    throw new AppError('QUOTE_AMOUNT_TOO_LARGE', 400, { maxDigits: MAX_AMOUNT_DIGITS });
+  }
+}
+
 /** Recalcula siempre en el back con `shared/calc` (RN-05); los totales del cliente se ignoran. */
 export function priceLines(
   lines: readonly LineDraft[],
@@ -32,6 +42,14 @@ export function priceLines(
   const totals = quoteTotalsToStrings(
     calculateQuoteTotals({ items: normalized, discountPct, shippingAmount, shippingTaxable }),
   );
+  assertAmountsFit([
+    ...totals.lineAmounts,
+    totals.subtotal,
+    totals.discountAmount,
+    totals.linesVat,
+    totals.shippingVat,
+    totals.total,
+  ]);
   return {
     items: normalized.map((line, index) => ({
       ...line,

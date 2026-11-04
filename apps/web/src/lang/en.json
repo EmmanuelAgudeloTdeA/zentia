@@ -103,6 +103,7 @@
     "QUOTE_EMPTY": "No active products are left for the quote.",
     "QUOTE_CUSTOMER_LOCKED": "The customer cannot be changed on a sent quote.",
     "QUOTE_NOT_DUPLICABLE": "Only approved or rejected quotes can be duplicated.",
+    "QUOTE_AMOUNT_TOO_LARGE": "The quote amounts exceed the maximum allowed ({{maxDigits}} digits). Reduce quantities or prices.",
     "DUPLICATE_PRODUCT_LINE": "That product is already in the quote; adjust its quantity.",
     "DISCOUNT_LIMIT_EXCEEDED": "The discount exceeds your limit ({{limit}} %).",
     "CUSTOMER_REQUEST_REQUIRED": "Write what the customer asked for.",
@@ -313,7 +314,11 @@
       "owner": "Owner",
       "inactiveOwner": "{{name}} (inactive)",
       "allCustomers": "All customers",
-      "allOwners": "All owners"
+      "allOwners": "All owners",
+      "sentPeriod": "First sent: {{from}} – {{to}}",
+      "sentFromOnly": "First sent from {{from}}",
+      "sentToOnly": "First sent until {{to}}",
+      "removeFilter": "Remove filter: {{label}}"
     },
     "empty": {
       "title": "There are no quotes yet. Create the first one to get started.",
@@ -329,6 +334,7 @@
     "editor": {
       "newTitle": "New quote",
       "editTitle": "Edit {{number}}",
+      "parametersError": "The commercial parameters could not be loaded, so the totals might not match. Retry before saving.",
       "customerSection": "Customer",
       "customerPlaceholder": "Search by name or document",
       "customerRequired": "Select a customer.",

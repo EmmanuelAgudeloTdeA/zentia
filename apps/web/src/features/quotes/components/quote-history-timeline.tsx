@@ -146,8 +146,8 @@ function ChangeList({ entry }: { entry: Extract<HistoryEntryDto, { kind: 'VERSIO
   ];
   return (
     <ul className="mt-2 list-disc space-y-0.5 pl-5 text-body-sm text-neutral-700">
-      {items.map((item) => (
-        <li key={item}>{item}</li>
+      {items.map((item, index) => (
+        <li key={index}>{item}</li>
       ))}
     </ul>
   );

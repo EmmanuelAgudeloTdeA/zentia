@@ -1,5 +1,5 @@
 import type { CompanySettingsDto, DocumentLocale, Role } from '@zentia/shared';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { companyService } from '../../company-settings';
 
 export interface CommercialParameters {
@@ -35,23 +35,43 @@ function fromSettings(settings: CompanySettingsDto): CommercialParameters {
   };
 }
 
+export interface CommercialParametersState extends CommercialParameters {
+  ready: boolean;
+  /** Error de carga: los valores son los de respaldo y la vista previa puede no coincidir con el back. */
+  error: unknown;
+  retry: () => void;
+}
+
 /** Parámetros de M2 para la vista previa; el back siempre vuelve a validar con los vigentes. */
-export function useCommercialParameters(): CommercialParameters & { ready: boolean } {
-  const [state, setState] = useState<{ ready: boolean; params: CommercialParameters }>({
-    ready: false,
-    params: FALLBACK,
-  });
+export function useCommercialParameters(): CommercialParametersState {
+  const [state, setState] = useState<{
+    ready: boolean;
+    params: CommercialParameters;
+    error: unknown;
+  }>({ ready: false, params: FALLBACK, error: null });
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     companyService
       .getSettings()
-      .then((settings) => !cancelled && setState({ ready: true, params: fromSettings(settings) }))
-      .catch(() => !cancelled && setState({ ready: true, params: FALLBACK }));
+      .then(
+        (settings) =>
+          !cancelled && setState({ ready: true, params: fromSettings(settings), error: null }),
+      )
+      .catch(
+        (error: unknown) =>
+          !cancelled && setState({ ready: true, params: FALLBACK, error: error ?? true }),
+      );
     return () => {
       cancelled = true;
     };
+  }, [attempt]);
+
+  const retry = useCallback(() => {
+    setState((current) => ({ ...current, ready: false, error: null }));
+    setAttempt((value) => value + 1);
   }, []);
 
-  return { ...state.params, ready: state.ready };
+  return { ...state.params, ready: state.ready, error: state.error, retry };
 }

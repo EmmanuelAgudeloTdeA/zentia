@@ -79,6 +79,9 @@ export interface QuoteSearch {
   number?: number | undefined;
   /** Clave sin tildes del nombre del cliente. */
   customerKey?: string | undefined;
+  /** Cohorte por `firstSentAt` en `[firstSentFrom, firstSentBefore)`. */
+  firstSentFrom?: Date | undefined;
+  firstSentBefore?: Date | undefined;
   skip: number;
   take: number;
 }

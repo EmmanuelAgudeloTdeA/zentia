@@ -1,12 +1,14 @@
 import { QUOTE_STATUSES, type QuoteSummaryDto, type UserOptionDto } from '@zentia/shared';
+import type { TFunction } from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
 import { useSessionStore } from '../../../core/auth';
-import { formatCop, todayInBogota } from '../../../core/format';
+import { formatCop, formatDay, todayInBogota } from '../../../core/format';
 import { PageHeader } from '../../../core/layout';
 import {
   Button,
+  CloseIcon,
   Combobox,
   DataTable,
   EmptyState,
@@ -24,10 +26,26 @@ import { customersService } from '../../customers';
 import { usersService } from '../../users';
 import { useCommercialParameters } from '../hooks/use-commercial-parameters';
 import { useQuotes } from '../hooks/use-quotes';
-import { hasQuoteFilters, useQuoteFiltersStore } from '../store/quote-filters.store';
+import {
+  hasQuoteFilters,
+  useQuoteFiltersStore,
+  type SentPeriod,
+} from '../store/quote-filters.store';
 import { expiryLabel } from './quote-format';
 import { QuoteStatusBadge } from './quote-status-badge';
 import { NEW_QUOTE_PATH, quotePath } from './quote-paths';
+
+function sentPeriodText(t: TFunction, period: SentPeriod | null): string | null {
+  if (period?.from && period.to) {
+    return t('quotes.filters.sentPeriod', {
+      from: formatDay(period.from),
+      to: formatDay(period.to),
+    });
+  }
+  if (period?.from) return t('quotes.filters.sentFromOnly', { from: formatDay(period.from) });
+  if (period?.to) return t('quotes.filters.sentToOnly', { to: formatDay(period.to) });
+  return null;
+}
 
 export function QuotesListPage() {
   const { t } = useTranslation();
@@ -51,6 +69,7 @@ export function QuotesListPage() {
     ) : (
       <span className="text-neutral-400">—</span>
     );
+  const sentPeriodLabel = sentPeriodText(t, filters.sentPeriod);
   const comboboxLabels = {
     loading: t('common.combobox.loading'),
     noResults: t('common.combobox.noResults'),
@@ -155,6 +174,19 @@ export function QuotesListPage() {
               </FilterChip>
             ))}
           </div>
+          {sentPeriodLabel ? (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={filters.clearSentPeriod}
+                aria-label={t('quotes.filters.removeFilter', { label: sentPeriodLabel })}
+                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-primary-600 bg-primary-50 px-3 text-body-sm font-medium text-primary-900 hover:bg-primary-100"
+              >
+                {sentPeriodLabel}
+                <CloseIcon size={14} />
+              </button>
+            </div>
+          ) : null}
           <div className={`grid gap-3 ${seesAll ? 'lg:grid-cols-3' : 'sm:grid-cols-2'}`}>
             <TextField
               label={t('quotes.filters.search')}

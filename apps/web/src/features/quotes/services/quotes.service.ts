@@ -22,6 +22,8 @@ export interface QuotesListParams {
   q?: string | undefined;
   customerId?: string | undefined;
   ownerId?: string | undefined;
+  sentFrom?: string | undefined;
+  sentTo?: string | undefined;
   page: number;
   pageSize: number;
 }
