@@ -116,4 +116,66 @@ describe('ProductsPage', () => {
     fireEvent.click(within(dialog).getByRole('option', { name: 'Tecnología' }));
     expect((combobox as HTMLInputElement).value).toBe('Tecnología');
   });
+
+  it('hides every status chip from a SELLER', async () => {
+    signIn('SELLER');
+    mockList([product]);
+    renderPage();
+
+    await screen.findByRole('table');
+    for (const status of ['active', 'inactive', 'all'] as const) {
+      expect(screen.queryByRole('button', { name: es.common.statusFilter[status] })).toBeNull();
+    }
+    expect(screen.queryByRole('group', { name: es.common.statusFilter.label })).toBeNull();
+  });
+
+  it('warns that edits do not change existing quotes', async () => {
+    signIn('ADMIN');
+    mockList([product]);
+    vi.spyOn(companyService, 'getSettings').mockRejectedValue(new Error('offline'));
+    vi.spyOn(productsService, 'categories').mockResolvedValue([]);
+    renderPage();
+
+    const table = await screen.findByRole('table');
+    fireEvent.click(within(table).getByRole('button', { name: es.common.actions.edit }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(es.products.snapshotNotice)).toBeTruthy();
+  });
+
+  it('asks before deactivating and keeps the row with the "all" filter', async () => {
+    signIn('ADMIN');
+    useProductsFiltersStore.getState().setStatus('all');
+    mockList([product]);
+    const update = vi
+      .spyOn(productsService, 'update')
+      .mockResolvedValue({ ...product, isActive: false });
+    renderPage();
+
+    const table = await screen.findByRole('table');
+    fireEvent.click(within(table).getByRole('button', { name: es.common.actions.more }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: es.common.actions.deactivate }));
+    const dialog = await screen.findByRole('dialog');
+    expect(update).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: es.common.actions.deactivate }));
+
+    await waitFor(() => expect(update).toHaveBeenCalledWith(product.id, { isActive: false }));
+    expect(await within(table).findByText(es.common.status.inactive)).toBeTruthy();
+  });
+
+  it('refreshes the list when a deactivated product leaves the "active" filter', async () => {
+    signIn('ADMIN');
+    const list = mockList([product]);
+    vi.spyOn(productsService, 'update').mockResolvedValue({ ...product, isActive: false });
+    renderPage();
+
+    const table = await screen.findByRole('table');
+    list.mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
+    fireEvent.click(within(table).getByRole('button', { name: es.common.actions.more }));
+    fireEvent.click(await screen.findByRole('menuitem', { name: es.common.actions.deactivate }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: es.common.actions.deactivate }));
+
+    await waitFor(() => expect(screen.queryByText('Portátil')).toBeNull());
+    expect(list).toHaveBeenCalledTimes(2);
+  });
 });
