@@ -8,6 +8,8 @@ export const shareLinksDtoSchema = z.object({
   emailUrl: z.string().nullable(),
   /** Datos de contacto que le faltan al cliente. */
   missing: z.array(z.enum(['PHONE', 'EMAIL'])),
+  /** Motivo por el que no hay enlaces aunque el estado lo permita. */
+  unavailableReason: z.enum(['CUSTOMER_INACTIVE']).nullable(),
 });
 
 export type ShareLinksDto = z.infer<typeof shareLinksDtoSchema>;

@@ -58,7 +58,12 @@ export class GetShareLinksUseCase {
       ...(customer.phone ? [] : ['PHONE' as const]),
       ...(customer.email ? [] : ['EMAIL' as const]),
     ];
-    if (!SHAREABLE.includes(quote.status)) return { whatsappUrl: null, emailUrl: null, missing };
+    const none = { whatsappUrl: null, emailUrl: null, missing };
+    if (!SHAREABLE.includes(quote.status)) return { ...none, unavailableReason: null };
+    // Enviar un Borrador exige cliente activo: sin esto el cliente recibiría el mensaje y la cotización seguiría en Borrador.
+    if (quote.status === 'DRAFT' && !customer.isActive) {
+      return { ...none, unavailableReason: 'CUSTOMER_INACTIVE' };
+    }
 
     const [profile, params] = await Promise.all([
       this.deps.settings.getDocumentProfile(),
@@ -88,6 +93,7 @@ export class GetShareLinksUseCase {
         ? `mailto:${encodeURIComponent(customer.email).replace('%40', '@')}?subject=${mailtoComponent(subject)}&body=${mailtoComponent(body)}`
         : null,
       missing,
+      unavailableReason: null,
     };
   }
 }
