@@ -103,6 +103,7 @@
     "QUOTE_EMPTY": "No quedó ningún producto activo para la cotización.",
     "QUOTE_CUSTOMER_LOCKED": "El cliente no se puede cambiar en una cotización enviada.",
     "QUOTE_NOT_DUPLICABLE": "Solo se pueden duplicar cotizaciones aprobadas o rechazadas.",
+    "QUOTE_AMOUNT_TOO_LARGE": "Los valores de la cotización superan el máximo permitido ({{maxDigits}} dígitos). Reduce cantidades o precios.",
     "DUPLICATE_PRODUCT_LINE": "Ese producto ya está en la cotización; ajusta su cantidad.",
     "DISCOUNT_LIMIT_EXCEEDED": "El descuento supera tu límite ({{limit}} %).",
     "CUSTOMER_REQUEST_REQUIRED": "Escribe lo que solicitó el cliente.",
@@ -313,7 +314,11 @@
       "owner": "Dueño",
       "inactiveOwner": "{{name}} (inactivo)",
       "allCustomers": "Todos los clientes",
-      "allOwners": "Todos los dueños"
+      "allOwners": "Todos los dueños",
+      "sentPeriod": "Primer envío: {{from}} – {{to}}",
+      "sentFromOnly": "Primer envío desde {{from}}",
+      "sentToOnly": "Primer envío hasta {{to}}",
+      "removeFilter": "Quitar filtro: {{label}}"
     },
     "empty": {
       "title": "Aún no hay cotizaciones. Crea la primera para empezar.",
@@ -329,6 +334,7 @@
     "editor": {
       "newTitle": "Nueva cotización",
       "editTitle": "Editar {{number}}",
+      "parametersError": "No se pudieron cargar los parámetros comerciales, así que los totales podrían no coincidir. Reintenta antes de guardar.",
       "customerSection": "Cliente",
       "customerPlaceholder": "Busca por nombre o documento",
       "customerRequired": "Selecciona un cliente.",
