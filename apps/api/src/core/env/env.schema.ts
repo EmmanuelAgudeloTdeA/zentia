@@ -52,6 +52,11 @@ export const envSchema = z
     BCRYPT_COST: z.coerce.number().int().min(4).max(15).default(12),
     /** Jobs diarios (vencimiento y alertas); con varias instancias, el advisory lock evita duplicar trabajo. */
     SCHEDULER_ENABLED: booleanString.default(false),
+    /** `none` (o sin clave) usa siempre la plantilla de respaldo: desarrollo y pruebas sin red. */
+    LLM_PROVIDER: z.enum(['gemini', 'none']).default('none'),
+    LLM_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+    LLM_API_KEY: z.string().optional(),
+    LLM_TIMEOUT_MS: z.coerce.number().int().min(500).max(30_000).default(4000),
   })
   .transform((env) => ({
     ...env,

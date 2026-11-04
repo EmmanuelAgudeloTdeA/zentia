@@ -62,6 +62,7 @@ export function createApplication({
   const modules = createModules({
     env,
     clock,
+    logger,
     publicLimiter: createGeneralLimiter(),
     ...(overrides ? { overrides } : {}),
   });
