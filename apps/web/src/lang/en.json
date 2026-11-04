@@ -287,7 +287,12 @@
       "title": "No quotes have been sent yet. Indicators appear from the first send.",
       "period": "No quotes were sent in this period."
     },
-    "viewQuotes": "View quotes"
+    "viewQuotes": "View quotes",
+    "sections": {
+      "topProbability": {
+        "title": "Highest closing probability"
+      }
+    }
   },
   "quotes": {
     "title": "Quotes",
@@ -557,7 +562,13 @@
     "loadError": "Notifications could not be loaded.",
     "unread": "Unread",
     "QUOTE_EXPIRING": "{{quoteNumber}} for {{customerName}} expires on {{expiresAt}}.",
-    "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} for {{customerName}} has gone {{days}} days without follow-up."
+    "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} for {{customerName}} has gone {{days}} days without follow-up.",
+    "sort": {
+      "label": "Sort by",
+      "probability": "Closing probability",
+      "date": "Date",
+      "fallbackNotice": "Could not sort by probability; showing by date."
+    }
   },
   "orders": {
     "title": "Orders",
@@ -866,6 +877,56 @@
       "followUp": "Follow-up",
       "expiring": "Alert: {{date}}",
       "expires": "Expires: {{date}}"
+    }
+  },
+  "ai": {
+    "assistant": {
+      "title": "Follow-up assistant",
+      "help": "Generate a follow-up message you can edit before using it.",
+      "highlighted": "{{days}} days without follow-up.",
+      "suggest": "Suggest message",
+      "suggestAgain": "Suggest another message",
+      "templateNotice": "The AI did not respond; this message comes from a template. You can still edit it.",
+      "aiSource": "Suggested with AI",
+      "messageLabel": "Message",
+      "documentLocaleNotice": "The message is generated in {{language}}.",
+      "copy": "Copy",
+      "copied": "Message copied.",
+      "copyError": "The message could not be copied.",
+      "openWhatsapp": "Open in WhatsApp",
+      "openEmail": "Open in email",
+      "noPhone": "The customer has no phone number.",
+      "noEmail": "The customer has no email address.",
+      "emptyMessage": "Write a message to use it.",
+      "registerHint": "Already contacted the customer? Log it in the follow-up.",
+      "registerInteraction": "Log interaction",
+      "rateLimited": "Too many requests. Wait a minute.",
+      "replaceTitle": "Replace the current message?",
+      "replaceConfirm": "Replace"
+    },
+    "probability": {
+      "label": "Probability",
+      "rulesEstimate": "Rules-based estimate",
+      "rulesEstimateShort": "Rules est.",
+      "factorsTitle": "Applied factors",
+      "error": "The probability could not be calculated.",
+      "factors": {
+        "BASE": "Base",
+        "RECENT_INTERACTION": "Recent interaction",
+        "VERSION_AFTER_SEND": "Version after sending",
+        "NO_FOLLOW_UP": "No follow-up",
+        "VALIDITY_CONSUMED": "Validity consumed without interaction"
+      }
+    },
+    "calibration": {
+      "title": "Calibration status",
+      "progress": "{{closed}} of {{threshold}} closed quotes",
+      "ready": "There is enough data to calibrate the estimate (phase 2).",
+      "notReady": "The estimate is still rules-based."
+    },
+    "top": {
+      "empty": "There are no sent quotes.",
+      "expiresOn": "Expires on {{date}}"
     }
   }
 }

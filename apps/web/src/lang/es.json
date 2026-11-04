@@ -287,7 +287,12 @@
       "title": "Aún no hay cotizaciones enviadas. Los indicadores aparecen desde el primer envío.",
       "period": "No hay cotizaciones enviadas en este período."
     },
-    "viewQuotes": "Ver cotizaciones"
+    "viewQuotes": "Ver cotizaciones",
+    "sections": {
+      "topProbability": {
+        "title": "Mayor probabilidad de cierre"
+      }
+    }
   },
   "quotes": {
     "title": "Cotizaciones",
@@ -557,7 +562,13 @@
     "loadError": "No se pudieron cargar las notificaciones.",
     "unread": "Sin leer",
     "QUOTE_EXPIRING": "{{quoteNumber}} de {{customerName}} vence el {{expiresAt}}.",
-    "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} de {{customerName}} lleva {{days}} días sin seguimiento."
+    "QUOTE_NO_FOLLOW_UP": "{{quoteNumber}} de {{customerName}} lleva {{days}} días sin seguimiento.",
+    "sort": {
+      "label": "Ordenar por",
+      "probability": "Probabilidad de cierre",
+      "date": "Fecha",
+      "fallbackNotice": "No se pudo ordenar por probabilidad; se muestran por fecha."
+    }
   },
   "orders": {
     "title": "Pedidos",
@@ -866,6 +877,56 @@
       "followUp": "Sin seguimiento",
       "expiring": "Aviso: {{date}}",
       "expires": "Vence: {{date}}"
+    }
+  },
+  "ai": {
+    "assistant": {
+      "title": "Asistente de seguimiento",
+      "help": "Genera un mensaje de seguimiento que puedes editar antes de usarlo.",
+      "highlighted": "Lleva {{days}} días sin seguimiento.",
+      "suggest": "Sugerir mensaje",
+      "suggestAgain": "Sugerir otro mensaje",
+      "templateNotice": "La IA no respondió; este mensaje sale de una plantilla. Puedes editarlo igual.",
+      "aiSource": "Sugerido con IA",
+      "messageLabel": "Mensaje",
+      "documentLocaleNotice": "El mensaje se genera en {{language}}.",
+      "copy": "Copiar",
+      "copied": "Mensaje copiado.",
+      "copyError": "No se pudo copiar el mensaje.",
+      "openWhatsapp": "Abrir en WhatsApp",
+      "openEmail": "Abrir en correo",
+      "noPhone": "El cliente no tiene teléfono registrado.",
+      "noEmail": "El cliente no tiene correo registrado.",
+      "emptyMessage": "Escribe un mensaje para usarlo.",
+      "registerHint": "¿Ya contactaste al cliente? Deja constancia en el seguimiento.",
+      "registerInteraction": "Registrar interacción",
+      "rateLimited": "Hiciste muchas solicitudes. Espera un minuto.",
+      "replaceTitle": "¿Reemplazar el mensaje actual?",
+      "replaceConfirm": "Reemplazar"
+    },
+    "probability": {
+      "label": "Probabilidad",
+      "rulesEstimate": "Estimación por reglas",
+      "rulesEstimateShort": "Est. por reglas",
+      "factorsTitle": "Factores aplicados",
+      "error": "No se pudo calcular la probabilidad.",
+      "factors": {
+        "BASE": "Base",
+        "RECENT_INTERACTION": "Interacción reciente",
+        "VERSION_AFTER_SEND": "Versión después del envío",
+        "NO_FOLLOW_UP": "Sin seguimiento",
+        "VALIDITY_CONSUMED": "Vigencia consumida sin interacción"
+      }
+    },
+    "calibration": {
+      "title": "Estado de calibración",
+      "progress": "{{closed}} de {{threshold}} cotizaciones cerradas",
+      "ready": "Ya hay datos suficientes para calibrar la estimación (fase 2).",
+      "notReady": "La estimación sigue siendo por reglas."
+    },
+    "top": {
+      "empty": "No hay cotizaciones enviadas.",
+      "expiresOn": "Vence el {{date}}"
     }
   }
 }

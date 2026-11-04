@@ -26,6 +26,7 @@ function notification(overrides: Partial<NotificationDto> = {}): NotificationDto
     readAt: null,
     createdAt: '2026-11-03T12:00:00.000Z',
     quote: { id: QUOTE_ID, displayNumber: 'COT-0012', status: 'SENT' },
+    probability: null,
     ...overrides,
   };
 }
@@ -66,6 +67,7 @@ describe('NotificationBell', () => {
       total: 1,
       page: 1,
       pageSize: 10,
+      sort: 'date',
     });
     const markRead = vi.spyOn(notificationsService, 'markRead').mockResolvedValue(undefined);
     const router = renderAt('/');
@@ -108,6 +110,7 @@ describe('NotificationsPage', () => {
       total: 1,
       page: 1,
       pageSize: 20,
+      sort: 'probability',
     });
     renderAt('/notifications');
 
@@ -116,5 +119,31 @@ describe('NotificationsPage', () => {
     ).closest('button');
     expect(row?.className).toContain('opacity-60');
     expect(within(row as HTMLElement).getByText(es.notifications.resolved)).toBeTruthy();
+  });
+
+  it('sorts by probability by default, shows compact badges and the date fallback notice', async () => {
+    vi.spyOn(notificationsService, 'unreadCount').mockResolvedValue({ count: 0 });
+    const list = vi.spyOn(notificationsService, 'list').mockResolvedValue({
+      items: [notification({ probability: 55 })],
+      total: 1,
+      page: 1,
+      pageSize: 20,
+      sort: 'date',
+    });
+    renderAt('/notifications');
+
+    expect(await screen.findByText(`55 % · ${es.ai.probability.rulesEstimateShort}`)).toBeTruthy();
+    expect(list).toHaveBeenCalledWith(expect.objectContaining({ sort: 'probability' }));
+    expect(screen.getByText(es.notifications.sort.fallbackNotice)).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText(es.notifications.sort.label), {
+      target: { value: 'date' },
+    });
+    await waitFor(() =>
+      expect(list).toHaveBeenLastCalledWith(expect.objectContaining({ sort: 'date' })),
+    );
+    await waitFor(() =>
+      expect(screen.queryByText(es.notifications.sort.fallbackNotice)).toBeNull(),
+    );
   });
 });

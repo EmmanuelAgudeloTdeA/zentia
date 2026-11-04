@@ -19,6 +19,7 @@ import {
   TextField,
   type DataTableColumn,
 } from '../../../shared/ui';
+import { ProbabilityCell, useProbabilities } from '../../ai';
 import { customersService } from '../../customers';
 import { usersService } from '../../users';
 import { useCommercialParameters } from '../hooks/use-commercial-parameters';
@@ -36,6 +37,20 @@ export function QuotesListPage() {
   const { state, reload } = useQuotes();
   const { expiringAlertDays } = useCommercialParameters();
   const today = useMemo(() => todayInBogota(), []);
+  const sentIds = useMemo(
+    () =>
+      state.status === 'ready'
+        ? state.data.items.filter((quote) => quote.status === 'SENT').map((quote) => quote.id)
+        : [],
+    [state],
+  );
+  const probabilities = useProbabilities(sentIds);
+  const probability = (quote: QuoteSummaryDto) =>
+    quote.status === 'SENT' ? (
+      <ProbabilityCell quoteId={quote.id} state={probabilities} />
+    ) : (
+      <span className="text-neutral-400">—</span>
+    );
   const comboboxLabels = {
     loading: t('common.combobox.loading'),
     noResults: t('common.combobox.noResults'),
@@ -86,6 +101,7 @@ export function QuotesListPage() {
       header: t('quotes.status'),
       cell: (quote) => <QuoteStatusBadge status={quote.status} />,
     },
+    { key: 'probability', header: t('ai.probability.label'), cell: probability, secondary: true },
   ];
 
   const mobileCard = (quote: QuoteSummaryDto) => (
@@ -97,6 +113,7 @@ export function QuotesListPage() {
       <p className="truncate text-body text-neutral-900">{quote.customer.name}</p>
       <div className="flex items-center justify-between gap-3 text-body-sm">
         {expiry(quote)}
+        {quote.status === 'SENT' ? probability(quote) : null}
         <span className="font-semibold tabular-nums">{formatCop(quote.total)}</span>
       </div>
     </div>

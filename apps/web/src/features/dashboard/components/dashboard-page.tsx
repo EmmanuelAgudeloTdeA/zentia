@@ -31,6 +31,7 @@ import {
   Skeleton,
   TextField,
 } from '../../../shared/ui';
+import { DashboardSections } from '../../ai';
 import { NEW_QUOTE_PATH, QuoteStatusBadge, useQuoteFiltersStore } from '../../quotes';
 import { usersService } from '../../users';
 import { dashboardService } from '../services/dashboard.service';
@@ -279,6 +280,8 @@ export function DashboardPage() {
                 <DashboardCharts period={data.period} />
               </Suspense>
             )}
+
+            <DashboardSections sections={data.sections} showOwner={seesAll} />
           </>
         )}
 

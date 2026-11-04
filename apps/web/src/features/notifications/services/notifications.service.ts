@@ -2,9 +2,15 @@ import type { NotificationListDto, UnreadCountDto } from '@zentia/shared';
 import { request } from '../../../core/http-client';
 import { useNotificationsStore } from '../../../core/notifications';
 
+export type NotificationSort = NotificationListDto['sort'];
+
 export const notificationsService = {
-  list: (query: { unreadOnly?: boolean; page: number; pageSize: number }) =>
-    request<NotificationListDto>('GET', '/notifications', { query }),
+  list: (query: {
+    unreadOnly?: boolean;
+    sort?: NotificationSort;
+    page: number;
+    pageSize: number;
+  }) => request<NotificationListDto>('GET', '/notifications', { query }),
   unreadCount: () => request<UnreadCountDto>('GET', '/notifications/unread-count'),
   markRead: (id: string) => request<undefined>('POST', `/notifications/${id}/read`),
   markAllRead: () => request<undefined>('POST', '/notifications/read-all'),

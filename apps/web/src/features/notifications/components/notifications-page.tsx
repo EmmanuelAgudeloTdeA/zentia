@@ -6,17 +6,24 @@ import { formatDateTime } from '../../../core/format';
 import { PageHeader } from '../../../core/layout';
 import { useNotificationsStore } from '../../../core/notifications';
 import {
+  Alert,
   Button,
   BellIcon,
   EmptyState,
   ErrorMessage,
   FilterChip,
   Pagination,
+  Select,
   Skeleton,
   toast,
 } from '../../../shared/ui';
+import { ProbabilityBadge } from '../../ai';
 import { QuoteStatusBadge } from '../../quotes';
-import { notificationsService, refreshUnreadCount } from '../services/notifications.service';
+import {
+  notificationsService,
+  refreshUnreadCount,
+  type NotificationSort,
+} from '../services/notifications.service';
 import { useNotificationText } from './notification-text';
 
 export function NotificationsPage() {
@@ -25,6 +32,7 @@ export function NotificationsPage() {
   const text = useNotificationText();
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState<NotificationSort>('probability');
   const [state, setState] = useState<
     | { status: 'loading' }
     | { status: 'error'; error: unknown }
@@ -36,12 +44,17 @@ export function NotificationsPage() {
     try {
       setState({
         status: 'ready',
-        data: await notificationsService.list({ unreadOnly, page, pageSize: DEFAULT_PAGE_SIZE }),
+        data: await notificationsService.list({
+          unreadOnly,
+          sort,
+          page,
+          pageSize: DEFAULT_PAGE_SIZE,
+        }),
       });
     } catch (error) {
       setState({ status: 'error', error });
     }
-  }, [unreadOnly, page]);
+  }, [unreadOnly, sort, page]);
 
   useEffect(() => {
     void load();
@@ -78,14 +91,34 @@ export function NotificationsPage() {
         }
       />
       <section className="rounded-lg border border-neutral-200 bg-neutral-0 shadow-sm">
-        <div className="flex gap-2 border-b border-neutral-200 p-4">
-          <FilterChip active={!unreadOnly} onClick={() => filter(false)}>
-            {t('notifications.all')}
-          </FilterChip>
-          <FilterChip active={unreadOnly} onClick={() => filter(true)}>
-            {t('notifications.unreadOnly')}
-          </FilterChip>
+        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-neutral-200 p-4">
+          <div className="flex gap-2">
+            <FilterChip active={!unreadOnly} onClick={() => filter(false)}>
+              {t('notifications.all')}
+            </FilterChip>
+            <FilterChip active={unreadOnly} onClick={() => filter(true)}>
+              {t('notifications.unreadOnly')}
+            </FilterChip>
+          </div>
+          <Select
+            label={t('notifications.sort.label')}
+            className="sm:w-64"
+            value={sort}
+            onChange={(event) => {
+              setSort(event.target.value as NotificationSort);
+              setPage(1);
+            }}
+            options={[
+              { value: 'probability', label: t('notifications.sort.probability') },
+              { value: 'date', label: t('notifications.sort.date') },
+            ]}
+          />
         </div>
+        {state.status === 'ready' && sort === 'probability' && state.data.sort === 'date' ? (
+          <div className="px-4 pt-4">
+            <Alert tone="info">{t('notifications.sort.fallbackNotice')}</Alert>
+          </div>
+        ) : null}
         {state.status === 'loading' ? (
           <div className="space-y-3 p-4" aria-busy="true">
             {[0, 1, 2, 3].map((index) => (
@@ -134,6 +167,17 @@ export function NotificationsPage() {
                       </span>
                       <span className="flex shrink-0 flex-col items-end gap-1">
                         <QuoteStatusBadge status={item.quote.status} size="sm" />
+                        {item.probability !== null ? (
+                          <ProbabilityBadge
+                            compact
+                            probability={{
+                              quoteId: item.quote.id,
+                              probability: item.probability,
+                              label: 'RULES_ESTIMATE',
+                              factors: [],
+                            }}
+                          />
+                        ) : null}
                         {resolved ? (
                           <span className="text-caption text-neutral-500">
                             {t('notifications.resolved')}
