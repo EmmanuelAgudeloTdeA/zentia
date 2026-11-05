@@ -54,7 +54,7 @@ Si falta, la API se detiene al arrancar con `Invalid environment variables` y el
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Solo para el seed del primer administrador                        | —                                                     |
 | `SCHEDULER_ENABLED`             | Jobs diarios (vencimiento y alertas)                              | `false`                                               |
 | `LLM_PROVIDER`                  | `gemini` o `none` (siempre plantilla); sin clave usa la plantilla | `gemini`                                              |
-| `LLM_MODEL`, `LLM_API_KEY`      | Modelo y clave del asistente de IA                                | `gemini-2.5-flash`, —                                 |
+| `LLM_MODEL`, `LLM_API_KEY`      | Modelo y clave del asistente de IA                                | `gemini-3.5-flash-lite`, —                            |
 | `LLM_TIMEOUT_MS`                | Tiempo límite del asistente                                       | `4000`                                                |
 | `WEB_DIST_DIR`                  | Web compilada que sirve la API (mismo origen)                     | — (sin estáticos)                                     |
 | `ALLOW_DEMO_SEED`               | Permite `seed:demo` y `seed:catalog` con `NODE_ENV=production`    | —                                                     |
