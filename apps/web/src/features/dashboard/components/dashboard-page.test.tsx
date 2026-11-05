@@ -2,20 +2,33 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { DashboardSummaryDto } from '@zentia/shared';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useSessionStore } from '../../../core/auth';
+import { ApiError } from '../../../core/errors';
 import { PrivateLayout } from '../../../core/layout';
 import es from '../../../lang/es.json';
 import { signIn } from '../../../test/session-fixture';
-import { useQuoteFiltersStore } from '../../quotes';
+import { QUOTES_PATH, useQuoteFiltersStore } from '../../quotes';
+import { usersService } from '../../users';
 import { dashboardService } from '../services/dashboard.service';
 import { useDashboardFiltersStore } from '../store/dashboard-filters.store';
 import { DashboardPage } from './dashboard-page';
 
 vi.mock('./dashboard-charts', () => ({ default: () => <p>gráficos</p> }));
 
-function summary(overrides: Partial<DashboardSummaryDto['period']> = {}): DashboardSummaryDto {
+const SELLER = {
+  id: '5d2e1f3a-4b5c-4d6e-8f70-1a2b3c4d5e6f',
+  name: 'Beto Ruiz',
+  role: 'SELLER' as const,
+  isActive: true,
+};
+
+function summary(
+  overrides: Partial<DashboardSummaryDto['period']> = {},
+  current: Partial<DashboardSummaryDto['current']> = {},
+): DashboardSummaryDto {
   return {
     scope: { ownerId: null },
-    current: { active: 4, pendingFollowUp: 2, followUpDays: 5 },
+    current: { active: 4, pendingFollowUp: 2, followUpDays: 5, ...current },
     period: {
       from: '2026-11-01',
       to: '2026-11-30',
@@ -45,8 +58,8 @@ function renderPage() {
     ],
     { initialEntries: ['/'] },
   );
-  render(<RouterProvider router={router} />);
-  return router;
+  const view = render(<RouterProvider router={router} />);
+  return Object.assign(router, { unmount: view.unmount });
 }
 
 afterEach(() => {
@@ -118,7 +131,7 @@ describe('DashboardPage', () => {
     expect(call).toHaveBeenCalledTimes(2);
   });
 
-  it('opens the quotes list filtered by status from the cards', async () => {
+  it('opens the active quotes by current state, without the period', async () => {
     signIn('SELLER');
     vi.spyOn(dashboardService, 'summary').mockResolvedValue(summary());
     const router = renderPage();
@@ -126,7 +139,109 @@ describe('DashboardPage', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: new RegExp(es.dashboard.kpi.active) }),
     );
-    await waitFor(() => expect(router.state.location.pathname).toBe('/quotes'));
-    expect(useQuoteFiltersStore.getState().statuses).toEqual(['SENT']);
+    await waitFor(() => expect(router.state.location.pathname).toBe(QUOTES_PATH));
+    expect(useQuoteFiltersStore.getState()).toMatchObject({
+      statuses: ['SENT'],
+      owner: null,
+      sentPeriod: null,
+    });
+  });
+
+  it('opens a cohort card with the same status, period and seller as the dashboard', async () => {
+    signIn('MANAGER');
+    useDashboardFiltersStore.getState().pickOwner({ id: SELLER.id, label: SELLER.name });
+    const call = vi.spyOn(dashboardService, 'summary').mockResolvedValue(summary());
+    const router = renderPage();
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: new RegExp(es.enums.QuoteStatus.REJECTED) }),
+    );
+    await waitFor(() => expect(router.state.location.pathname).toBe(QUOTES_PATH));
+    expect(call.mock.calls[0]?.[0]).toMatchObject({ ownerId: SELLER.id });
+    expect(useQuoteFiltersStore.getState()).toMatchObject({
+      statuses: ['REJECTED'],
+      owner: { id: SELLER.id, label: SELLER.name },
+      sentPeriod: { from: '2026-11-01', to: '2026-11-30' },
+    });
+  });
+
+  it('filters by a seller and returns to all sellers with the "Todos" option', async () => {
+    signIn('ADMIN');
+    vi.spyOn(usersService, 'options').mockResolvedValue([SELLER]);
+    const call = vi.spyOn(dashboardService, 'summary').mockResolvedValue(summary());
+    renderPage();
+    await waitFor(() => expect(call).toHaveBeenCalledTimes(1));
+    const input = screen.getByLabelText(es.dashboard.seller.label);
+
+    fireEvent.change(input, { target: { value: 'Be' } });
+    fireEvent.click(await screen.findByRole('option', { name: SELLER.name }));
+    await waitFor(() => expect(call.mock.calls.at(-1)?.[0]).toMatchObject({ ownerId: SELLER.id }));
+
+    fireEvent.change(input, { target: { value: 'Be' } });
+    fireEvent.click(await screen.findByRole('option', { name: es.dashboard.seller.all }));
+    await waitFor(() => expect(call.mock.calls.at(-1)?.[0].ownerId).toBeUndefined());
+    expect(useDashboardFiltersStore.getState()).toMatchObject({ owner: null, ownerInput: '' });
+  });
+
+  it('remembers the preset after leaving and coming back', async () => {
+    signIn('SELLER');
+    const call = vi.spyOn(dashboardService, 'summary').mockResolvedValue(summary());
+    const first = renderPage();
+    await waitFor(() => expect(call).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByRole('button', { name: es.dashboard.period.last90Days }));
+    await waitFor(() => expect(call).toHaveBeenCalledTimes(2));
+    first.unmount();
+
+    renderPage();
+    await waitFor(() => expect(call).toHaveBeenCalledTimes(3));
+    expect(call.mock.calls[2]?.[0]).toEqual(call.mock.calls[1]?.[0]);
+    expect(
+      screen
+        .getByRole('button', { name: es.dashboard.period.last90Days })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+  });
+
+  it('shows the global empty state when nothing was ever sent', async () => {
+    signIn('SELLER');
+    vi.spyOn(dashboardService, 'summary').mockResolvedValue(
+      summary(
+        {
+          approved: 0,
+          rejected: 0,
+          expired: 0,
+          closed: 0,
+          conversionRate: null,
+          quotedAmount: '0',
+          approvedAmount: '0',
+        },
+        { active: 0, pendingFollowUp: 0 },
+      ),
+    );
+    renderPage();
+    expect(await screen.findByText(es.dashboard.empty.title)).toBeTruthy();
+    expect(screen.getByRole('link', { name: es.quotes.new })).toBeTruthy();
+  });
+
+  it('translates an invalid period answered by the API', async () => {
+    signIn('SELLER');
+    vi.spyOn(dashboardService, 'summary').mockRejectedValue(
+      new ApiError('DASHBOARD_INVALID_PERIOD', 400),
+    );
+    renderPage();
+    expect(await screen.findByText(es.errors.DASHBOARD_INVALID_PERIOD)).toBeTruthy();
+  });
+
+  it('resets the filters when the session user changes', () => {
+    signIn('MANAGER');
+    const filters = useDashboardFiltersStore.getState();
+    filters.setPreset('last90Days');
+    filters.pickOwner({ id: SELLER.id, label: SELLER.name });
+    useSessionStore.getState().clearSession();
+    expect(useDashboardFiltersStore.getState()).toMatchObject({
+      preset: 'thisMonth',
+      owner: null,
+      ownerInput: '',
+    });
   });
 });

@@ -62,4 +62,40 @@ describe.skipIf(!databaseUrl)('seedDemoData (integration)', () => {
     expect(await seedDemoData(prisma)).toMatchObject({ skipped: true });
     expect(await prisma.quote.count()).toBe(48);
   });
+
+  it('records the void reason, keeps interactions after the send and expires on the Bogotá day', async () => {
+    const voided = await prisma.quote.findMany({
+      where: { status: 'VOIDED' },
+      include: { events: true },
+    });
+    expect(voided.length).toBeGreaterThan(0);
+    for (const quote of voided) {
+      const event = quote.events.find(
+        (item) =>
+          item.type === 'STATE_CHANGED' && (item.data as { to?: string } | null)?.to === 'VOIDED',
+      );
+      expect(event?.note).toBeTruthy();
+    }
+
+    const interactions = await prisma.interaction.findMany({ include: { quote: true } });
+    const now = new Date('2026-11-03T15:00:00.000Z');
+    for (const interaction of interactions) {
+      expect(interaction.quote?.sentAt).toBeTruthy();
+      expect(interaction.occurredAt.getTime()).toBeGreaterThanOrEqual(
+        interaction.quote!.sentAt!.getTime(),
+      );
+      expect(interaction.occurredAt.getTime()).toBeLessThanOrEqual(now.getTime());
+    }
+
+    const settings = await prisma.companySettings.findUnique({ where: { id: 1 } });
+    const validityDays = settings?.validityDays ?? 15;
+    const bogotaDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Bogota' });
+    const sent = await prisma.quote.findMany({ where: { sentAt: { not: null } } });
+    expect(sent.length).toBeGreaterThan(0);
+    for (const quote of sent) {
+      const expected = new Date(`${bogotaDay.format(quote.sentAt!)}T00:00:00.000Z`);
+      expected.setUTCDate(expected.getUTCDate() + validityDays);
+      expect(quote.expiresAt?.toISOString().slice(0, 10)).toBe(expected.toISOString().slice(0, 10));
+    }
+  });
 });

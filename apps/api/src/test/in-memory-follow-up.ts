@@ -51,12 +51,13 @@ export function createInMemoryFollowUp(
         createdAt: stored.createdAt,
       };
     },
-    async list({ customerId, quoteId, visibleToOwnerId, skip, take }) {
+    async list({ customerId, quoteId, withoutQuote, visibleToOwnerId, skip, take }) {
       const matches = interactions
         .filter(
           (item) =>
             (!customerId || item.customerId === customerId) &&
             (!quoteId || item.quoteId === quoteId) &&
+            (!withoutQuote || item.quoteId === null) &&
             (!visibleToOwnerId ||
               item.quoteId === null ||
               ownerOf(item.quoteId) === visibleToOwnerId),

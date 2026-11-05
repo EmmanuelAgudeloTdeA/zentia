@@ -145,4 +145,48 @@ describe.skipIf(!databaseUrl)('PrismaDashboardReadRepository (integration)', () 
     expect((await repo.currentCounts(ownerId, '2026-11-03', 5)).pendingFollowUp).toBe(0);
     expect(stale.status).toBe('SENT');
   });
+
+  it('counts a reactivated quote (EXPIRED → SENT) as active, not as expired', async () => {
+    const reactivated = await quote('EXPIRED', 400, '2026-11-02T15:00:00.000Z');
+    await prisma.quote.update({
+      where: { id: reactivated.id },
+      data: {
+        status: 'SENT',
+        sentAt: new Date('2026-11-03T14:00:00.000Z'),
+        expiresAt: new Date('2026-11-18T00:00:00.000Z'),
+      },
+    });
+    expect(await repo.currentCounts(ownerId, '2026-11-03', 5)).toEqual({
+      active: 1,
+      pendingFollowUp: 0,
+    });
+    expect(await november()).toEqual({
+      approved: 0,
+      rejected: 0,
+      expired: 0,
+      quotedAmount: '400',
+      approvedAmount: '0',
+    });
+  });
+
+  it('filters the period stats by owner', async () => {
+    await quote('APPROVED', 1000, '2026-11-02T15:00:00.000Z');
+    await quote('REJECTED', 500, '2026-11-03T15:00:00.000Z', otherId);
+    await quote('EXPIRED', 300, '2026-11-04T15:00:00.000Z', otherId);
+    const range = [bogotaDayStartUtc('2026-11-01'), bogotaDayStartUtc('2026-12-01')] as const;
+    expect(await repo.periodStats(ownerId, ...range)).toEqual({
+      approved: 1,
+      rejected: 0,
+      expired: 0,
+      quotedAmount: '1000',
+      approvedAmount: '1000',
+    });
+    expect(await repo.periodStats(otherId, ...range)).toEqual({
+      approved: 0,
+      rejected: 1,
+      expired: 1,
+      quotedAmount: '800',
+      approvedAmount: '0',
+    });
+  });
 });

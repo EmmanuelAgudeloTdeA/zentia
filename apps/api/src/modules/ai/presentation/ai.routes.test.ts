@@ -268,4 +268,62 @@ describe('probabilities and calibration', () => {
       .set('Authorization', seller.authorization);
     expect(byDate.body.sort).toBe('date');
   });
+
+  it('ranks the top 5 sent quotes by probability with the dashboard scope', async () => {
+    const seller = await login('SELLER', 'ana@empresa.co');
+    const otherSeller = await login('SELLER', 'otro@empresa.co');
+    const manager = await login('MANAGER');
+    const base = {
+      number: 1,
+      status: 'SENT' as const,
+      ownerName: 'ana',
+      customerName: 'Cliente',
+      total: '1000000',
+      sentDay: '2026-10-25',
+      expiresAt: '2026-11-18',
+      lastInteractionDay: null,
+      interactedSinceSent: false,
+      versionsAfterSend: 0,
+    };
+    const engaged = { lastInteractionDay: '2026-11-02', interactedSinceSent: true };
+    for (let i = 0; i < 6; i++) {
+      ai.signals.push({
+        ...base,
+        ...(i % 2 === 0 ? engaged : {}),
+        quoteId: `own-${i}`,
+        number: i + 1,
+        ownerId: seller.user.id,
+      });
+    }
+    ai.signals.push({ ...base, ...engaged, quoteId: 'foreign', ownerId: otherSeller.user.id });
+    ai.signals.push({ ...base, quoteId: 'draft', status: 'DRAFT', ownerId: seller.user.id });
+
+    const section = async (authorization: string, ownerId?: string) => {
+      const response = await request(app)
+        .get('/api/dashboard/summary')
+        .query(ownerId ? { ownerId } : {})
+        .set('Authorization', authorization);
+      return response.body.sections as {
+        key: string;
+        items: { quoteId: string; probability: number }[];
+      }[];
+    };
+
+    const own = await section(seller.authorization);
+    expect(own.map((item) => item.key)).toEqual(['topProbability']);
+    const top = own[0]!.items;
+    expect(top).toHaveLength(5);
+    const probabilities = top.map((item) => item.probability);
+    expect(probabilities).toEqual([...probabilities].sort((a, b) => b - a));
+    expect(probabilities[0]).toBeGreaterThan(probabilities[4]!);
+    expect(top.every((item) => item.quoteId.startsWith('own-'))).toBe(true);
+
+    const filtered = await section(manager.authorization, otherSeller.user.id);
+    expect(filtered[0]!.items.map((item) => item.quoteId)).toEqual(['foreign']);
+    expect(filtered.map((item) => item.key)).toEqual(['topProbability', 'calibration']);
+
+    const all = await section(manager.authorization);
+    expect(all[0]!.items).toHaveLength(5);
+    expect(all[0]!.items[0]!.probability).toBe(55);
+  });
 });

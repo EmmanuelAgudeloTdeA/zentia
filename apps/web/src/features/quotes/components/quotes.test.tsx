@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { CompanySettingsDto, HistoryEntryDto, QuoteDto, ShareLinksDto } from '@zentia/shared';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,7 +7,9 @@ import { PrivateLayout } from '../../../core/layout';
 import es from '../../../lang/es.json';
 import { useToastStore } from '../../../shared/ui';
 import { signIn } from '../../../test/session-fixture';
+import { aiService } from '../../ai/services/ai.service';
 import { companyService } from '../../company-settings';
+import { interactionsService } from '../../follow-up';
 import { usersService } from '../../users';
 import { openQuotesWithFilters, useQuoteFiltersStore } from '../store/quote-filters.store';
 import { documentsService } from '../services/documents.service';
@@ -569,5 +571,72 @@ describe('audit (M4)', () => {
     );
     expect(screen.queryByText(/Primer envío/)).toBeNull();
     useQuoteFiltersStore.getState().reset();
+  });
+});
+
+describe('closing probability (M9)', () => {
+  const APPROVED_ID = '8e9f0a1b-2c3d-4e5f-8a6b-7c8d9e0f1a2b';
+  const probability = {
+    quoteId: QUOTE_ID,
+    probability: 35,
+    label: 'RULES_ESTIMATE' as const,
+    factors: [{ code: 'BASE' as const, points: 35 }],
+  };
+
+  beforeEach(() => {
+    vi.spyOn(interactionsService, 'list').mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 1,
+    });
+  });
+
+  it('asks the probability only for the sent quotes of the list and shows "—" for the rest', async () => {
+    const { id, number, displayNumber, customer, owner, total, expiresAt, updatedAt } =
+      quoteFixture();
+    const summary = { id, number, displayNumber, customer, owner, total, expiresAt, updatedAt };
+    vi.spyOn(quotesService, 'list').mockResolvedValue({
+      items: [
+        { ...summary, status: 'SENT' },
+        { ...summary, id: APPROVED_ID, number: 13, displayNumber: 'COT-0013', status: 'APPROVED' },
+      ],
+      total: 2,
+      page: 1,
+      pageSize: 20,
+    });
+    const probabilities = vi.spyOn(aiService, 'getProbabilities').mockResolvedValue([probability]);
+    renderAt('/quotes');
+
+    expect((await screen.findAllByRole('button', { name: /35 %/ })).length).toBeGreaterThan(0);
+    expect(probabilities).toHaveBeenCalledTimes(1);
+    expect(probabilities.mock.calls[0]?.[0]).toEqual([QUOTE_ID]);
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0);
+  });
+
+  it('shows the badge only on a sent quote and the assistant only with its action', async () => {
+    vi.spyOn(quotesService, 'history').mockResolvedValue([]);
+    const probabilities = vi.spyOn(aiService, 'getProbabilities').mockResolvedValue([probability]);
+    const get = vi.spyOn(quotesService, 'get').mockResolvedValue(quoteFixture());
+    renderAt(`/quotes/${QUOTE_ID}`);
+
+    expect((await screen.findAllByRole('button', { name: /35 %/ })).length).toBeGreaterThan(0);
+    expect(screen.queryByText(es.ai.assistant.title)).toBeNull();
+    cleanup();
+
+    get.mockResolvedValue(
+      quoteFixture({ allowedActions: ['edit', 'approve', 'followUpAssistant'] }),
+    );
+    renderAt(`/quotes/${QUOTE_ID}`);
+    expect(await screen.findByText(es.ai.assistant.title)).toBeTruthy();
+    cleanup();
+
+    probabilities.mockClear();
+    get.mockResolvedValue(quoteFixture({ status: 'APPROVED', allowedActions: ['duplicate'] }));
+    renderAt(`/quotes/${QUOTE_ID}`);
+    expect(await screen.findByRole('button', { name: es.quotes.actions.duplicate })).toBeTruthy();
+    expect(probabilities).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /35 %/ })).toBeNull();
+    expect(screen.queryByText(es.ai.assistant.title)).toBeNull();
   });
 });

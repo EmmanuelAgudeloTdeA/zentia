@@ -23,16 +23,19 @@ export function useFollowUpHighlight(
       return;
     }
     let cancelled = false;
-    interactionsService
-      .list({ customerId, page: 1, pageSize: 50 })
-      .then(({ items }) => {
-        // Como en M6: cuentan las interacciones de la cotización y las del cliente sin cotización.
-        const last = items.find((item) => item.quote === null || item.quote.id === id);
+    // Como en M6: cuenta la última de esta cotización y la última del cliente sin cotización.
+    Promise.all([
+      interactionsService.list({ quoteId: id, page: 1, pageSize: 1 }),
+      interactionsService.list({ customerId, withoutQuote: 'true', page: 1, pageSize: 1 }),
+    ])
+      .then(([own, general]) => {
+        const days = [own.items[0], general.items[0]]
+          .filter((item) => item !== undefined)
+          .map((item) => todayInBogota(new Date(item.occurredAt)))
+          .sort();
+        const last = days.at(-1) ?? null;
         const today = todayInBogota();
-        const reference = followUpReferenceDate(
-          last ? todayInBogota(new Date(last.occurredAt)) : null,
-          todayInBogota(new Date(sentAt)),
-        );
+        const reference = followUpReferenceDate(last, todayInBogota(new Date(sentAt)));
         if (!cancelled) {
           setHighlight({
             highlighted: isWithoutFollowUp(reference, today, followUpDays),

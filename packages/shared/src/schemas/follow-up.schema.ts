@@ -24,6 +24,11 @@ export const listInteractionsQuerySchema = z
   .object({
     customerId: z.uuid().optional(),
     quoteId: z.uuid().optional(),
+    /** Solo los contactos generales con el cliente (sin cotización). */
+    withoutQuote: z
+      .enum(['true', 'false'])
+      .default('false')
+      .transform((value) => value === 'true'),
     ...paginationQueryShape,
   })
   .refine((query) => query.customerId || query.quoteId, {

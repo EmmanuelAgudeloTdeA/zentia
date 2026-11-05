@@ -90,6 +90,7 @@ export class ListInteractionsUseCase {
     const result = await this.deps.interactions.list({
       customerId: filter.customerId,
       quoteId: filter.quoteId,
+      withoutQuote: filter.withoutQuote,
       visibleToOwnerId: resolveScope(actor.role) === 'OWN' ? actor.id : undefined,
       skip: (page - 1) * pageSize,
       take: pageSize,
