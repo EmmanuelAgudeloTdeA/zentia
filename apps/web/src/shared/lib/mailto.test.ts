@@ -33,4 +33,13 @@ describe('webmailUrl', () => {
       body: 'Hola,\n1+1 & listo',
     });
   });
+
+  it('encodes spaces as %20, never as + (Outlook would show the + literally)', () => {
+    for (const provider of ['GMAIL', 'OUTLOOK'] as const) {
+      const url = webmailUrl(provider, draft);
+      const search = url.slice(url.indexOf('?') + 1);
+      expect(search).not.toContain('+');
+      expect(search).toContain('Hola%2C%0A1%2B1%20%26%20listo');
+    }
+  });
 });
