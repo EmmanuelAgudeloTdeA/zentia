@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Button, type ButtonVariant } from './button';
+import { pushDialog } from './dialog-stack';
 
 interface ConfirmDialogProps {
   title: ReactNode;
@@ -32,8 +33,10 @@ export function ConfirmDialog({
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
+    const layer = pushDialog();
     cancelRef.current?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
+      if (!layer.isTop()) return;
       if (event.key === 'Escape') onCancel();
       if (event.key !== 'Tab' || !panelRef.current) return;
       const focusable = panelRef.current.querySelectorAll<HTMLElement>('button:not(:disabled)');
@@ -50,6 +53,7 @@ export function ConfirmDialog({
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      layer.release();
       previous?.focus();
     };
   }, [onCancel]);

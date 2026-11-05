@@ -27,7 +27,7 @@ Rutas abreviadas:
 - [x] S4.1.1.3 `quantity` > 0 con hasta 2 decimales — `shared/quotes.schema` › accepts quantity %s; › rejects quantity %s
 - [x] S4.1.1.3 `shippingAmount` `moneyString` ≥ 0 y opcional — `shared/quotes.schema` › defaults discount and shipping and limits lines to 1–100
 - [x] S4.1.1.4 `shippingTaxable` se toma al crear y queda como snapshot aunque cambie el parámetro — `api/quote-use-cases` › keeps the shippingTaxable snapshot after the parameter changes
-- [ ] S4.1.1.5 Editor con selector de cliente, selector de productos activos y tabla de líneas editable — manual, pendiente
+- [x] S4.1.1.5 Editor con selector de cliente, selector de productos activos y tabla de líneas editable — `web/quotes` › picks the customer and products from searchable selectors without typing; `apps/web/src/shared/ui/search-select.test.tsx` › lists options on open without typing, in a panel attached to body; › navigates with the keyboard and picks with Enter
 
 ### S4.1.2 Cálculo de totales
 - [x] S4.1.2.1 `decimal.js` half-up por concepto, sin redondeo del IVA por línea — `shared/quote-totals` › rounds each concept half-up independently; › does not round VAT per line; › handles exempt lines and 0 % / 100 % discounts

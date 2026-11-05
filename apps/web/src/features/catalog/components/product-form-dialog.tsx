@@ -14,7 +14,7 @@ import { errorKey } from '../../../core/errors';
 import { Alert, Button, Dialog, MoneyField, Select, TextField } from '../../../shared/ui';
 import { FALLBACK_VAT_RATE, useDefaultVatRate } from '../hooks/use-default-vat-rate';
 import { productsService } from '../services/products.service';
-import { CategoryCombobox } from './category-combobox';
+import { CategorySelect } from './category-select';
 
 const formSchema = z.object({
   name: z.string().trim().min(1).max(PRODUCT_NAME_MAX_LENGTH),
@@ -115,14 +115,15 @@ export function ProductFormDialog({ product, onClose, onSaved }: ProductFormDial
           control={control}
           name="category"
           render={({ field }) => (
-            <CategoryCombobox
+            <CategorySelect
               label={t('products.fields.category')}
               required
               allowCreate
               value={field.value}
-              onChange={field.onChange}
-              onSelect={field.onChange}
-              onBlur={field.onBlur}
+              onChange={(category) => {
+                field.onChange(category);
+                field.onBlur();
+              }}
               error={message('category')}
             />
           )}

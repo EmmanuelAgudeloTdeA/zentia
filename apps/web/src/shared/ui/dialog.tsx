@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { pushDialog } from './dialog-stack';
 import { CloseIcon } from './icons';
 
 export type DialogSize = 'sm' | 'md' | 'lg';
@@ -43,12 +44,14 @@ export function Dialog({
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
+    const layer = pushDialog();
     const panel = panelRef.current;
     const focusable = () => [...(panel?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])];
     const body = panel?.querySelector<HTMLElement>('[data-dialog-body]');
     (body?.querySelector<HTMLElement>(FOCUSABLE) ?? focusable()[0])?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
+      if (!layer.isTop()) return;
       if (event.key === 'Escape' && dismissible) onCloseRef.current();
       if (event.key !== 'Tab') return;
       const items = focusable();
@@ -65,6 +68,7 @@ export function Dialog({
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      layer.release();
       previous?.focus();
     };
   }, [dismissible]);

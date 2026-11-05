@@ -28,7 +28,7 @@ import {
 import { useProducts } from '../hooks/use-products';
 import { productsService } from '../services/products.service';
 import { useProductsFiltersStore } from '../store/products-filters.store';
-import { CategoryCombobox } from './category-combobox';
+import { CategorySelect } from './category-select';
 import { ProductFormDialog } from './product-form-dialog';
 
 type DialogState =
@@ -234,12 +234,11 @@ export function ProductsPage() {
               onChange={(event) => filters.setQ(event.target.value)}
               endAdornment={<SearchIcon size={16} className="mr-2 text-neutral-400" />}
             />
-            <CategoryCombobox
+            <CategorySelect
               label={t('products.fields.category')}
-              placeholder={t('products.category.filterPlaceholder')}
-              value={filters.categoryInput}
-              onChange={filters.setCategoryInput}
-              onSelect={filters.selectCategory}
+              allLabel={t('products.category.filterPlaceholder')}
+              value={filters.category}
+              onChange={filters.selectCategory}
             />
           </div>
         </div>

@@ -20,10 +20,10 @@ import { PageHeader } from '../../../core/layout';
 import {
   Alert,
   Button,
-  Combobox,
   ConfirmDialog,
   MoneyField,
   NumberField,
+  SearchSelect,
   SectionCard,
   toast,
   TotalsSummary,
@@ -96,9 +96,7 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
     shippingAmount: quote?.shippingAmount ?? '0',
   });
   const [customer, setCustomer] = useState<EditorCustomer | null>(initial.current.customer);
-  const [customerInput, setCustomerInput] = useState(quote?.customer.name ?? '');
   const [lines, setLines] = useState<EditorLine[]>(initial.current.lines);
-  const [productInput, setProductInput] = useState('');
   const [discountPct, setDiscountPct] = useState(initial.current.discountPct);
   const [shippingAmount, setShippingAmount] = useState(initial.current.shippingAmount);
   const [submitted, setSubmitted] = useState(false);
@@ -174,7 +172,6 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
         quantity: '1',
       },
     ]);
-    setProductInput('');
   };
 
   const payloadItems = () =>
@@ -240,7 +237,7 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
   const cancel = () =>
     dirty ? setConfirmDiscard(true) : navigate(quote ? quotePath(quote.id) : QUOTES_PATH);
   const conflict = isApiError(serverError) && serverError.code === 'QUOTE_CONFLICT';
-  const comboboxLabels = {
+  const selectLabels = {
     loading: t('common.combobox.loading'),
     noResults: t('common.combobox.noResults'),
     error: t('common.combobox.error'),
@@ -314,19 +311,15 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
                 </span>
               </p>
             ) : (
-              <Combobox<CustomerDto>
+              <SearchSelect<CustomerDto | EditorCustomer>
                 label={t('quotes.customer')}
                 required
                 placeholder={t('quotes.editor.customerPlaceholder')}
-                inputValue={customerInput}
-                onInputChange={(value) => {
-                  setCustomerInput(value);
-                  if (customer && value !== customer.name) setCustomer(null);
-                }}
+                value={customer}
                 loadOptions={async (query, signal) =>
                   (
                     await customersService.list(
-                      { q: query, status: 'active', page: 1, pageSize: 8 },
+                      { q: query || undefined, status: 'active', page: 1, pageSize: 20 },
                       signal,
                     )
                   ).items
@@ -341,16 +334,15 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
                     </span>
                   </span>
                 )}
-                onSelect={(option) => {
+                onSelect={(option) =>
                   setCustomer({
                     id: option.id,
                     name: option.name,
                     documentId: option.documentId,
                     isActive: option.isActive,
-                  });
-                  setCustomerInput(option.name);
-                }}
-                labels={comboboxLabels}
+                  })
+                }
+                labels={{ ...selectLabels, search: t('quotes.editor.customerSearch') }}
                 error={submitted ? errors.customer : undefined}
               />
             )}
@@ -362,17 +354,17 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
           </SectionCard>
 
           <SectionCard title={t('quotes.editor.productsSection')}>
-            <Combobox<ProductDto>
+            <SearchSelect<ProductDto>
               label={t('quotes.editor.addProduct')}
               placeholder={t('quotes.editor.productPlaceholder')}
               disabled={lines.length >= QUOTE_MAX_ITEMS}
               hint={lines.length >= QUOTE_MAX_ITEMS ? t('quotes.editor.maxLines') : undefined}
-              inputValue={productInput}
-              onInputChange={setProductInput}
+              value={null}
+              clearAfterSelect
               loadOptions={async (query, signal) => {
                 const added = new Set(lines.map((line) => line.productId));
                 const { items } = await productsService.list(
-                  { q: query, status: 'active', page: 1, pageSize: 20 },
+                  { q: query || undefined, status: 'active', page: 1, pageSize: 20 },
                   signal,
                 );
                 return items.filter((product) => !added.has(product.id));
@@ -389,7 +381,7 @@ export function QuoteEditor({ quote, notice, onReload }: QuoteEditorProps) {
                 </span>
               )}
               onSelect={addProduct}
-              labels={comboboxLabels}
+              labels={{ ...selectLabels, search: t('quotes.editor.productSearch') }}
               error={submitted ? errors.lines : undefined}
             />
 
