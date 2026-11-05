@@ -136,16 +136,22 @@ describe('FollowUpAssistantPanel', () => {
       pageSize: 100,
     });
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    let opened = '';
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      opened = this.href;
+    });
     renderPanel();
     fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.suggest }));
     fireEvent.change(await screen.findByLabelText(es.ai.assistant.messageLabel), {
       target: { value: 'Texto editado & listo' },
     });
     fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.openEmail }));
-    expect(open).toHaveBeenCalledWith(
+    // En la misma pestaña: con `_blank` el navegador deja una pestaña en blanco.
+    expect(open).not.toHaveBeenCalled();
+    expect(opened).toBe(
       `mailto:compras@acme.co?body=${encodeURIComponent('Texto editado & listo')}`,
-      '_blank',
-      'noopener,noreferrer',
     );
   });
 

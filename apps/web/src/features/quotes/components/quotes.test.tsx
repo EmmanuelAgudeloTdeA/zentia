@@ -347,6 +347,49 @@ describe('SendQuoteDialog', () => {
     return screen.findByRole('dialog');
   }
 
+  const EMAIL_URL =
+    'mailto:a%40acme.co?subject=Cotizaci%C3%B3n%20COT-0012&body=Hola%20Acme%2C%0D%0AAdjunto%20el%20PDF.';
+
+  it('opens the email in the same tab (no blank tab) and registers the share', async () => {
+    const share = vi.spyOn(documentsService, 'share').mockResolvedValue(quoteFixture());
+    let opened = '';
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      opened = this.href;
+    });
+    const dialog = await openDialog(draft(), { emailUrl: EMAIL_URL, missing: [] });
+    const link = await within(dialog).findByRole('link', { name: es.quotes.send.email });
+    expect(link.getAttribute('target')).toBeNull();
+    expect(
+      within(dialog).getByRole('link', { name: es.quotes.send.whatsapp }).getAttribute('target'),
+    ).toBe('_blank');
+
+    fireEvent.click(link);
+    expect(opened).toBe(EMAIL_URL);
+    await waitFor(() =>
+      expect(share).toHaveBeenCalledWith(QUOTE_ID, {
+        channel: 'EMAIL',
+        updatedAt: draft().updatedAt,
+      }),
+    );
+  });
+
+  it('copies the email (to, subject and body) for webmail when there is no mail app', async () => {
+    const share = vi.spyOn(documentsService, 'share').mockResolvedValue(quoteFixture());
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
+    const dialog = await openDialog(draft(), { emailUrl: EMAIL_URL, missing: [] });
+
+    fireEvent.click(await within(dialog).findByRole('button', { name: es.quotes.send.copyEmail }));
+    await waitFor(() =>
+      expect(writeText).toHaveBeenCalledWith(
+        'Para: a@acme.co\nAsunto: Cotización COT-0012\n\nHola Acme,\nAdjunto el PDF.',
+      ),
+    );
+    await waitFor(() => expect(share).toHaveBeenCalled());
+  });
+
   it('disables the channel without contact data and sends the draft through WhatsApp', async () => {
     const share = vi.spyOn(documentsService, 'share').mockResolvedValue(quoteFixture());
     const dialog = await openDialog();

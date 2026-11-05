@@ -65,6 +65,11 @@ Rutas de prueba usadas:
 - [x] S5.2.3.4 El diálogo guía en dos pasos: descargar el PDF limpio y elegir canal — quotes.test.tsx › SendQuoteDialog › downloads the clean PDF from the dialog
 - [x] `allowedActions` suma `downloadPdf` siempre y `share` solo en `DRAFT` y `SENT` — documents.test.ts › ShareQuoteUseCase › contributes downloadPdf always and share only in DRAFT and SENT; documents.routes.test.ts › documents routes › adds downloadPdf and share to allowedActions
 
+### Apertura del correo
+- [x] "Abrir en correo" abre `mailto:` en la misma pestaña (sin pestaña en blanco) y registra el envío — `web/quotes` › opens the email in the same tab (no blank tab) and registers the share
+- [x] "Copiar correo" copia destinatario, asunto y cuerpo para el correo web cuando no hay aplicación de correo — `web/quotes` › copies the email (to, subject and body) for webmail when there is no mail app; `apps/web/src/shared/lib/mailto.test.ts` › reads recipient, subject and CRLF body as built by the API (RFC 6068)
+- [ ] Apertura real del cliente de correo en macOS/Windows con y sin aplicación configurada — manual, pendiente
+
 ## Reglas críticas de CLAUDE.md
 - [x] Cliente inactivo en un Borrador: sin enlaces y con `unavailableReason: CUSTOMER_INACTIVE` (el envío lo rechazaría) — documents.test.ts › GetShareLinksUseCase › returns no links for a draft whose customer is inactive; documents.routes.test.ts › documents routes › returns no links with the reason when the draft customer is inactive
 - [x] El diálogo explica el cliente inactivo y no ofrece canales ni "Marcar como enviada" — quotes.test.tsx › SendQuoteDialog › explains that a draft with an inactive customer cannot be sent

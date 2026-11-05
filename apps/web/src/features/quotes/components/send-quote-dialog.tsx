@@ -2,7 +2,17 @@ import type { QuoteDto, ShareChannel, ShareLinksDto } from '@zentia/shared';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCop, formatDay } from '../../../core/format';
-import { Alert, Button, CheckIcon, Dialog, ErrorMessage, Skeleton } from '../../../shared/ui';
+import { openMailto, parseMailto } from '../../../shared/lib';
+import {
+  Alert,
+  Button,
+  CheckIcon,
+  CopyIcon,
+  Dialog,
+  ErrorMessage,
+  Skeleton,
+  toast,
+} from '../../../shared/ui';
 import { useCommercialParameters } from '../hooks/use-commercial-parameters';
 import { documentsService } from '../services/documents.service';
 import { DownloadPdfButton } from './download-pdf-button';
@@ -63,6 +73,20 @@ export function SendQuoteDialog({
   }, [loadLinks]);
 
   // El enlace se abre con el clic del usuario (sin bloqueo de ventanas); el registro va en paralelo.
+  // Respaldo sin cliente de correo instalado: copiar y pegar en el correo web.
+  const copyEmail = async (url: string) => {
+    const { to, subject, body } = parseMailto(url);
+    try {
+      await navigator.clipboard.writeText(
+        t('quotes.send.emailDraft', { to, subject, body, interpolation: { escapeValue: false } }),
+      );
+      toast.success(t('quotes.send.emailCopied'));
+      void share('EMAIL');
+    } catch {
+      toast.error(t('quotes.send.copyError'));
+    }
+  };
+
   const share = async (channel: ShareChannel) => {
     setSharing(channel);
     setShareError(null);
@@ -169,16 +193,36 @@ export function SendQuoteDialog({
                 return (
                   <div key={channel}>
                     {typeof url === 'string' ? (
-                      <a
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => void share(channel)}
-                        aria-busy={sharing === channel || undefined}
-                        className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary-600 px-4 text-button text-white uppercase hover:bg-primary-700"
-                      >
-                        {label}
-                      </a>
+                      <>
+                        <a
+                          href={url}
+                          {...(channel === 'WHATSAPP'
+                            ? { target: '_blank', rel: 'noopener noreferrer' }
+                            : {})}
+                          onClick={(event) => {
+                            if (channel === 'EMAIL') {
+                              event.preventDefault();
+                              openMailto(url);
+                            }
+                            void share(channel);
+                          }}
+                          aria-busy={sharing === channel || undefined}
+                          className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary-600 px-4 text-button text-white uppercase hover:bg-primary-700"
+                        >
+                          {label}
+                        </a>
+                        {channel === 'EMAIL' ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mt-1 w-full"
+                            icon={<CopyIcon size={14} />}
+                            onClick={() => void copyEmail(url)}
+                          >
+                            {t('quotes.send.copyEmail')}
+                          </Button>
+                        ) : null}
+                      </>
                     ) : (
                       <>
                         <span
