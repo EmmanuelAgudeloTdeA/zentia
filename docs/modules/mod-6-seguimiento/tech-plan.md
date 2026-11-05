@@ -112,7 +112,7 @@ Las interacciones no tienen `updatedAt`: son de solo agregar.
 
 `lastInteraction` = máximo `occurredAt` entre las interacciones con `quoteId` = la cotización y las del mismo cliente sin `quoteId`.
 
-**Deduplicación:** `UNIQUE (quoteId, type, referenceDate)` + `ON CONFLICT DO NOTHING`. Un ciclo nuevo cambia `referenceDate`.
+**Deduplicación:** `UNIQUE (quoteId, type, referenceDate, userId)` + `ON CONFLICT DO NOTHING`. Un ciclo nuevo cambia `referenceDate`. Incluye al destinatario (decisión del usuario, 2026-11-05): si el dueño anterior ya leyó la alerta, el nuevo dueño la recibe en la siguiente corrida. Al reasignar, las no leídas se traspasan; si el destino ya tiene la del mismo ciclo, la copia sobrante se borra en la misma transacción.
 
 **Destinatario:** el dueño actual (`Quote.ownerId`) al generar; al reasignar, las no leídas pasan al nuevo dueño.
 

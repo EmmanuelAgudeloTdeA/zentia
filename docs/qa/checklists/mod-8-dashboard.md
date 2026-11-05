@@ -63,6 +63,12 @@ Rutas de prueba usadas:
 - [x] Estado vacío global con acción "Nueva cotización" cuando nunca se envió nada — dashboard-page.test.tsx › DashboardPage › shows the global empty state when nothing was ever sent
 - [ ] La página del tablero llega en un chunk aparte (`React.lazy`) y muestra el esqueleto mientras carga — manual, pendiente
 
+## Tarjetas que abren el listado con los filtros de su número
+- [x] "Monto aprobado", "Monto cotizado" y "Pendientes de seguimiento" abren la lista con estado, período, vendedor y pendientes — `web/dashboard-page` › opens "%s" in the list with the filters behind its number
+- [x] El listado filtra las pendientes con la misma regla del tablero (M6, días de Bogotá) — `api/quote-use-cases` › lists only the sent quotes pending follow-up after Y days, like the dashboard (M6); `api/prisma-quote.integration` › lists sent quotes pending follow-up with the M6 rule in Bogota days; `api/quotes.routes` › accepts followUp=pending and rejects other values
+- [x] Chip "Pendientes de seguimiento" removible en la lista — `web/quotes` › sends followUp=pending with a removable chip
+- [x] Los diálogos (p. ej., convertir en pedido) quedan sobre todo el contenido — `apps/web/src/shared/ui/dialog.test.tsx` › portals Dialog to document.body even inside an isolated header; › portals ConfirmDialog to document.body
+
 ## Reglas críticas de CLAUDE.md
 - [x] Activa = Enviada; los borradores no cuentan — prisma-dashboard.integration.test.ts › PrismaDashboardReadRepository (integration) › counts active and pending follow-up by current state with the M6 rule
 - [x] Pendientes de seguimiento = Enviadas que cumplen la regla de Y días — prisma-dashboard.integration.test.ts › PrismaDashboardReadRepository (integration) › counts active and pending follow-up by current state with the M6 rule

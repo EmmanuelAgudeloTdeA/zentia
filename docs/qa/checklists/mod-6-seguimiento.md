@@ -100,6 +100,10 @@ Rutas abreviadas: `api/` = `apps/api/src/`, `web/` = `apps/web/src/`, `shared/` 
 - [x] S6.3.3.3 Al reasignar, las no leídas pasan al nuevo dueño — `api/modules/follow-up/presentation/follow-up.routes.test.ts` › notifications › moves unread notifications to the new owner when the quote is reassigned
 - [x] S6.3.3.3 El traspaso ocurre dentro de la transacción y se revierte con ella — `api/modules/follow-up/infrastructure/prisma-follow-up.integration.test.ts` › Prisma follow-up (integration) › transfers unread notifications inside the transaction and rolls back with it
 
+### Reasignación y deduplicación por destinatario
+- [x] Tras reasignar, el nuevo dueño recibe la alerta del ciclo aunque el anterior la haya leído, sin duplicarse — `api/follow-up-use-cases` › alerts the new owner after a reassignment even if the previous one read the alert
+- [x] Clave única por destinatario y traspaso de ida y vuelta (A → B → A) sin conflicto — `api/prisma-follow-up.integration` › deduplicates per recipient and moves alerts back and forth without conflicts
+
 ## Reglas de `CLAUDE.md`
 - [x] Tipos de interacción `CALL`, `EMAIL`, `WHATSAPP`, `MEETING`, `OTHER` (otro valor → 400) — `api/modules/follow-up/presentation/follow-up.routes.test.ts` › interaction visibility and validation › rejects a note longer than 2000 characters and an invalid type
 - [x] "Sin seguimiento" = Y días desde max(última interacción, último `sentAt`) — `shared/rules/follow-up.test.ts` › follow-up rules › uses the latest of the last interaction and the last send
