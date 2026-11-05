@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ConfirmDialog } from './confirm-dialog';
 import { Dialog } from './dialog';
@@ -34,5 +34,28 @@ describe('dialogs render above every stacking context', () => {
     const dialog = screen.getByRole('dialog', { name: '¿Duplicar?' });
     expect(screen.getByTestId('header').contains(dialog)).toBe(false);
     expect(dialog.closest('.fixed')?.parentElement).toBe(document.body);
+  });
+});
+
+describe('nested dialogs', () => {
+  it('closes only the top dialog with Escape', () => {
+    const outer = vi.fn();
+    const inner = vi.fn();
+    const { rerender } = render(
+      <Dialog title="Producto" closeLabel="Cerrar" onClose={outer}>
+        <input aria-label="Precio" />
+      </Dialog>,
+    );
+    rerender(
+      <Dialog title="Producto" closeLabel="Cerrar" onClose={outer}>
+        <input aria-label="Precio" />
+        <Dialog title="Crear categoría" closeLabel="Cerrar" onClose={inner}>
+          <input aria-label="Nombre" />
+        </Dialog>
+      </Dialog>,
+    );
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(inner).toHaveBeenCalledTimes(1);
+    expect(outer).not.toHaveBeenCalled();
   });
 });

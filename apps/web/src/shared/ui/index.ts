@@ -18,6 +18,7 @@ export { PageLoader } from './page-loader';
 export { RowActionLink } from './row-action-link';
 export { Pagination } from './pagination';
 export { SectionCard } from './section-card';
+export { SearchSelect, type SearchSelectLabels } from './search-select';
 export { Select, type SelectOption } from './select';
 export { Skeleton } from './skeleton';
 export { StatusBadge, type StatusTone } from './status-badge';
