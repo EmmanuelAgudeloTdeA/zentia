@@ -339,13 +339,13 @@
       "editTitle": "Editar {{number}}",
       "parametersError": "No se pudieron cargar los parámetros comerciales, así que los totales podrían no coincidir. Reintenta antes de guardar.",
       "customerSection": "Cliente",
-      "customerPlaceholder": "Busca por nombre o documento",
+      "customerPlaceholder": "Selecciona un cliente",
       "customerRequired": "Selecciona un cliente.",
       "customerLocked": "El cliente no se puede cambiar en una cotización enviada.",
       "customerInactive": "El cliente está inactivo. Elige otro antes de guardar o enviar.",
       "productsSection": "Productos",
       "addProduct": "Agregar producto",
-      "productPlaceholder": "Busca por nombre o categoría",
+      "productPlaceholder": "Selecciona un producto para agregarlo",
       "linesEmpty": "Aún no hay productos. Búscalos arriba para agregarlos.",
       "linesRequired": "Agrega al menos un producto.",
       "maxLines": "Máximo 100 productos por cotización.",
@@ -378,7 +378,9 @@
       "notEditable": "Esta cotización ya no se puede editar.",
       "discardTitle": "¿Descartar cambios?",
       "discardDescription": "Los cambios que no guardaste se perderán.",
-      "discard": "Descartar"
+      "discard": "Descartar",
+      "customerSearch": "Busca por nombre o documento",
+      "productSearch": "Busca por nombre o categoría"
     },
     "totals": {
       "subtotal": "Subtotal",

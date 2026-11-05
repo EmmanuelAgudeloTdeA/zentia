@@ -8,7 +8,9 @@ import es from '../../../lang/es.json';
 import { useToastStore } from '../../../shared/ui';
 import { signIn } from '../../../test/session-fixture';
 import { aiService } from '../../ai/services/ai.service';
+import { productsService } from '../../catalog';
 import { companyService } from '../../company-settings';
+import { customersService } from '../../customers';
 import { interactionsService } from '../../follow-up';
 import { usersService } from '../../users';
 import { openQuotesWithFilters, useQuoteFiltersStore } from '../store/quote-filters.store';
@@ -115,6 +117,53 @@ describe('QuoteEditor', () => {
       target: { value: '3' },
     });
     expect(total()).toBe('$ 8.052.500');
+  });
+
+  it('picks the customer and products from searchable selectors without typing', async () => {
+    const fixture = quoteFixture();
+    const customer = {
+      ...fixture.customer,
+      phone: null,
+      email: 'compras@acme.co',
+      createdBy: fixture.owner,
+      createdAt: fixture.createdAt,
+      updatedAt: fixture.updatedAt,
+    };
+    const listCustomers = vi
+      .spyOn(customersService, 'list')
+      .mockResolvedValue({ items: [customer], total: 1, page: 1, pageSize: 20 });
+    const laptop = {
+      id: '5a6b7c8d-9e0f-4a1b-8c2d-3e4f5a6b7c8d',
+      name: 'Portátil',
+      category: 'Tecnología',
+      price: '2500000',
+      vatRate: 'GENERAL_19' as const,
+      isActive: true,
+      createdAt: fixture.createdAt,
+      updatedAt: fixture.updatedAt,
+    };
+    vi.spyOn(productsService, 'list').mockResolvedValue({
+      items: [laptop],
+      total: 1,
+      page: 1,
+      pageSize: 20,
+    });
+    renderAt('/quotes/new');
+
+    const customerSelect = await screen.findByRole('combobox', { name: /Cliente/ });
+    fireEvent.click(customerSelect);
+    fireEvent.click(await screen.findByRole('option', { name: /Acme SAS/ }));
+    expect(listCustomers.mock.calls[0]?.[0]).toMatchObject({ q: undefined, status: 'active' });
+    expect(customerSelect.textContent).toBe('Acme SAS');
+
+    const productSelect = screen.getByRole('combobox', { name: es.quotes.editor.addProduct });
+    fireEvent.click(productSelect);
+    fireEvent.click(await screen.findByRole('option', { name: /Portátil/ }));
+    expect(productSelect.textContent).toBe(es.quotes.editor.productPlaceholder);
+    expect(total()).toBe('$ 2.975.000');
+
+    fireEvent.click(productSelect);
+    await waitFor(() => expect(screen.getByText(es.common.combobox.noResults)).toBeTruthy());
   });
 
   it('asks what the customer requested before saving a sent quote', async () => {

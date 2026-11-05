@@ -339,13 +339,13 @@
       "editTitle": "Edit {{number}}",
       "parametersError": "The commercial parameters could not be loaded, so the totals might not match. Retry before saving.",
       "customerSection": "Customer",
-      "customerPlaceholder": "Search by name or document",
+      "customerPlaceholder": "Select a customer",
       "customerRequired": "Select a customer.",
       "customerLocked": "The customer cannot be changed on a sent quote.",
       "customerInactive": "The customer is inactive. Choose another one before saving or sending.",
       "productsSection": "Products",
       "addProduct": "Add product",
-      "productPlaceholder": "Search by name or category",
+      "productPlaceholder": "Select a product to add it",
       "linesEmpty": "There are no products yet. Search above to add them.",
       "linesRequired": "Add at least one product.",
       "maxLines": "Up to 100 products per quote.",
@@ -378,7 +378,9 @@
       "notEditable": "This quote can no longer be edited.",
       "discardTitle": "Discard changes?",
       "discardDescription": "The changes you did not save will be lost.",
-      "discard": "Discard"
+      "discard": "Discard",
+      "customerSearch": "Search by name or document",
+      "productSearch": "Search by name or category"
     },
     "totals": {
       "subtotal": "Subtotal",
