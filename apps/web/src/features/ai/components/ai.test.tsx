@@ -1,10 +1,12 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { FollowUpMessageDto } from '@zentia/shared';
+import { fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
+import type { FollowUpMessageDto, InteractionDto } from '@zentia/shared';
 import { MemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ApiError } from '../../../core/errors';
 import es from '../../../lang/es.json';
 import { interactionsService } from '../../follow-up';
 import { quotesService } from '../../quotes';
+import { useFollowUpHighlight } from '../hooks/use-follow-up-highlight';
 import { aiService } from '../services/ai.service';
 import { DashboardSections } from './dashboard-sections';
 import { FollowUpAssistantPanel } from './follow-up-assistant-panel';
@@ -45,6 +47,7 @@ function renderPanel(highlight: { highlighted: boolean; days: number } | null = 
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 describe('FollowUpAssistantPanel', () => {
@@ -115,6 +118,35 @@ describe('FollowUpAssistantPanel', () => {
     expect(suggest).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.replaceConfirm }));
     await waitFor(() => expect(suggest).toHaveBeenCalledTimes(2));
+  });
+
+  it('shows the rate limit message when the suggestion answers 429', async () => {
+    vi.spyOn(aiService, 'suggestMessage').mockRejectedValue(new ApiError('RATE_LIMITED', 429));
+    renderPanel();
+    fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.suggest }));
+    expect(await screen.findByText(es.ai.assistant.rateLimited)).toBeTruthy();
+  });
+
+  it('opens the email client with a mailto link carrying the edited text', async () => {
+    vi.spyOn(aiService, 'suggestMessage').mockResolvedValue(suggestion());
+    vi.spyOn(quotesService, 'list').mockResolvedValue({
+      items: [],
+      total: 0,
+      page: 1,
+      pageSize: 100,
+    });
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    renderPanel();
+    fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.suggest }));
+    fireEvent.change(await screen.findByLabelText(es.ai.assistant.messageLabel), {
+      target: { value: 'Texto editado & listo' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.openEmail }));
+    expect(open).toHaveBeenCalledWith(
+      `mailto:compras@acme.co?body=${encodeURIComponent('Texto editado & listo')}`,
+      '_blank',
+      'noopener,noreferrer',
+    );
   });
 
   it('disables every action when the message is emptied', async () => {
@@ -198,5 +230,70 @@ describe('DashboardSections', () => {
     expect(screen.getAllByText('COT-0012').length).toBeGreaterThan(0);
     expect(screen.getByText('12 de 30 cotizaciones cerradas')).toBeTruthy();
     expect(screen.getByText(es.ai.calibration.notReady)).toBeTruthy();
+  });
+});
+
+function interaction(occurredAt: string, quoteId: string | null): InteractionDto {
+  return {
+    id: crypto.randomUUID(),
+    customerId: CUSTOMER_ID,
+    quote: quoteId ? { id: quoteId, displayNumber: 'COT-0099' } : null,
+    type: 'CALL',
+    note: 'x',
+    occurredAt,
+    author: { id: crypto.randomUUID(), name: 'Ana' },
+    createdAt: occurredAt,
+  };
+}
+
+describe('useFollowUpHighlight', () => {
+  const quote = {
+    id: QUOTE_ID,
+    customerId: CUSTOMER_ID,
+    status: 'SENT',
+    // 28/10 a las 22:00 en Bogotá (29/10 en UTC).
+    sentAt: '2026-10-29T03:00:00.000Z',
+  };
+
+  function mockInteractions(byQuote: InteractionDto[], general: InteractionDto[]) {
+    return vi.spyOn(interactionsService, 'list').mockImplementation(async (query) => {
+      // Sin filtro, el cliente tendría una interacción reciente de otra cotización: no debe contar.
+      const items = query.quoteId
+        ? byQuote
+        : query.withoutQuote === 'true'
+          ? general
+          : [interaction('2026-11-02T14:00:00.000Z', crypto.randomUUID())];
+      return { items, total: items.length, page: 1, pageSize: 1 };
+    });
+  }
+
+  it('ignores interactions of other quotes and counts days in Bogotá', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-02T15:00:00.000Z'));
+    const list = mockInteractions([], []);
+    const { result } = renderHook(() => useFollowUpHighlight(quote, 5));
+    await waitFor(() => expect(result.current).not.toBeNull());
+    // En UTC serían 4 días (29/10 → 02/11) y no se destacaría.
+    expect(result.current).toEqual({ highlighted: true, days: 5 });
+    expect(list).toHaveBeenCalledWith({ quoteId: QUOTE_ID, page: 1, pageSize: 1 });
+    expect(list).toHaveBeenCalledWith({
+      customerId: CUSTOMER_ID,
+      withoutQuote: 'true',
+      page: 1,
+      pageSize: 1,
+    });
+  });
+
+  it('uses the latest of the own quote interaction and the general customer contact', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-02T15:00:00.000Z'));
+    mockInteractions(
+      [interaction('2026-10-30T15:00:00.000Z', QUOTE_ID)],
+      // 31/10 a las 21:00 en Bogotá (01/11 en UTC).
+      [interaction('2026-11-01T02:00:00.000Z', null)],
+    );
+    const { result } = renderHook(() => useFollowUpHighlight(quote, 5));
+    await waitFor(() => expect(result.current).not.toBeNull());
+    expect(result.current).toEqual({ highlighted: false, days: 2 });
   });
 });
