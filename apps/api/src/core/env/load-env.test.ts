@@ -49,7 +49,7 @@ describe('loadEnv', () => {
   it('defaults LLM_PROVIDER to gemini (Gemini Flash)', () => {
     const env = loadEnv(base);
     expect(env.LLM_PROVIDER).toBe('gemini');
-    expect(env.LLM_MODEL).toBe('gemini-2.5-flash');
+    expect(env.LLM_MODEL).toBe('gemini-3.5-flash-lite');
     expect(env.LLM_API_KEY).toBeUndefined();
   });
 

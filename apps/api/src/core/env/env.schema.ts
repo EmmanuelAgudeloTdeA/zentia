@@ -56,7 +56,7 @@ export const envSchema = z
     SCHEDULER_ENABLED: booleanString.default(false),
     /** Gemini Flash por defecto; sin `LLM_API_KEY` (o con `none`) usa siempre la plantilla de respaldo. */
     LLM_PROVIDER: z.enum(['gemini', 'none']).default('gemini'),
-    LLM_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+    LLM_MODEL: z.string().min(1).default('gemini-3.5-flash-lite'),
     LLM_API_KEY: z.string().optional(),
     LLM_TIMEOUT_MS: z.coerce.number().int().min(500).max(30_000).default(4000),
     /** Carpeta de la web compilada; sin ella la API no sirve estáticos (desarrollo con Vite). */
