@@ -35,10 +35,14 @@ export const MAX_MESSAGE_LENGTH = 600;
 
 /** Reemplaza `{{CLIENTE}}` y `{{VENDEDOR}}`, elimina cualquier otro marcador y recorta a 600 caracteres. */
 export function finalizeMessage(text: string, names: { customer: string; seller: string }): string {
+  // Una sola pasada con función: los nombres se insertan literales (sin patrones `$`) y no se reprocesan.
   return text
-    .replace(/\{\{\s*CLIENTE\s*\}\}/g, names.customer)
-    .replace(/\{\{\s*VENDEDOR\s*\}\}/g, names.seller)
-    .replace(/\{\{[^}]*\}\}/g, '')
+    .replace(/\{\{([^}]*)\}\}/g, (_match, marker: string) => {
+      const key = marker.trim();
+      if (key === 'CLIENTE') return names.customer;
+      if (key === 'VENDEDOR') return names.seller;
+      return '';
+    })
     .trim()
     .slice(0, MAX_MESSAGE_LENGTH)
     .trim();
