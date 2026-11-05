@@ -3,7 +3,6 @@ import {
   periodPresets,
   type DashboardSummaryDto,
   type QuoteStatus,
-  type UserOptionDto,
 } from '@zentia/shared';
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -32,12 +31,24 @@ import {
   TextField,
 } from '../../../shared/ui';
 import { DashboardSections } from '../../ai';
-import { NEW_QUOTE_PATH, QuoteStatusBadge, useQuoteFiltersStore } from '../../quotes';
+import {
+  NEW_QUOTE_PATH,
+  openQuotesWithFilters,
+  QUOTES_PATH,
+  QuoteStatusBadge,
+  type SentPeriod,
+} from '../../quotes';
 import { usersService } from '../../users';
 import { dashboardService } from '../services/dashboard.service';
 import { useDashboardFiltersStore, type PeriodPreset } from '../store/dashboard-filters.store';
 
 const DashboardCharts = lazy(() => import('./dashboard-charts'));
+
+/** `id: null` es la opción explícita "Todos". */
+interface SellerOption {
+  id: string | null;
+  name: string;
+}
 
 const PRESETS: readonly PeriodPreset[] = ['thisMonth', 'lastMonth', 'last90Days', 'custom'];
 
@@ -95,11 +106,14 @@ export function DashboardPage() {
     return () => controller.abort();
   }, [ready, period.from, period.to, ownerId, version]);
 
-  const openQuotes = (status: QuoteStatus) => {
-    const quoteFilters = useQuoteFiltersStore.getState();
-    quoteFilters.reset();
-    quoteFilters.toggleStatus(status);
-    navigate('/quotes');
+  // Las cohortes abren la lista con el mismo período y vendedor para que los conteos coincidan.
+  const openQuotes = (status: QuoteStatus, sentPeriod: SentPeriod | null) => {
+    openQuotesWithFilters({
+      statuses: [status],
+      owner: seesAll ? filters.owner : null,
+      sentPeriod,
+    });
+    navigate(QUOTES_PATH);
   };
 
   const firstName = user?.name.split(' ')[0] ?? '';
@@ -162,7 +176,7 @@ export function DashboardPage() {
             ) : null}
           </div>
           {seesAll ? (
-            <Combobox<UserOptionDto>
+            <Combobox<SellerOption>
               label={t('dashboard.seller.label')}
               placeholder={t('dashboard.seller.all')}
               className="lg:w-72"
@@ -171,13 +185,18 @@ export function DashboardPage() {
               onInputChange={filters.setOwnerInput}
               loadOptions={async (query) => {
                 const key = query.toLocaleLowerCase();
-                return (await usersService.options()).filter((option) =>
+                const sellers = (await usersService.options()).filter((option) =>
                   option.name.toLocaleLowerCase().includes(key),
                 );
+                return [{ id: null, name: t('dashboard.seller.all') }, ...sellers];
               }}
-              getOptionKey={(option) => option.id}
+              getOptionKey={(option) => option.id ?? 'all'}
               getOptionLabel={(option) => option.name}
-              onSelect={(option) => filters.pickOwner({ id: option.id, label: option.name })}
+              onSelect={(option) =>
+                option.id === null
+                  ? filters.clearOwner()
+                  : filters.pickOwner({ id: option.id, label: option.name })
+              }
               labels={{
                 loading: t('common.combobox.loading'),
                 noResults: t('common.combobox.noResults'),
@@ -203,7 +222,7 @@ export function DashboardPage() {
                 value={data.current.active}
                 icon={<SendIcon size={18} />}
                 tag={t('dashboard.currentStateHint')}
-                onClick={() => openQuotes('SENT')}
+                onClick={() => openQuotes('SENT', null)}
               />
               <KpiCard
                 label={t('dashboard.kpi.pendingFollowUp')}
@@ -245,7 +264,7 @@ export function DashboardPage() {
                   label={<QuoteStatusBadge status={status} size="sm" />}
                   value={data.period[status.toLowerCase() as 'approved' | 'rejected' | 'expired']}
                   tag={periodTag}
-                  onClick={() => openQuotes(status)}
+                  onClick={() => openQuotes(status, { from: data.period.from, to: data.period.to })}
                 />
               ))}
               <KpiCard
@@ -286,7 +305,7 @@ export function DashboardPage() {
         )}
 
         <Link
-          to="/quotes"
+          to={QUOTES_PATH}
           className="inline-block text-body-sm font-medium text-primary-600 hover:underline"
         >
           {t('dashboard.viewQuotes')}
