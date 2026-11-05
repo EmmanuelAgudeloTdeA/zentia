@@ -35,6 +35,7 @@ const OLD = randomUUID();
 let auth: InMemoryAuth;
 let quotes: InMemoryQuotes;
 let clock: FixedClock;
+const lastInteractions = new Map<string, Date>();
 let deps: QuotesDependencies;
 let seller: Actor;
 let otherSeller: Actor;
@@ -126,7 +127,9 @@ beforeEach(async () => {
       const user = auth.users.users.get(id);
       return user ? { id, name: user.name, isActive: user.isActive } : null;
     },
+    lastInteraction: (id) => lastInteractions.get(id) ?? null,
   });
+  lastInteractions.clear();
   deps = {
     ...quotes,
     clock,
@@ -837,5 +840,24 @@ describe('audit (M4)', () => {
     expect(await ids('2026-11-03', '2026-11-03')).toEqual([sent.id]);
     expect(await ids('2026-11-04', '2026-11-30')).toEqual([]);
     expect(await ids('2026-10-01', '2026-11-02')).toEqual([]);
+  });
+
+  it('lists only the sent quotes pending follow-up after Y days, like the dashboard (M6)', async () => {
+    const stale = await send(await createPpi());
+    const contacted = await send(await createPpi());
+    await createPpi();
+    const list = new ListQuotesUseCase(deps);
+    const pending = async () =>
+      (
+        await list.execute(manager, { status: [], page: 1, pageSize: 20, followUp: 'pending' })
+      ).items.map((q) => q.id);
+
+    expect(await pending()).toEqual([]);
+    clock.advance(3 * 86_400_000);
+    lastInteractions.set(contacted.id, clock.now());
+    clock.advance(2 * 86_400_000);
+    expect(await pending()).toEqual([stale.id]);
+    clock.advance(3 * 86_400_000);
+    expect((await pending()).sort()).toEqual([stale.id, contacted.id].sort());
   });
 });

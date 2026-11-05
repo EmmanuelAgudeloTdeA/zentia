@@ -17,7 +17,7 @@ import type { QuotesDependencies } from './quotes-dependencies.js';
 const NUMBER_PATTERN = /^(?:COT-?)?0*(\d{1,9})$/i;
 
 export class ListQuotesUseCase {
-  constructor(private readonly deps: Pick<QuotesDependencies, 'quotes'>) {}
+  constructor(private readonly deps: Pick<QuotesDependencies, 'quotes' | 'settings' | 'clock'>) {}
 
   async execute(actor: Actor, filter: QuoteListFilter): Promise<QuoteListDto> {
     const { page, pageSize } = filter;
@@ -25,7 +25,15 @@ export class ListQuotesUseCase {
     const numberMatch = q ? NUMBER_PATTERN.exec(q) : null;
     const scope = scopeFilter(actor);
     const { fromUtc, toUtcExclusive } = bogotaRangeUtc(filter.sentFrom, filter.sentTo);
+    const pendingFollowUp =
+      filter.followUp === 'pending'
+        ? {
+            today: this.deps.clock.today(),
+            followUpDays: (await this.deps.settings.getCommercialParameters()).followUpDays,
+          }
+        : undefined;
     const result = await this.deps.quotes.list({
+      pendingFollowUp,
       firstSentFrom: fromUtc,
       firstSentBefore: toUtcExclusive,
       statuses: filter.status,

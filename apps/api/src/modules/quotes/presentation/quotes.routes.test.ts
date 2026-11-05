@@ -135,6 +135,22 @@ describe('quotes routes', () => {
     });
   });
 
+  it('accepts followUp=pending and rejects other values', async () => {
+    const { admin } = await setup();
+    const ok = await request(app)
+      .get('/api/quotes')
+      .query({ followUp: 'pending' })
+      .set('Authorization', admin);
+    expect(ok.status).toBe(200);
+    expect(ok.body.total).toBe(0);
+    const invalid = await request(app)
+      .get('/api/quotes')
+      .query({ followUp: 'all' })
+      .set('Authorization', admin);
+    expect(invalid.status).toBe(400);
+    expect(invalid.body.error.code).toBe('VALIDATION_ERROR');
+  });
+
   it('filters by first-sent date (sentFrom/sentTo) and validates the range', async () => {
     const { quote, seller, admin } = await setup();
     await request(app)

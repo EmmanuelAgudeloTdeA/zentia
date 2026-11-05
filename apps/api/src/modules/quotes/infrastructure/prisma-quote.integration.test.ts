@@ -250,4 +250,58 @@ describe.skipIf(!databaseUrl)('Prisma quotes (integration)', () => {
     });
     expect(items.map((item) => item.id).sort()).toEqual([ids[1], ids[2]].sort());
   });
+
+  it('lists sent quotes pending follow-up with the M6 rule in Bogota days', async () => {
+    const repo = new PrismaQuoteRepository(prisma);
+    const sendAt = async (at: string) => {
+      const id = await createInTx();
+      await repo.update(id, {
+        status: 'SENT',
+        sentAt: new Date(at),
+        firstSentAt: new Date(at),
+        expiresAt: '2026-12-31',
+      });
+      return id;
+    };
+    // Y = 5, hoy 2026-11-08 en Bogotá: vence el ciclo si la referencia es <= 2026-11-03.
+    const stale = await sendAt('2026-11-03T15:00:00.000Z');
+    const lateNight = await sendAt('2026-11-04T03:00:00.000Z');
+    const quoteContact = await sendAt('2026-11-01T15:00:00.000Z');
+    const customerContact = await sendAt('2026-11-01T15:00:00.000Z');
+    await createInTx();
+    const quote = await prisma.quote.findUniqueOrThrow({ where: { id: quoteContact } });
+    await prisma.interaction.create({
+      data: {
+        customerId: quote.customerId,
+        quoteId: quoteContact,
+        type: 'CALL',
+        note: 'x',
+        occurredAt: new Date('2026-11-05T15:00:00.000Z'),
+        authorId: quote.ownerId,
+      },
+    });
+    const pendingIds = async () =>
+      (
+        await repo.list({
+          statuses: [],
+          pendingFollowUp: { today: '2026-11-08', followUpDays: 5 },
+          skip: 0,
+          take: 10,
+        })
+      ).items.map((item) => item.id);
+
+    expect((await pendingIds()).sort()).toEqual([stale, lateNight, customerContact].sort());
+
+    await prisma.interaction.create({
+      data: {
+        customerId: quote.customerId,
+        quoteId: null,
+        type: 'EMAIL',
+        note: 'x',
+        occurredAt: new Date('2026-11-06T15:00:00.000Z'),
+        authorId: quote.ownerId,
+      },
+    });
+    expect(await pendingIds()).toEqual([]);
+  });
 });
