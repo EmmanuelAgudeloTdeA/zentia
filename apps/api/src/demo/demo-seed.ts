@@ -94,8 +94,9 @@ export async function seedDemoData(
   prisma: PrismaClient,
   now = new Date(),
 ): Promise<DemoSeedResult> {
+  // Sus clientes son `DEMO0001…`; los del catálogo (`DEMOCLI…`) no cuentan como demo ya cargada.
   const existing = await prisma.customer.count({
-    where: { documentId: { startsWith: DEMO_DOCUMENT_PREFIX } },
+    where: { documentId: { startsWith: `${DEMO_DOCUMENT_PREFIX}0` } },
   });
   if (existing > 0) return { skipped: true, customers: 0, products: 0, quotes: 0 };
 
