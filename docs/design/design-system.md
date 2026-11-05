@@ -588,9 +588,11 @@ Los componentes base viven en `apps/web/src/shared/ui/` y se exportan por su bar
 ### Tabla (`DataTable`)
 - Contenedor tarjeta (`rounded-lg`, `shadow-sm`, borde `neutral-200`), con barra de herramientas arriba: chips de filtro, selects de filtro y búsqueda a la derecha.
 - **Encabezado:** fondo `neutral-50`, texto `overline` `neutral-500`; columnas ordenables con icono de dirección y `aria-sort`.
-- **Filas:** alto mínimo 56 px, separador `neutral-200`; hover `neutral-50`. Si la fila abre un detalle, toda la fila es clicable y la primera celda contiene el enlace real (accesible por teclado).
+- **Filas:** alto mínimo 56 px, separador `neutral-200`; hover `neutral-50`. Si la fila abre un detalle, toda la fila es clicable (`onRowClick`) y la primera celda contiene el enlace real (accesible por teclado). Los clics en enlaces, botones, el menú o la columna de acciones no activan la fila. Aplica a cotizaciones, clientes, pedidos y al top de probabilidad; productos y usuarios no tienen detalle y su fila no es clicable.
 - **Celdas:** texto a la izquierda; montos, cantidades y porcentajes a la derecha con `tabular-nums`; fechas en `DD/MM/AAAA`; estado con `StatusBadge`. Número de cotización en `mono` `primary-600`. Celda de dos líneas: principal en `h3`, secundaria en `body-sm` `neutral-500` truncada a una línea con el texto completo en `title`.
-- **Acciones por fila:** máximo 2 visibles (`ghost` `sm`); el resto en un menú "Más acciones" (icono de tres puntos con `aria-label`).
+- **Acciones por fila:** máximo 2 visibles (`ghost` `sm`, `RowActionLink`: icono y etiqueta desde `lg`, solo icono antes); el resto en un menú "Más acciones" (icono de tres puntos con `aria-label`). Toda tabla con detalle muestra "Ver detalle" como primera acción visible.
+- **Cotizaciones:** visibles "Ver detalle" y "Editar" (solo Borrador y Enviada); en el menú, "Descargar PDF" y "Duplicar" (solo Aprobada y Rechazada). Por D6, los cambios de estado, el vencimiento y la reasignación siguen solo en el detalle.
+- **Menú "Más acciones" (`ActionMenu`):** el panel se dibuja en un portal sobre `body` con posición fija en la capa 40, alineado al borde derecho del disparador; si no cabe debajo, se abre hacia arriba. Nunca lo recorta el contenedor ni desplaza el diseño. Se cierra con Escape, clic afuera, scroll o cambio de tamaño.
 - **Paginación:** al pie, "1–20 de 134" + anterior/siguiente; 20 filas por página.
 - **Móvil (< 640 px):** cada fila se presenta como tarjeta con: título (número o nombre), estado arriba a la derecha, dos o tres pares etiqueta-valor y el monto destacado.
 - Estados de vacío, carga y error: ver "Reglas".

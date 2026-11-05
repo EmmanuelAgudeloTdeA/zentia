@@ -152,6 +152,16 @@ Rutas abreviadas:
 - [x] S4.3.7.4 Otro estado → 409 `QUOTE_NOT_DUPLICABLE` — `api/quote-use-cases` › duplicates final quotes with current prices, omitting inactive products and resetting the discount
 - [x] S4.3.7.5 El front abre el editor con los avisos — `web/quotes` › duplicates into the editor with the omitted products and the discount reset notice
 
+### Tabla de cotizaciones (acciones por fila)
+- [x] Toda la fila abre el detalle — `web/quotes` › opens the detail when clicking anywhere on the row
+- [x] "Ver detalle" en todas las filas y "Editar" solo en Borrador y Enviada — `web/quotes` › shows "Ver detalle" on every row and "Editar" only on editable statuses
+- [x] Menú sin cambios de estado (D6): PDF siempre y Duplicar solo en finales — `web/quotes` › keeps state changes out of the menu: PDF always, Duplicar only on final quotes
+- [x] Descargar el PDF desde la tabla sin salir de la lista — `web/quotes` › downloads the PDF from the menu without leaving the list
+- [x] Duplicar desde la tabla con confirmación y apertura del borrador nuevo — `web/quotes` › duplicates a final quote after confirmation and opens the new draft
+- [x] El menú "Más acciones" se dibuja sobre todo el contenido, sin recortarse — `apps/web/src/shared/ui/action-menu.test.tsx` › renders the panel in document.body, outside the clipping container; › opens below the trigger aligned to its right edge, and upward when there is no room
+- [x] Las acciones de la fila no activan la navegación de la fila — `apps/web/src/shared/ui/data-table.test.tsx` › ignores clicks on links, buttons and row actions (including what they open); `apps/web/src/shared/ui/action-menu.test.tsx` › runs the item and never bubbles the click to the row
+- [ ] Revisión visual del menú y de las filas en navegador real y a 360 px — manual, pendiente
+
 ## Reglas críticas de `CLAUDE.md`
 - [x] Fórmulas: `línea`, `subtotal`, `descuento`, `ivaLíneas` sin redondeo por línea, `ivaEnvío`, `total`; half-up por concepto — `shared/quote-totals` › rounds each concept half-up independently; › does not round VAT per line; › adds 19 % VAT to taxable shipping (5.378.800)
 - [x] Prohibidos `parseFloat`, `Number()`, `Math.round`… en `shared/calc` — `eslint.config.js` (regla sobre `packages/shared/src/calc/**`, `pnpm lint` en CI)
