@@ -68,7 +68,8 @@ export function ActionMenu({ label, items, tone = 'default' }: ActionMenuProps) 
       if (!menuRef.current?.contains(target) && !triggerRef.current?.contains(target)) close();
     };
     const onScroll = (event: Event) => {
-      if (!menuRef.current?.contains(event.target as Node)) close();
+      const target = event.target;
+      if (!(target instanceof Node) || !menuRef.current?.contains(target)) close();
     };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {

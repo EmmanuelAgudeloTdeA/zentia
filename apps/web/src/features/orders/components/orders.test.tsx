@@ -122,6 +122,24 @@ describe('OrdersListPage', () => {
     await waitFor(() => expect(lastQuery().get('page')).toBe('2'));
     expect(lastQuery().get('pageSize')).toBe('20');
   });
+  it('opens the order from anywhere on the row and offers an explicit "Ver detalle"', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(listResponse()));
+    const router = createMemoryRouter(
+      [
+        { path: '/orders', element: <OrdersListPage /> },
+        { path: '/orders/:id', element: <p>detalle</p> },
+      ],
+      { initialEntries: ['/orders'] },
+    );
+    render(<RouterProvider router={router} />);
+    const table = within(await screen.findByRole('table'));
+    const row = within(table.getByText('Acme SAS').closest('tr') as HTMLElement);
+    expect(row.getByRole('link', { name: es.common.actions.viewDetail }).getAttribute('href')).toBe(
+      `/orders/${ORDER_ID}`,
+    );
+    fireEvent.click(table.getByText('Acme SAS'));
+    expect(router.state.location.pathname).toBe(`/orders/${ORDER_ID}`);
+  });
 });
 
 describe('OrderDetailPage', () => {
