@@ -483,7 +483,6 @@
       "downloaded": "PDF downloaded",
       "step2": "2. Choose the channel",
       "whatsapp": "Open in WhatsApp",
-      "email": "Open in email",
       "missingPhone": "The customer has no phone number.",
       "missingEmail": "The customer has no email.",
       "editCustomer": "Edit customer",
@@ -499,7 +498,11 @@
       "copyEmail": "Copy email",
       "emailDraft": "To: {{to}}\nSubject: {{subject}}\n\n{{body}}",
       "emailCopied": "Email copied. Paste it in your webmail and attach the PDF.",
-      "copyError": "Could not copy. Select and copy the text manually."
+      "copyError": "Could not copy. Select and copy the text manually.",
+      "webmail": {
+        "GMAIL": "Open in Gmail",
+        "OUTLOOK": "Open in Outlook"
+      }
     },
     "toast": {
       "saved": "Quote {{number}} saved.",
@@ -927,7 +930,6 @@
       "copied": "Message copied.",
       "copyError": "The message could not be copied.",
       "openWhatsapp": "Open in WhatsApp",
-      "openEmail": "Open in email",
       "noPhone": "The customer has no phone number.",
       "noEmail": "The customer has no email address.",
       "emptyMessage": "Write a message to use it.",
@@ -935,7 +937,11 @@
       "registerInteraction": "Log interaction",
       "rateLimited": "Too many requests. Wait a minute.",
       "replaceTitle": "Replace the current message?",
-      "replaceConfirm": "Replace"
+      "replaceConfirm": "Replace",
+      "openWebmail": {
+        "GMAIL": "Open in Gmail",
+        "OUTLOOK": "Open in Outlook"
+      }
     },
     "probability": {
       "label": "Probability",

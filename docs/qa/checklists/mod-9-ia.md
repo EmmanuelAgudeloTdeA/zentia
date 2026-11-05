@@ -37,7 +37,7 @@ Rutas de prueba usadas:
 - [x] S9.1.2.3 Mensaje en el idioma de `documentLocale` — suggest-follow-up-message.test.ts › SuggestFollowUpMessageUseCase › asks the LLM and falls back in the document locale
 - [x] S9.1.2.3 `{{CLIENTE}}` y `{{VENDEDOR}}` reemplazados en el back, de forma literal — ai.routes.test.ts › follow-up message › sends only anonymized signals to the LLM and cleans its answer; suggest-follow-up-message.test.ts › SuggestFollowUpMessageUseCase › inserts names literally, without replacement patterns
 - [x] S9.1.2.4 Campo editable con "Abrir en WhatsApp" con el texto editado — ai.test.tsx › FollowUpAssistantPanel › opens WhatsApp with the edited text and pre-fills the interaction
-- [x] S9.1.2.4 "Abrir en correo" genera un `mailto:` con el texto editado — ai.test.tsx › FollowUpAssistantPanel › opens the email client with a mailto link carrying the edited text
+- [x] S9.1.2.4 "Abrir en Gmail" y "Abrir en Outlook" abren el redactor web con el texto editado — ai.test.tsx › FollowUpAssistantPanel › opens %s web compose in a new tab with the edited text
 - [x] S9.1.2.4 Sin datos de contacto el canal se deshabilita; con el mensaje vacío, todas las acciones — ai.test.tsx › FollowUpAssistantPanel › shows the template notice, disables channels without contact data and confirms before replacing; ai.test.tsx › FollowUpAssistantPanel › disables every action when the message is emptied
 - [ ] S9.1.2.4 Copiar o abrir un canal no cambia el estado de la cotización — manual, pendiente
 - [x] S9.1.2.5 Tras abrir un enlace se ofrece registrar la interacción prellenada — ai.test.tsx › FollowUpAssistantPanel › opens WhatsApp with the edited text and pre-fills the interaction

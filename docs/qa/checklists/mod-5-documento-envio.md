@@ -66,9 +66,9 @@ Rutas de prueba usadas:
 - [x] `allowedActions` suma `downloadPdf` siempre y `share` solo en `DRAFT` y `SENT` — documents.test.ts › ShareQuoteUseCase › contributes downloadPdf always and share only in DRAFT and SENT; documents.routes.test.ts › documents routes › adds downloadPdf and share to allowedActions
 
 ### Apertura del correo
-- [x] "Abrir en correo" abre `mailto:` en la misma pestaña (sin pestaña en blanco) y registra el envío — `web/quotes` › opens the email in the same tab (no blank tab) and registers the share
+- [x] Correo por Gmail y Outlook web (redactor con destinatario, asunto y cuerpo, en pestaña nueva, sin depender de una aplicación de correo) y registro del envío — `web/quotes` › opens Gmail and Outlook web compose in a new tab and registers the share; `apps/web/src/shared/lib/mailto.test.ts` › builds the Gmail compose page with recipient, subject and body; › builds the Outlook web compose page with recipient, subject and body
 - [x] "Copiar correo" copia destinatario, asunto y cuerpo para el correo web cuando no hay aplicación de correo — `web/quotes` › copies the email (to, subject and body) for webmail when there is no mail app; `apps/web/src/shared/lib/mailto.test.ts` › reads recipient, subject and CRLF body as built by the API (RFC 6068)
-- [ ] Apertura real del cliente de correo en macOS/Windows con y sin aplicación configurada — manual, pendiente
+- [ ] Apertura real de Gmail y Outlook web con sesión iniciada — manual, pendiente
 
 ## Reglas críticas de CLAUDE.md
 - [x] Cliente inactivo en un Borrador: sin enlaces y con `unavailableReason: CUSTOMER_INACTIVE` (el envío lo rechazaría) — documents.test.ts › GetShareLinksUseCase › returns no links for a draft whose customer is inactive; documents.routes.test.ts › documents routes › returns no links with the reason when the draft customer is inactive

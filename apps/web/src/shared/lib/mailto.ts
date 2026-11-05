@@ -1,15 +1,10 @@
-/** Abre `mailto:` en la misma pestaña: con `_blank` el navegador deja una pestaña en blanco. */
-export function openMailto(url: string): void {
-  const link = document.createElement('a');
-  link.href = url;
-  link.click();
-}
-
 export interface MailDraft {
   to: string;
   subject: string;
   body: string;
 }
+
+export type Webmail = 'GMAIL' | 'OUTLOOK';
 
 /** Destinatario, asunto y cuerpo de un enlace `mailto:` (RFC 6068). */
 export function parseMailto(url: string): MailDraft {
@@ -20,4 +15,14 @@ export function parseMailto(url: string): MailDraft {
     subject: params.get('subject') ?? '',
     body: (params.get('body') ?? '').replace(/\r\n/g, '\n'),
   };
+}
+
+/** Redactor web con el correo listo: no depende de tener una aplicación de correo instalada. */
+export function webmailUrl(provider: Webmail, { to, subject, body }: MailDraft): string {
+  if (provider === 'GMAIL') {
+    const params = new URLSearchParams({ view: 'cm', fs: '1', to, su: subject, body });
+    return `https://mail.google.com/mail/?${params.toString()}`;
+  }
+  const params = new URLSearchParams({ to, subject, body });
+  return `https://outlook.office.com/mail/deeplink/compose?${params.toString()}`;
 }

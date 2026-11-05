@@ -106,8 +106,11 @@ describe('FollowUpAssistantPanel', () => {
         .disabled,
     ).toBe(true);
     expect(
-      (screen.getByRole('button', { name: es.ai.assistant.openEmail }) as HTMLButtonElement)
-        .disabled,
+      (
+        screen.getByRole('button', {
+          name: es.ai.assistant.openWebmail.GMAIL,
+        }) as HTMLButtonElement
+      ).disabled,
     ).toBe(false);
 
     fireEvent.change(screen.getByLabelText(es.ai.assistant.messageLabel), {
@@ -127,33 +130,34 @@ describe('FollowUpAssistantPanel', () => {
     expect(await screen.findByText(es.ai.assistant.rateLimited)).toBeTruthy();
   });
 
-  it('opens the email client with a mailto link carrying the edited text', async () => {
-    vi.spyOn(aiService, 'suggestMessage').mockResolvedValue(suggestion());
-    vi.spyOn(quotesService, 'list').mockResolvedValue({
-      items: [],
-      total: 0,
-      page: 1,
-      pageSize: 100,
-    });
-    const open = vi.spyOn(window, 'open').mockReturnValue(null);
-    let opened = '';
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
-      this: HTMLAnchorElement,
-    ) {
-      opened = this.href;
-    });
-    renderPanel();
-    fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.suggest }));
-    fireEvent.change(await screen.findByLabelText(es.ai.assistant.messageLabel), {
-      target: { value: 'Texto editado & listo' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.openEmail }));
-    // En la misma pestaña: con `_blank` el navegador deja una pestaña en blanco.
-    expect(open).not.toHaveBeenCalled();
-    expect(opened).toBe(
-      `mailto:compras@acme.co?body=${encodeURIComponent('Texto editado & listo')}`,
-    );
-  });
+  it.each([
+    ['GMAIL', 'https://mail.google.com/mail/', 'to'],
+    ['OUTLOOK', 'https://outlook.office.com/mail/deeplink/compose', 'to'],
+  ] as const)(
+    'opens %s web compose in a new tab with the edited text',
+    async (provider, page, toParam) => {
+      vi.spyOn(aiService, 'suggestMessage').mockResolvedValue(suggestion());
+      vi.spyOn(quotesService, 'list').mockResolvedValue({
+        items: [],
+        total: 0,
+        page: 1,
+        pageSize: 100,
+      });
+      const open = vi.spyOn(window, 'open').mockReturnValue(null);
+      renderPanel();
+      fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.suggest }));
+      fireEvent.change(await screen.findByLabelText(es.ai.assistant.messageLabel), {
+        target: { value: 'Texto editado & listo' },
+      });
+      fireEvent.click(screen.getByRole('button', { name: es.ai.assistant.openWebmail[provider] }));
+      const [url, target] = open.mock.calls[0] ?? [];
+      const parsed = new URL(String(url));
+      expect(parsed.origin + parsed.pathname).toBe(page);
+      expect(parsed.searchParams.get(toParam)).toBe('compras@acme.co');
+      expect(parsed.searchParams.get('body')).toBe('Texto editado & listo');
+      expect(target).toBe('_blank');
+    },
+  );
 
   it('disables every action when the message is emptied', async () => {
     vi.spyOn(aiService, 'suggestMessage').mockResolvedValue(suggestion());
