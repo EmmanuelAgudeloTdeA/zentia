@@ -300,3 +300,9 @@ Ajustes respecto a este plan y vacíos del ui-brief resueltos:
 | Desborde de montos | Tras recalcular, cualquier monto con más de 15 dígitos (columna `Decimal(15,0)`) responde 400 `QUOTE_AMOUNT_TOO_LARGE` con `params: { maxDigits: 15 }`, en lugar de un 500 de Postgres. |
 | `sentFrom` / `sentTo` | `GET /quotes` acepta `sentFrom` y `sentTo` (`YYYY-MM-DD`, días de Bogotá, ambos incluidos; `sentFrom ≤ sentTo` o 400 `VALIDATION_ERROR`) y filtra por `firstSentAt` en `[from 05:00Z, to+1 05:00Z)` con `bogotaRangeUtc` de `shared/rules`, la misma regla de cohorte del tablero, para que sus tarjetas abran la lista con conteos iguales. En el front, la lista muestra un chip removible "Primer envío: …" y el barril exporta `openQuotesWithFilters`. |
 | Editor | Si fallan los parámetros comerciales en una cotización nueva, muestra un error con reintento y deshabilita guardar; guardar una Enviada sin cambios no abre el diálogo de lo solicitado por el cliente. |
+
+## 11. Notas de implementación (tablas)
+- La lista de cotizaciones abre el detalle con un clic en cualquier parte de la fila y muestra "Ver detalle" y "Editar" (Borrador y Enviada). El menú de la fila tiene "Descargar PDF" y "Duplicar" (Aprobada y Rechazada), con el mismo diálogo del detalle.
+- Se mantiene D6 del sistema de diseño: enviar, aprobar, rechazar, anular, reactivar, cambiar vencimiento y reasignar solo desde el detalle.
+- La descarga del PDF y el flujo de duplicar viven en `hooks/use-quote-row-actions.ts`, compartidos por el detalle y la lista.
+- `ActionMenu` usa un portal en la capa 40 para no recortarse dentro de contenedores con `overflow`.

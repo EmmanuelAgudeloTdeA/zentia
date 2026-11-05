@@ -13,9 +13,11 @@ import {
   DataTable,
   EmptyState,
   ErrorMessage,
+  EyeIcon,
   FilterChip,
   Pagination,
   PlusIcon,
+  RowActionLink,
   SearchIcon,
   TextField,
   toast,
@@ -136,6 +138,15 @@ export function CustomersPage() {
             columns={columns}
             rows={state.status === 'ready' ? state.data.items : []}
             rowKey={(customer) => customer.id}
+            onRowClick={(customer) => navigate(customerPath(customer.id))}
+            actionsHeader={t('common.actions.rowActions')}
+            rowActions={(customer) => (
+              <RowActionLink
+                to={customerPath(customer.id)}
+                label={t('common.actions.viewDetail')}
+                icon={<EyeIcon size={16} />}
+              />
+            )}
             loading={state.status === 'loading'}
             skeletonRows={8}
             mobileCard={mobileCard}

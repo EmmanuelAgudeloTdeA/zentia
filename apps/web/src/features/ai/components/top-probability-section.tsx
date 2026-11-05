@@ -1,6 +1,6 @@
 import type { ProbabilityDto, TopProbabilityItem } from '@zentia/shared';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { formatCop, formatDay } from '../../../core/format';
 import { DataTable, SectionCard, type DataTableColumn } from '../../../shared/ui';
 import { ProbabilityBadge } from './probability-badge';
@@ -23,6 +23,7 @@ function asProbability(item: TopProbabilityItem): ProbabilityDto {
 /** "Mayor probabilidad de cierre" del tablero (S9.3.2). */
 export function TopProbabilitySection({ items, showOwner }: TopProbabilitySectionProps) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const numberLink = (item: TopProbabilityItem) => (
     <Link
       to={`/quotes/${item.quoteId}`}
@@ -76,6 +77,7 @@ export function TopProbabilitySection({ items, showOwner }: TopProbabilitySectio
         columns={columns}
         rows={items}
         rowKey={(item) => item.quoteId}
+        onRowClick={(item) => navigate(`/quotes/${item.quoteId}`)}
         empty={t('ai.top.empty')}
         mobileCard={(item) => (
           <div className="space-y-1.5">

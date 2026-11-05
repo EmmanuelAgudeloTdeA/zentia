@@ -640,3 +640,119 @@ describe('closing probability (M9)', () => {
     expect(screen.queryByText(es.ai.assistant.title)).toBeNull();
   });
 });
+
+describe('row actions of the list (D6: no state changes)', () => {
+  const APPROVED_ID = '8e9f0a1b-2c3d-4e5f-8a6b-7c8d9e0f1a2b';
+  const NEW_ID = '9f0a1b2c-3d4e-4f5a-8b6c-7d8e9f0a1b2c';
+
+  beforeEach(() => {
+    const { id, number, displayNumber, customer, owner, total, expiresAt, updatedAt } =
+      quoteFixture();
+    const summary = { id, number, displayNumber, customer, owner, total, expiresAt, updatedAt };
+    vi.spyOn(quotesService, 'list').mockResolvedValue({
+      items: [
+        { ...summary, status: 'DRAFT' },
+        {
+          ...summary,
+          id: APPROVED_ID,
+          number: 13,
+          displayNumber: 'COT-0013',
+          status: 'APPROVED',
+          customer: { ...customer, name: 'Beta SAS' },
+        },
+      ],
+      total: 2,
+      page: 1,
+      pageSize: 20,
+    });
+    vi.spyOn(aiService, 'getProbabilities').mockResolvedValue([]);
+    useQuoteFiltersStore.getState().reset();
+  });
+
+  const table = async () => within(await screen.findByRole('table'));
+  const row = async (text: string) => {
+    const cell = (await table()).getByText(text);
+    return cell.closest('tr') as HTMLElement;
+  };
+
+  it('opens the detail when clicking anywhere on the row', async () => {
+    const router = renderAt('/quotes');
+    fireEvent.click((await table()).getByText('Beta SAS'));
+    expect(router.state.location.pathname).toBe(`/quotes/${APPROVED_ID}`);
+  });
+
+  it('shows "Ver detalle" on every row and "Editar" only on editable statuses', async () => {
+    renderAt('/quotes');
+    const draft = within(await row('Acme SAS'));
+    const approved = within(await row('Beta SAS'));
+    expect(draft.getByRole('link', { name: 'Ver detalle' }).getAttribute('href')).toBe(
+      `/quotes/${QUOTE_ID}`,
+    );
+    expect(draft.getByRole('link', { name: 'Editar' }).getAttribute('href')).toBe(
+      `/quotes/${QUOTE_ID}/edit`,
+    );
+    expect(approved.getByRole('link', { name: 'Ver detalle' }).getAttribute('href')).toBe(
+      `/quotes/${APPROVED_ID}`,
+    );
+    expect(approved.queryByRole('link', { name: 'Editar' })).toBeNull();
+  });
+
+  it('keeps state changes out of the menu: PDF always, Duplicar only on final quotes', async () => {
+    const router = renderAt('/quotes');
+    fireEvent.click(
+      within(await row('Acme SAS')).getByRole('button', { name: 'Más acciones de COT-0012' }),
+    );
+    let menu = screen.getByRole('menu');
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Descargar PDF']);
+    expect(router.state.location.pathname).toBe('/quotes');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(
+      within(await row('Beta SAS')).getByRole('button', { name: 'Más acciones de COT-0013' }),
+    );
+    menu = screen.getByRole('menu');
+    const labels = within(menu)
+      .getAllByRole('menuitem')
+      .map((item) => item.textContent);
+    expect(labels).toEqual(['Descargar PDF', 'Duplicar']);
+    for (const state of ['Marcar como aprobada', 'Marcar como rechazada', 'Anular', 'Reactivar']) {
+      expect(labels).not.toContain(state);
+    }
+  });
+
+  it('downloads the PDF from the menu without leaving the list', async () => {
+    const download = vi.spyOn(documentsService, 'downloadPdf').mockResolvedValue();
+    const router = renderAt('/quotes');
+    fireEvent.click(
+      within(await row('Acme SAS')).getByRole('button', { name: 'Más acciones de COT-0012' }),
+    );
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Descargar PDF' }));
+    await waitFor(() => expect(download).toHaveBeenCalledWith(QUOTE_ID, 'COT-0012', 'view'));
+    expect(router.state.location.pathname).toBe('/quotes');
+  });
+
+  it('duplicates a final quote after confirmation and opens the new draft', async () => {
+    const duplicate = vi.spyOn(quotesService, 'duplicate').mockResolvedValue({
+      quote: quoteFixture({ id: NEW_ID, displayNumber: 'COT-0014', status: 'DRAFT' }),
+      omittedProductIds: [],
+      discountReset: false,
+    });
+    vi.spyOn(quotesService, 'get').mockResolvedValue(
+      quoteFixture({ id: NEW_ID, displayNumber: 'COT-0014', status: 'DRAFT' }),
+    );
+    const router = renderAt('/quotes');
+    fireEvent.click(
+      within(await row('Beta SAS')).getByRole('button', { name: 'Más acciones de COT-0013' }),
+    );
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Duplicar' }));
+    const dialog = screen.getByRole('dialog', { name: '¿Duplicar COT-0013?' });
+    expect(router.state.location.pathname).toBe('/quotes');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Duplicar' }));
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/quotes/${NEW_ID}/edit`));
+    expect(duplicate).toHaveBeenCalledWith(APPROVED_ID);
+  });
+});

@@ -6,7 +6,7 @@ import {
 } from '@zentia/shared';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useSessionStore } from '../../../core/auth';
 import { formatCop, formatDate } from '../../../core/format';
 import { PageHeader } from '../../../core/layout';
@@ -17,8 +17,10 @@ import {
   DataTable,
   EmptyState,
   ErrorMessage,
+  EyeIcon,
   FilterChip,
   Pagination,
+  RowActionLink,
   SearchIcon,
   TextField,
   type DataTableColumn,
@@ -60,6 +62,7 @@ export function OrdersListPage() {
     void load();
   }, [load]);
 
+  const navigate = useNavigate();
   const filtered = filters.statuses.length > 0 || filters.q.trim() !== '';
   const numberLink = (order: OrderSummaryDto) => (
     <Link
@@ -160,6 +163,15 @@ export function OrdersListPage() {
             columns={columns}
             rows={state.status === 'ready' ? state.data.items : []}
             rowKey={(order) => order.id}
+            onRowClick={(order) => navigate(`/orders/${order.id}`)}
+            actionsHeader={t('common.actions.rowActions')}
+            rowActions={(order) => (
+              <RowActionLink
+                to={`/orders/${order.id}`}
+                label={t('common.actions.viewDetail')}
+                icon={<EyeIcon size={16} />}
+              />
+            )}
             loading={state.status === 'loading'}
             skeletonRows={8}
             mobileCard={(order) => (

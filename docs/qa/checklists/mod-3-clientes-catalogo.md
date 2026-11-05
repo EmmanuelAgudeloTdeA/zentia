@@ -55,6 +55,9 @@ Rutas abreviadas: `customers/…` = `apps/api/src/modules/customers/…`; `catal
 - [x] S3.2.4.2 La categoría se normaliza y reutiliza la forma escrita existente — `catalog/application/catalog-use-cases.test.ts` › reuses the written form of an equivalent category; › lets the only product of a category fix its written form; `catalog/domain/catalog-domain.test.ts` › reuses the existing written form for the same key; › normalizes a new category
 - [x] S3.2.4.3 El front sugiere mientras se escribe y permite crear una categoría nueva — `web/catalog/components/products-page.test.tsx` › suggests categories and offers to create a new one
 
+### Tabla de clientes
+- [x] Toda la fila abre el detalle del cliente y hay acción "Ver detalle" — `web/customers` › opens the detail from anywhere on the row and offers an explicit "Ver detalle"
+
 ## Reglas críticas de `CLAUDE.md`
 - [x] Clientes y productos no se borran, se desactivan — `customers/presentation/customers.routes.test.ts` › has no delete route, rejects a taken document on edit and long searches; `catalog/presentation/products.routes.test.ts` › has no delete route and suggests at most 10 categories
 - [x] Todos los vendedores ven y editan todos los clientes — `customers/presentation/customers.routes.test.ts` › lets any role create, read and edit customers

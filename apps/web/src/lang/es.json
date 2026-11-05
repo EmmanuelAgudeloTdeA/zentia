@@ -27,7 +27,9 @@
       "activate": "Activar",
       "deactivate": "Desactivar",
       "more": "Más acciones",
-      "clearFilters": "Limpiar filtros"
+      "clearFilters": "Limpiar filtros",
+      "viewDetail": "Ver detalle",
+      "rowActions": "Acciones"
     },
     "combobox": {
       "loading": "Buscando…",
@@ -504,6 +506,9 @@
       "reassigned": "{{number}} reasignada a {{name}}.",
       "reactivated": "{{number}} reactivada.",
       "duplicated": "Se creó {{number}}."
+    },
+    "list": {
+      "moreActions": "Más acciones de {{number}}"
     }
   },
   "history": {

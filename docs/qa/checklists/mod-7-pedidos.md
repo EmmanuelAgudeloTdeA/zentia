@@ -60,6 +60,9 @@ Rutas de prueba usadas:
 - [x] S7.2.2.4 El front pide confirmación y envía el motivo opcional — orders.test.tsx › OrderDetailPage › cancels with an optional reason after confirmation
 - [x] S7.2.2.4 Cerrar el diálogo de cancelación limpia el error — orders.test.tsx › OrderDetailPage › clears the action error when the cancel dialog is closed
 
+### Tabla de pedidos
+- [x] Toda la fila abre el detalle del pedido y hay acción "Ver detalle" — `web/orders` › opens the order from anywhere on the row and offers an explicit "Ver detalle"
+
 ## Reglas críticas de CLAUDE.md
 - [x] Acciones derivadas del estado (`allowedActions` del pedido) — order.test.ts › order status › derives the available actions
 - [x] El pedido no mueve inventario ni factura: aviso visible en el detalle — orders.test.tsx › OrderDetailPage › shows the actions allowed and starts processing

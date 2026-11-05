@@ -15,6 +15,7 @@ export { KpiCard } from './kpi-card';
 export { MoneyField } from './money-field';
 export { NumberField } from './number-field';
 export { PageLoader } from './page-loader';
+export { RowActionLink } from './row-action-link';
 export { Pagination } from './pagination';
 export { SectionCard } from './section-card';
 export { Select, type SelectOption } from './select';

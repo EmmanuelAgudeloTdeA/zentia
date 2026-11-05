@@ -345,3 +345,23 @@ describe('Customer detail', () => {
     expect(list).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('Customers table', () => {
+  it('opens the detail from anywhere on the row and offers an explicit "Ver detalle"', async () => {
+    vi.spyOn(customersService, 'list').mockResolvedValue({
+      items: [existing],
+      total: 1,
+      page: 1,
+      pageSize: 20,
+    });
+    vi.spyOn(customersService, 'get').mockResolvedValue(existing);
+    const router = renderApp();
+    const table = within(await screen.findByRole('table'));
+    const row = within(table.getByText('Acme SAS').closest('tr') as HTMLElement);
+    expect(row.getByRole('link', { name: es.common.actions.viewDetail }).getAttribute('href')).toBe(
+      `/customers/${existing.id}`,
+    );
+    fireEvent.click(table.getByText('9001234567'));
+    expect(router.state.location.pathname).toBe(`/customers/${existing.id}`);
+  });
+});
