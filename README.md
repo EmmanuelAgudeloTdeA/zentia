@@ -57,7 +57,7 @@ Si falta, la API se detiene al arrancar con `Invalid environment variables` y el
 | `LLM_MODEL`, `LLM_API_KEY`      | Modelo y clave del asistente de IA                                | `gemini-2.5-flash`, —                                 |
 | `LLM_TIMEOUT_MS`                | Tiempo límite del asistente                                       | `4000`                                                |
 | `WEB_DIST_DIR`                  | Web compilada que sirve la API (mismo origen)                     | — (sin estáticos)                                     |
-| `ALLOW_DEMO_SEED`               | Permite `seed:demo` con `NODE_ENV=production`                     | —                                                     |
+| `ALLOW_DEMO_SEED`               | Permite `seed:demo` y `seed:catalog` con `NODE_ENV=production`    | —                                                     |
 
 La API valida las variables al arrancar y se detiene si alguna falta o es inválida.
 
@@ -76,6 +76,7 @@ Los tests de integración con PostgreSQL solo corren si se define `TEST_DATABASE
 - Documentación de la API: http://localhost:3000/api/docs
 - En desarrollo, la web reenvía `/api` a la API (mismo origen).
 - Datos de demostración (marcados `[DEMO]`): `pnpm --filter @zentia/api seed:demo`.
+- Solo clientes y productos de prueba (40 y 60, marcados `[DEMO]`, idempotente): `pnpm --filter @zentia/api seed:catalog`.
 
 ## Despliegue
 

@@ -14,6 +14,7 @@
     "prisma:deploy": "prisma migrate deploy",
     "db:seed": "tsx --conditions=development src/seed.ts",
     "seed:demo": "tsx --conditions=development src/seed-demo.ts",
+    "seed:catalog": "tsx --conditions=development src/seed-catalog.ts",
     "perf:p95": "tsx scripts/perf/p95.ts"
   },
   "dependencies": {
