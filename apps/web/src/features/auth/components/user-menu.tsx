@@ -3,7 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router';
 import { CHANGE_PASSWORD_PATH, LOGIN_PATH, useSessionStore } from '../../../core/auth';
 import { NOTIFICATIONS_PATH } from '../../../core/notifications';
-import { Avatar, ChevronDownIcon, InfoIcon, KeyIcon, LogOutIcon } from '../../../shared/ui';
+import {
+  Avatar,
+  ChevronDownIcon,
+  InfoIcon,
+  KeyIcon,
+  LogOutIcon,
+  Popover,
+} from '../../../shared/ui';
 import { logout } from '../services/session.service';
 
 const ITEM_CLASSES =
@@ -14,29 +21,16 @@ export function UserMenu() {
   const navigate = useNavigate();
   const user = useSessionStore((state) => state.user);
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuId = useId();
 
   useEffect(() => {
     if (!open) return;
-    containerRef.current?.querySelector<HTMLElement>('[role="menuitem"]')?.focus();
-    const onPointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    };
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
-  }, [open]);
+    document
+      .getElementById(menuId)
+      ?.querySelector<HTMLElement>('[role="menuitem"]')
+      ?.focus({ preventScroll: true });
+  }, [open, menuId]);
 
   if (!user) return null;
 
@@ -52,7 +46,7 @@ export function UserMenu() {
   };
 
   return (
-    <div ref={containerRef} className="relative">
+    <div className="relative">
       <button
         ref={triggerRef}
         type="button"
@@ -72,11 +66,13 @@ export function UserMenu() {
       </button>
 
       {open ? (
-        <div
+        <Popover
+          anchorRef={triggerRef}
+          onClose={() => setOpen(false)}
           id={menuId}
           role="menu"
           aria-label={t('userMenu.label')}
-          className="absolute right-0 z-40 mt-2 w-64 rounded-lg border border-neutral-200 bg-neutral-0 p-2 shadow-md"
+          className="w-64 p-2"
         >
           <div className="mb-1 rounded-md bg-neutral-50 px-3 py-2">
             <p className="truncate text-body-sm font-semibold text-neutral-900">{user.name}</p>
@@ -117,7 +113,7 @@ export function UserMenu() {
             <LogOutIcon size={16} />
             {t('auth.logout')}
           </button>
-        </div>
+        </Popover>
       ) : null}
     </div>
   );
