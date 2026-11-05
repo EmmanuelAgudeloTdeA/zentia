@@ -18,6 +18,7 @@ import {
   TextArea,
   toast,
 } from '../../../shared/ui';
+import { openMailto } from '../../../shared/lib';
 import { InteractionDialog } from '../../follow-up';
 import type { FollowUpHighlight } from '../hooks/use-follow-up-highlight';
 import { aiService } from '../services/ai.service';
@@ -106,7 +107,8 @@ export function FollowUpAssistantPanel({
   const openChannel = (channel: Channel) => {
     const url =
       channel === 'WHATSAPP' ? whatsappUrl(phone ?? '', text) : mailtoUrl(email ?? '', text);
-    window.open(url, '_blank', 'noopener,noreferrer');
+    if (channel === 'EMAIL') openMailto(url);
+    else window.open(url, '_blank', 'noopener,noreferrer');
     setUsedChannel(channel);
   };
 

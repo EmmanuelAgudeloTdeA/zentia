@@ -495,7 +495,11 @@
       "channels": {
         "WHATSAPP": "WhatsApp",
         "EMAIL": "el correo"
-      }
+      },
+      "copyEmail": "Copiar correo",
+      "emailDraft": "Para: {{to}}\nAsunto: {{subject}}\n\n{{body}}",
+      "emailCopied": "Correo copiado. Pégalo en tu correo web y adjunta el PDF.",
+      "copyError": "No se pudo copiar. Selecciona y copia el texto manualmente."
     },
     "toast": {
       "saved": "Cotización {{number}} guardada.",
