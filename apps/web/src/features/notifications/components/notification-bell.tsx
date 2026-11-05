@@ -6,7 +6,7 @@ import { useSessionStore } from '../../../core/auth';
 import { errorKey } from '../../../core/errors';
 import { formatDateTime } from '../../../core/format';
 import { NOTIFICATIONS_PATH, useNotificationsStore } from '../../../core/notifications';
-import { BellIcon, Button, Skeleton, toast } from '../../../shared/ui';
+import { BellIcon, Button, Popover, Skeleton, toast } from '../../../shared/ui';
 import {
   markNotificationRead,
   notificationsService,
@@ -27,7 +27,7 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<NotificationDto[] | null>(null);
   const [failed, setFailed] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   const enabled = Boolean(user && !user.mustChangePassword);
 
@@ -51,16 +51,6 @@ export function NotificationBell() {
       .list({ sort: 'date', page: 1, pageSize: 10 })
       .then((result) => setItems(result.items))
       .catch(() => setFailed(true));
-    const onPointerDown = (event: PointerEvent) => {
-      if (!containerRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
-    };
   }, [open]);
 
   if (!enabled) return null;
@@ -87,8 +77,9 @@ export function NotificationBell() {
   };
 
   return (
-    <div ref={containerRef} className="relative">
+    <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         aria-label={t('notifications.bellLabel', { count: count ?? 0 })}
         aria-haspopup="true"
@@ -108,9 +99,11 @@ export function NotificationBell() {
         ) : null}
       </button>
       {open ? (
-        <div
+        <Popover
+          anchorRef={triggerRef}
+          onClose={() => setOpen(false)}
           id={panelId}
-          className="absolute right-0 z-40 mt-2 w-80 rounded-lg border border-neutral-200 bg-neutral-0 shadow-md sm:w-96"
+          className="w-80 sm:w-96"
         >
           <div className="flex items-center justify-between gap-2 border-b border-neutral-200 px-4 py-3">
             <p className="text-h3 text-neutral-900">{t('notifications.title')}</p>
@@ -167,7 +160,7 @@ export function NotificationBell() {
           >
             {t('notifications.viewAll')}
           </Link>
-        </div>
+        </Popover>
       ) : null}
     </div>
   );

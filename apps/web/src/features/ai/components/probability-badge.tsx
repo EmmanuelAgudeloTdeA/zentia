@@ -1,7 +1,7 @@
 import type { ProbabilityDto } from '@zentia/shared';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Skeleton } from '../../../shared/ui';
+import { Popover, Skeleton } from '../../../shared/ui';
 import type { ProbabilitiesState } from '../hooks/use-probabilities';
 
 interface ProbabilityBadgeProps {
@@ -22,22 +22,8 @@ export function ProbabilityBadge({ probability, compact = false }: ProbabilityBa
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const popoverId = useId();
-  const rootRef = useRef<HTMLSpanElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const value = `${probability.probability} %`;
-
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => event.key === 'Escape' && setOpen(false);
-    const onPointerDown = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('pointerdown', onPointerDown);
-    return () => {
-      document.removeEventListener('keydown', onKeyDown);
-      document.removeEventListener('pointerdown', onPointerDown);
-    };
-  }, [open]);
 
   if (compact) {
     return (
@@ -48,8 +34,9 @@ export function ProbabilityBadge({ probability, compact = false }: ProbabilityBa
   }
 
   return (
-    <span ref={rootRef} className="relative inline-flex">
+    <span className="relative inline-flex">
       <button
+        ref={triggerRef}
         type="button"
         className={`${BADGE_CLASSES} cursor-pointer hover:brightness-95`}
         aria-expanded={open}
@@ -57,17 +44,18 @@ export function ProbabilityBadge({ probability, compact = false }: ProbabilityBa
         aria-label={`${t('ai.probability.label')}: ${value}, ${t('ai.probability.rulesEstimate')}`}
         onClick={() => setOpen((current) => !current)}
         onFocus={() => setOpen(true)}
-        onBlur={(event) => {
-          if (!rootRef.current?.contains(event.relatedTarget as Node | null)) setOpen(false);
-        }}
+        onBlur={() => setOpen(false)}
       >
         {value} · {t('ai.probability.rulesEstimate')}
       </button>
       {open ? (
-        <span
+        <Popover
+          anchorRef={triggerRef}
+          onClose={() => setOpen(false)}
           id={popoverId}
           role="tooltip"
-          className="absolute top-full left-0 z-20 mt-2 w-64 rounded-md border border-neutral-200 bg-neutral-0 p-3 text-left shadow-lg"
+          align="start"
+          className="w-64 p-3 text-left"
         >
           <span className="block text-caption font-semibold text-neutral-700">
             {t('ai.probability.factorsTitle')}
@@ -83,7 +71,7 @@ export function ProbabilityBadge({ probability, compact = false }: ProbabilityBa
               </span>
             ))}
           </span>
-        </span>
+        </Popover>
       ) : null}
     </span>
   );
