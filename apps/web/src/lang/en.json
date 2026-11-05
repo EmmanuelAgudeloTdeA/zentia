@@ -320,7 +320,8 @@
       "sentPeriod": "First sent: {{from}} – {{to}}",
       "sentFromOnly": "First sent from {{from}}",
       "sentToOnly": "First sent until {{to}}",
-      "removeFilter": "Remove filter: {{label}}"
+      "removeFilter": "Remove filter: {{label}}",
+      "followUpPending": "Pending follow-up"
     },
     "empty": {
       "title": "There are no quotes yet. Create the first one to get started.",

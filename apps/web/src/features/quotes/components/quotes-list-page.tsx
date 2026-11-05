@@ -72,6 +72,20 @@ export function QuotesListPage() {
       <span className="text-neutral-400">—</span>
     );
   const sentPeriodLabel = sentPeriodText(t, filters.sentPeriod);
+  const removableChips = [
+    ...(sentPeriodLabel
+      ? [{ key: 'sentPeriod', label: sentPeriodLabel, onRemove: filters.clearSentPeriod }]
+      : []),
+    ...(filters.followUpPending
+      ? [
+          {
+            key: 'followUpPending',
+            label: t('quotes.filters.followUpPending'),
+            onRemove: filters.clearFollowUpPending,
+          },
+        ]
+      : []),
+  ];
   const comboboxLabels = {
     loading: t('common.combobox.loading'),
     noResults: t('common.combobox.noResults'),
@@ -176,17 +190,20 @@ export function QuotesListPage() {
               </FilterChip>
             ))}
           </div>
-          {sentPeriodLabel ? (
+          {removableChips.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={filters.clearSentPeriod}
-                aria-label={t('quotes.filters.removeFilter', { label: sentPeriodLabel })}
-                className="inline-flex h-8 items-center gap-1.5 rounded-full border border-primary-600 bg-primary-50 px-3 text-body-sm font-medium text-primary-900 hover:bg-primary-100"
-              >
-                {sentPeriodLabel}
-                <CloseIcon size={14} />
-              </button>
+              {removableChips.map((chip) => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  onClick={chip.onRemove}
+                  aria-label={t('quotes.filters.removeFilter', { label: chip.label })}
+                  className="inline-flex h-8 items-center gap-1.5 rounded-full border border-primary-600 bg-primary-50 px-3 text-body-sm font-medium text-primary-900 hover:bg-primary-100"
+                >
+                  {chip.label}
+                  <CloseIcon size={14} />
+                </button>
+              ))}
             </div>
           ) : null}
           <div className={`grid gap-3 ${seesAll ? 'lg:grid-cols-3' : 'sm:grid-cols-2'}`}>

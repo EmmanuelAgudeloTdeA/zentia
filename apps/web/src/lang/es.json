@@ -320,7 +320,8 @@
       "sentPeriod": "Primer envío: {{from}} – {{to}}",
       "sentFromOnly": "Primer envío desde {{from}}",
       "sentToOnly": "Primer envío hasta {{to}}",
-      "removeFilter": "Quitar filtro: {{label}}"
+      "removeFilter": "Quitar filtro: {{label}}",
+      "followUpPending": "Pendientes de seguimiento"
     },
     "empty": {
       "title": "Aún no hay cotizaciones. Crea la primera para empezar.",

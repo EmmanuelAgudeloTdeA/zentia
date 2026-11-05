@@ -24,6 +24,7 @@ export interface QuotesListParams {
   ownerId?: string | undefined;
   sentFrom?: string | undefined;
   sentTo?: string | undefined;
+  followUp?: 'pending' | undefined;
   page: number;
   pageSize: number;
 }
