@@ -580,10 +580,11 @@ Los componentes base viven en `apps/web/src/shared/ui/` y se exportan por su bar
 - `TextArea`: altura mínima 3 líneas, crece hasta 8; contador de caracteres cuando hay límite.
 - Alto de campo 40 px; ancho por defecto 100 % de su columna.
 
-### Select (`Select`, `Combobox`)
+### Select (`Select`, `SearchSelect`, `Combobox`)
 - `Select`: `<select>` nativo estilizado como el input, con chevron propio. Para listas cortas y fijas (rol, tipo de interacción, tarifa IVA, idioma).
-- `Combobox` (autocompletado): para cliente, producto, categoría y vendedor. Patrón ARIA `combobox` + `listbox`, navegable con flechas, Enter y Esc. Busca desde 2 caracteres con espera de 250 ms; muestra hasta 8 resultados con texto secundario (NIT del cliente; categoría y precio del producto). Los elementos inactivos no aparecen en contextos donde no se pueden usar. Estados del panel: buscando (indicador), sin resultados (texto de `lang/`), error (texto + reintentar).
-- Ambos en `shadow-md`, radio `lg`, ancho mínimo el del campo.
+- `SearchSelect` (selector con búsqueda): para elegir **cliente** y **producto** en el editor de cotizaciones y **categoría** en productos. Es un botón con apariencia de campo que despliega un panel (portal sobre `body`, capa 55: por encima de los modales y por debajo de los toasts) con un buscador arriba, la lista en medio y, si aplica, una acción fija al pie. Muestra opciones al abrir sin escribir y filtra con espera de 250 ms. Flechas, Enter y Esc; Esc cierra solo el panel, no el modal que lo contiene. La categoría tiene al pie "Crear categoría", que abre un modal (prellenado con lo buscado) y deja la nueva categoría seleccionada; si ya existe una equivalente (sin tildes ni mayúsculas) se selecciona esa. El filtro de categoría de la lista de productos incluye "Todas las categorías" como primera opción.
+- `Combobox` (autocompletado): para los **filtros** de cliente y vendedor en listas y tablero. Patrón ARIA `combobox` + `listbox`, navegable con flechas, Enter y Esc. Busca desde 2 caracteres con espera de 250 ms; muestra hasta 8 resultados con texto secundario (NIT del cliente; categoría y precio del producto). Los elementos inactivos no aparecen en contextos donde no se pueden usar. Estados del panel: buscando (indicador), sin resultados (texto de `lang/`), error (texto + reintentar).
+- Los paneles van en `shadow-md`, radio `lg`, ancho mínimo el del campo. Con modales anidados (p. ej., crear categoría sobre el formulario de producto), solo el modal de arriba responde a Esc y a la trampa de foco.
 
 ### Tabla (`DataTable`)
 - Contenedor tarjeta (`rounded-lg`, `shadow-sm`, borde `neutral-200`), con barra de herramientas arriba: chips de filtro, selects de filtro y búsqueda a la derecha.
