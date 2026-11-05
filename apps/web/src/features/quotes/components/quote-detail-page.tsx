@@ -1,7 +1,7 @@
 import type { QuoteDto } from '@zentia/shared';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useParams } from 'react-router';
+import { Link, useParams } from 'react-router';
 import { isApiError } from '../../../core/errors';
 import {
   formatCop,
@@ -38,6 +38,7 @@ import {
 import { FollowUpSection } from '../../follow-up';
 import { QuoteOrderAction } from '../../orders';
 import { useCommercialParameters } from '../hooks/use-commercial-parameters';
+import { useDuplicateQuote } from '../hooks/use-quote-row-actions';
 import { useQuote, useQuoteHistory } from '../hooks/use-quote';
 import { quotesService } from '../services/quotes.service';
 import {
@@ -90,7 +91,6 @@ function DataItem({ label, children }: { label: string; children: ReactNode }) {
 
 export function QuoteDetailPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const { id = '' } = useParams();
   const { state, reload, replace } = useQuote(id);
   const history = useQuoteHistory(id);
@@ -101,6 +101,7 @@ export function QuoteDetailPage() {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<unknown>(null);
   const [followUpVersion, setFollowUpVersion] = useState(0);
+  const duplication = useDuplicateQuote();
   const loaded = state.status === 'ready' ? state.data : null;
   const sentIds = useMemo(
     () => (loaded?.status === 'SENT' ? [loaded.id] : []),
@@ -172,6 +173,7 @@ export function QuoteDetailPage() {
   const closeDialog = () => {
     setDialog(null);
     setActionError(null);
+    duplication.reset();
   };
 
   const run = async (action: () => Promise<QuoteDto>, message: (quote: QuoteDto) => string) => {
@@ -186,30 +188,6 @@ export function QuoteDetailPage() {
     } catch (error) {
       setActionError(error);
     } finally {
-      setBusy(false);
-    }
-  };
-
-  const duplicate = async () => {
-    setBusy(true);
-    setActionError(null);
-    try {
-      const result = await quotesService.duplicate(quote.id);
-      toast.success(t('quotes.toast.duplicated', { number: result.quote.displayNumber }));
-      const omittedNames = quote.items
-        .filter((item) => result.omittedProductIds.includes(item.productId))
-        .map((item) => item.productName);
-      navigate(editQuotePath(result.quote.id), {
-        state: {
-          duplicate: {
-            number: result.quote.displayNumber,
-            omittedNames,
-            discountReset: result.discountReset,
-          },
-        },
-      });
-    } catch (error) {
-      setActionError(error);
       setBusy(false);
     }
   };
@@ -466,13 +444,13 @@ export function QuoteDetailPage() {
         <SimpleActionDialog
           kind={dialog}
           quote={quote}
-          busy={busy}
-          error={actionError}
+          busy={busy || duplication.busy}
+          error={actionError ?? duplication.error}
           onReload={reloadAll}
           sendExpiresAt={addDaysTo(today, params.validityDays)}
           onCancel={closeDialog}
           onConfirm={() => {
-            if (dialog === 'duplicate') void duplicate();
+            if (dialog === 'duplicate') void duplication.duplicate(quote);
             else if (dialog === 'send')
               void run(
                 () => quotesService.send(quote.id, quote.updatedAt),

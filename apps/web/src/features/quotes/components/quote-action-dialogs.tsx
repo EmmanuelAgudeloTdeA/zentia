@@ -62,10 +62,12 @@ export function SimpleActionDialog({
   onReload,
   onConfirm,
   sendExpiresAt,
-}: DialogProps & {
+}: Omit<DialogProps, 'quote'> & {
+  quote: Pick<QuoteDto, 'displayNumber'>;
   kind: 'send' | 'approve' | 'reject' | 'duplicate';
   onConfirm: () => void;
-  sendExpiresAt: string;
+  /** Solo para `send`: fecha de vencimiento prevista. */
+  sendExpiresAt?: string;
 }) {
   const { t } = useTranslation();
   const number = quote.displayNumber;
@@ -80,7 +82,7 @@ export function SimpleActionDialog({
       title={t(`quotes.dialogs.${kind}.title`, { number })}
       description={t(`quotes.dialogs.${kind}.description`, {
         number,
-        date: formatDay(sendExpiresAt),
+        ...(sendExpiresAt ? { date: formatDay(sendExpiresAt) } : {}),
       })}
       confirmLabel={confirmLabel}
       confirmVariant={kind === 'reject' ? 'danger' : 'primary'}

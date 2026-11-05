@@ -2,7 +2,7 @@ import { QUOTE_STATUSES, type QuoteSummaryDto, type UserOptionDto } from '@zenti
 import type { TFunction } from 'i18next';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { useSessionStore } from '../../../core/auth';
 import { formatCop, formatDay, todayInBogota } from '../../../core/format';
 import { PageHeader } from '../../../core/layout';
@@ -32,6 +32,7 @@ import {
   type SentPeriod,
 } from '../store/quote-filters.store';
 import { expiryLabel } from './quote-format';
+import { QuoteRowActions } from './quote-row-actions';
 import { QuoteStatusBadge } from './quote-status-badge';
 import { NEW_QUOTE_PATH, quotePath } from './quote-paths';
 
@@ -49,6 +50,7 @@ function sentPeriodText(t: TFunction, period: SentPeriod | null): string | null 
 
 export function QuotesListPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const role = useSessionStore((state) => state.user?.role);
   const seesAll = role === 'MANAGER' || role === 'ADMIN';
   const filters = useQuoteFiltersStore();
@@ -258,6 +260,9 @@ export function QuotesListPage() {
             columns={columns}
             rows={state.status === 'ready' ? state.data.items : []}
             rowKey={(quote) => quote.id}
+            onRowClick={(quote) => navigate(quotePath(quote.id))}
+            actionsHeader={t('common.actions.rowActions')}
+            rowActions={(quote) => <QuoteRowActions quote={quote} />}
             loading={state.status === 'loading'}
             skeletonRows={8}
             mobileCard={mobileCard}

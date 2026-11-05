@@ -1,9 +1,7 @@
 import type { PdfPurpose } from '@zentia/shared';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, FileTextIcon, toast, type ButtonVariant } from '../../../shared/ui';
-import { documentsService } from '../services/documents.service';
-import { errorText } from './quote-format';
+import { Button, FileTextIcon, type ButtonVariant } from '../../../shared/ui';
+import { useDownloadQuotePdf } from '../hooks/use-quote-row-actions';
 
 interface DownloadPdfButtonProps {
   quoteId: string;
@@ -22,18 +20,10 @@ export function DownloadPdfButton({
   onDownloaded,
 }: DownloadPdfButtonProps) {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
+  const { loading, download: downloadPdf } = useDownloadQuotePdf();
 
   const download = async () => {
-    setLoading(true);
-    try {
-      await documentsService.downloadPdf(quoteId, displayNumber, purpose);
-      onDownloaded?.();
-    } catch (error) {
-      toast.error(errorText(t, error));
-    } finally {
-      setLoading(false);
-    }
+    if (await downloadPdf({ id: quoteId, displayNumber }, purpose)) onDownloaded?.();
   };
 
   return (
