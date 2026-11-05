@@ -17,6 +17,7 @@ export interface NewInteraction {
 export interface InteractionSearch {
   customerId?: string | undefined;
   quoteId?: string | undefined;
+  withoutQuote?: boolean | undefined;
   /** Para un vendedor: solo las sin cotización o de cotizaciones propias. */
   visibleToOwnerId?: string | undefined;
   skip: number;

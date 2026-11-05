@@ -168,6 +168,13 @@ describe('interaction visibility and validation', () => {
     ]);
   });
 
+  it('lists only the general contacts of the customer with withoutQuote=true', async () => {
+    const { manager, acme } = await seedForeignQuote();
+    expect(
+      await listNotes(manager.authorization, { customerId: acme.id, withoutQuote: 'true' }),
+    ).toEqual(['Sin cotización']);
+  });
+
   it('answers 404 when a seller filters by a foreign quoteId', async () => {
     const { seller, foreignQuote } = await seedForeignQuote();
     const res = await request(app)

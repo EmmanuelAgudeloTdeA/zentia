@@ -46,10 +46,17 @@ export class PrismaInteractionRepository implements InteractionRepository {
     );
   }
 
-  async list({ customerId, quoteId, visibleToOwnerId, skip, take }: InteractionSearch) {
+  async list({
+    customerId,
+    quoteId,
+    withoutQuote,
+    visibleToOwnerId,
+    skip,
+    take,
+  }: InteractionSearch) {
     const where: Prisma.InteractionWhereInput = {
       ...(customerId ? { customerId } : {}),
-      ...(quoteId ? { quoteId } : {}),
+      ...(quoteId ? { quoteId } : withoutQuote ? { quoteId: null } : {}),
       ...(visibleToOwnerId
         ? { OR: [{ quoteId: null }, { quote: { ownerId: visibleToOwnerId } }] }
         : {}),
