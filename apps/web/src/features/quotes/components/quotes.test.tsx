@@ -350,23 +350,26 @@ describe('SendQuoteDialog', () => {
   const EMAIL_URL =
     'mailto:a%40acme.co?subject=Cotizaci%C3%B3n%20COT-0012&body=Hola%20Acme%2C%0D%0AAdjunto%20el%20PDF.';
 
-  it('opens the email in the same tab (no blank tab) and registers the share', async () => {
+  it('opens Gmail and Outlook web compose in a new tab and registers the share', async () => {
     const share = vi.spyOn(documentsService, 'share').mockResolvedValue(quoteFixture());
-    let opened = '';
-    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
-      this: HTMLAnchorElement,
-    ) {
-      opened = this.href;
-    });
     const dialog = await openDialog(draft(), { emailUrl: EMAIL_URL, missing: [] });
-    const link = await within(dialog).findByRole('link', { name: es.quotes.send.email });
-    expect(link.getAttribute('target')).toBeNull();
-    expect(
-      within(dialog).getByRole('link', { name: es.quotes.send.whatsapp }).getAttribute('target'),
-    ).toBe('_blank');
+    const gmail = await within(dialog).findByRole('link', {
+      name: es.quotes.send.webmail.GMAIL,
+    });
+    const outlook = within(dialog).getByRole('link', { name: es.quotes.send.webmail.OUTLOOK });
+    for (const link of [gmail, outlook]) {
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('href')).not.toMatch(/^mailto:/);
+    }
+    const gmailUrl = new URL(gmail.getAttribute('href') ?? '');
+    expect(gmailUrl.searchParams.get('to')).toBe('a@acme.co');
+    expect(gmailUrl.searchParams.get('su')).toBe('Cotización COT-0012');
+    expect(gmailUrl.searchParams.get('body')).toBe('Hola Acme,\nAdjunto el PDF.');
+    expect(new URL(outlook.getAttribute('href') ?? '').searchParams.get('subject')).toBe(
+      'Cotización COT-0012',
+    );
 
-    fireEvent.click(link);
-    expect(opened).toBe(EMAIL_URL);
+    fireEvent.click(gmail);
     await waitFor(() =>
       expect(share).toHaveBeenCalledWith(QUOTE_ID, {
         channel: 'EMAIL',

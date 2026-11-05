@@ -483,7 +483,6 @@
       "downloaded": "PDF descargado",
       "step2": "2. Elige el canal",
       "whatsapp": "Abrir en WhatsApp",
-      "email": "Abrir en correo",
       "missingPhone": "El cliente no tiene teléfono registrado.",
       "missingEmail": "El cliente no tiene correo registrado.",
       "editCustomer": "Editar cliente",
@@ -499,7 +498,11 @@
       "copyEmail": "Copiar correo",
       "emailDraft": "Para: {{to}}\nAsunto: {{subject}}\n\n{{body}}",
       "emailCopied": "Correo copiado. Pégalo en tu correo web y adjunta el PDF.",
-      "copyError": "No se pudo copiar. Selecciona y copia el texto manualmente."
+      "copyError": "No se pudo copiar. Selecciona y copia el texto manualmente.",
+      "webmail": {
+        "GMAIL": "Abrir en Gmail",
+        "OUTLOOK": "Abrir en Outlook"
+      }
     },
     "toast": {
       "saved": "Cotización {{number}} guardada.",
@@ -927,7 +930,6 @@
       "copied": "Mensaje copiado.",
       "copyError": "No se pudo copiar el mensaje.",
       "openWhatsapp": "Abrir en WhatsApp",
-      "openEmail": "Abrir en correo",
       "noPhone": "El cliente no tiene teléfono registrado.",
       "noEmail": "El cliente no tiene correo registrado.",
       "emptyMessage": "Escribe un mensaje para usarlo.",
@@ -935,7 +937,11 @@
       "registerInteraction": "Registrar interacción",
       "rateLimited": "Hiciste muchas solicitudes. Espera un minuto.",
       "replaceTitle": "¿Reemplazar el mensaje actual?",
-      "replaceConfirm": "Reemplazar"
+      "replaceConfirm": "Reemplazar",
+      "openWebmail": {
+        "GMAIL": "Abrir en Gmail",
+        "OUTLOOK": "Abrir en Outlook"
+      }
     },
     "probability": {
       "label": "Probabilidad",

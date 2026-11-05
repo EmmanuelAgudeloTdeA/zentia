@@ -18,7 +18,7 @@ import {
   TextArea,
   toast,
 } from '../../../shared/ui';
-import { openMailto } from '../../../shared/lib';
+import { webmailUrl, type Webmail } from '../../../shared/lib';
 import { InteractionDialog } from '../../follow-up';
 import type { FollowUpHighlight } from '../hooks/use-follow-up-highlight';
 import { aiService } from '../services/ai.service';
@@ -38,10 +38,6 @@ const CHANNEL_TYPE: Record<Channel, InteractionType> = { WHATSAPP: 'WHATSAPP', E
 
 function whatsappUrl(phone: string, text: string): string {
   return `https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(text)}`;
-}
-
-function mailtoUrl(email: string, text: string): string {
-  return `mailto:${email}?body=${encodeURIComponent(text)}`;
 }
 
 /** Asistente de seguimiento (H9.1): sugiere un mensaje editable y ofrece canales para usarlo. */
@@ -104,11 +100,12 @@ export function FollowUpAssistantPanel({
     }
   };
 
-  const openChannel = (channel: Channel) => {
+  const openChannel = (channel: Channel, provider: Webmail = 'GMAIL') => {
     const url =
-      channel === 'WHATSAPP' ? whatsappUrl(phone ?? '', text) : mailtoUrl(email ?? '', text);
-    if (channel === 'EMAIL') openMailto(url);
-    else window.open(url, '_blank', 'noopener,noreferrer');
+      channel === 'WHATSAPP'
+        ? whatsappUrl(phone ?? '', text)
+        : webmailUrl(provider, { to: email ?? '', subject: '', body: text });
+    window.open(url, '_blank', 'noopener,noreferrer');
     setUsedChannel(channel);
   };
 
@@ -182,16 +179,19 @@ export function FollowUpAssistantPanel({
               >
                 {t('ai.assistant.openWhatsapp')}
               </Button>
-              <Button
-                variant="secondary"
-                size="sm"
-                icon={<SendIcon size={16} />}
-                disabled={!text || !email}
-                title={!email ? t('ai.assistant.noEmail') : undefined}
-                onClick={() => openChannel('EMAIL')}
-              >
-                {t('ai.assistant.openEmail')}
-              </Button>
+              {(['GMAIL', 'OUTLOOK'] as const).map((provider) => (
+                <Button
+                  key={provider}
+                  variant="secondary"
+                  size="sm"
+                  icon={<SendIcon size={16} />}
+                  disabled={!text || !email}
+                  title={!email ? t('ai.assistant.noEmail') : undefined}
+                  onClick={() => openChannel('EMAIL', provider)}
+                >
+                  {t(`ai.assistant.openWebmail.${provider}`)}
+                </Button>
+              ))}
             </div>
             {!phone || !email ? (
               <p className="text-caption text-neutral-500">

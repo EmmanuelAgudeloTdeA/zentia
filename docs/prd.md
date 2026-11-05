@@ -184,7 +184,7 @@ MVP: M0–M5. M5, M6 y M7 pueden avanzar en paralelo después de M4. M7 no bloqu
 4. Muestra las oportunidades con mayor probabilidad de cierre cuando M9 esté disponible.
 
 **RF-14 Envío asistido** (M5 · Esencial · Alta)
-1. Ofrece "Abrir en WhatsApp" (wa.me con mensaje prellenado) y "Abrir en correo" (mailto). Cada botón se deshabilita si falta el dato del cliente (RN-31).
+1. Ofrece "Abrir en WhatsApp" (wa.me con mensaje prellenado) y "Abrir en Gmail" y "Abrir en Outlook" (redactor web con destinatario, asunto y cuerpo; reemplaza el `mailto`, que dejaba la pestaña en blanco sin aplicación de correo) y "Copiar correo". Cada botón se deshabilita si falta el dato del cliente (RN-31).
 2. Al usar cualquiera de los dos accesos, la cotización pasa a Enviada (RN-19, RN-22) y se crea la versión 1 (RN-26).
 
 ## 5. Requisitos no funcionales

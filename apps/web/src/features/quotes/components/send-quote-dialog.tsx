@@ -2,7 +2,7 @@ import type { QuoteDto, ShareChannel, ShareLinksDto } from '@zentia/shared';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCop, formatDay } from '../../../core/format';
-import { openMailto, parseMailto } from '../../../shared/lib';
+import { parseMailto, webmailUrl, type Webmail } from '../../../shared/lib';
 import {
   Alert,
   Button,
@@ -37,6 +37,12 @@ const CHANNELS: readonly {
 ];
 
 /** E2 del ui-brief de M5: 1) descargar el PDF limpio, 2) abrir el canal y registrar el envío. */
+const WEBMAILS: readonly Webmail[] = ['GMAIL', 'OUTLOOK'];
+const PRIMARY_LINK =
+  'inline-flex h-10 w-full items-center justify-center rounded-md bg-primary-600 px-4 text-button text-white uppercase hover:bg-primary-700';
+const SECONDARY_LINK =
+  'inline-flex h-10 w-full items-center justify-center rounded-md border border-neutral-300 bg-neutral-0 px-4 text-button text-neutral-800 uppercase shadow-xs hover:bg-neutral-50';
+
 export function SendQuoteDialog({
   quote,
   projectedExpiresAt,
@@ -188,41 +194,48 @@ export function SendQuoteDialog({
               {CHANNELS.map(({ channel, link, missing }) => {
                 const url = links.data[link];
                 const label = t(
-                  channel === 'WHATSAPP' ? 'quotes.send.whatsapp' : 'quotes.send.email',
+                  channel === 'WHATSAPP' ? 'quotes.send.whatsapp' : 'quotes.send.webmail.GMAIL',
                 );
                 return (
                   <div key={channel}>
                     {typeof url === 'string' ? (
-                      <>
+                      channel === 'WHATSAPP' ? (
                         <a
                           href={url}
-                          {...(channel === 'WHATSAPP'
-                            ? { target: '_blank', rel: 'noopener noreferrer' }
-                            : {})}
-                          onClick={(event) => {
-                            if (channel === 'EMAIL') {
-                              event.preventDefault();
-                              openMailto(url);
-                            }
-                            void share(channel);
-                          }}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => void share(channel)}
                           aria-busy={sharing === channel || undefined}
-                          className="inline-flex h-10 w-full items-center justify-center rounded-md bg-primary-600 px-4 text-button text-white uppercase hover:bg-primary-700"
+                          className={PRIMARY_LINK}
                         >
                           {label}
                         </a>
-                        {channel === 'EMAIL' ? (
+                      ) : (
+                        <div className="space-y-2">
+                          {WEBMAILS.map((provider, index) => (
+                            <a
+                              key={provider}
+                              href={webmailUrl(provider, parseMailto(url))}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => void share(channel)}
+                              aria-busy={sharing === channel || undefined}
+                              className={index === 0 ? PRIMARY_LINK : SECONDARY_LINK}
+                            >
+                              {t(`quotes.send.webmail.${provider}`)}
+                            </a>
+                          ))}
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="mt-1 w-full"
+                            className="w-full"
                             icon={<CopyIcon size={14} />}
                             onClick={() => void copyEmail(url)}
                           >
                             {t('quotes.send.copyEmail')}
                           </Button>
-                        ) : null}
-                      </>
+                        </div>
+                      )
                     ) : (
                       <>
                         <span

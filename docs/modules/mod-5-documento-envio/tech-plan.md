@@ -122,3 +122,8 @@ La feature visual vive en `features/quotes` (decisión de `architecture.md` §4:
 | `lang/` del back | `apps/api/src/lang/{es,en}.json` con `pdf.*` y `share.*`; la prueba de paridad ahora compara también los marcadores `{{x}}`. Traductor `JsonDocumentTranslator` con `Intl` (`es-CO`/`en-US`) y montos con `BigInt`. |
 | Descarga en el front | `requestBlob` en `core/http-client` (misma autenticación y renovación que `request`); el archivo se guarda como `COT-0001.pdf`. |
 | Detalle | En Borrador, "Enviar" (canales) es la acción principal y "Marcar como enviada" pasa a "Más acciones"; en Enviada, "Enviar" es secundaria. "Editar cliente" abre el cliente en otra pestaña y el diálogo ofrece "Recargar enlaces" (V6). |
+
+## Nota (2026-11-05): correo por Gmail y Outlook web
+- El `mailto:` dejaba la pestaña en blanco en equipos sin aplicación de correo. Por decisión del usuario, el canal de correo abre el redactor web de **Gmail** (`mail.google.com/mail/?view=cm`) y de **Outlook** (`outlook.office.com/mail/deeplink/compose`) con destinatario, asunto y cuerpo, en pestaña nueva, y ofrece **Copiar correo**. Usar cualquiera registra el envío (Borrador → Enviada), igual que antes.
+- Se aparta de `docs/fuente/desglose.md` (H5.2: "Abrir en correo (mailto)"), que es de solo lectura; la API sigue entregando `emailUrl` en formato `mailto` y el front lo convierte (`shared/lib/mailto.ts`). El asistente de IA (M9) usa los mismos botones.
+
