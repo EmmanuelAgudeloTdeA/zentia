@@ -6,10 +6,13 @@ import {
   type InteractionType,
   type VatRate,
 } from '@zentia/shared';
+import { SystemClock } from '../core/clock/index.js';
 
 /** RN-41: todo lo sintético queda marcado (documento `DEMO…`, nombre `[DEMO]`). */
 export const DEMO_PREFIX = '[DEMO]';
 export const DEMO_DOCUMENT_PREFIX = 'DEMO';
+
+const VOID_REASON = `${DEMO_PREFIX} Anulada en la demostración`;
 
 export class DemoSeedRefusedError extends Error {}
 
@@ -71,6 +74,13 @@ const PRODUCTS: { name: string; category: string; price: number; vatRate: VatRat
 const INTERACTION_TYPES: InteractionType[] = ['CALL', 'EMAIL', 'WHATSAPP', 'MEETING'];
 
 const DAY = 86_400_000;
+
+/** Día calendario de `date` en America/Bogota (`YYYY-MM-DD`). */
+function bogotaDay(date: Date): string {
+  const clock = new SystemClock();
+  clock.now = () => date;
+  return clock.today();
+}
 
 export interface DemoSeedResult {
   skipped: boolean;
@@ -135,7 +145,6 @@ export async function seedDemoData(
     );
   }
 
-  const day = (date: Date) => new Date(`${date.toISOString().slice(0, 10)}T00:00:00.000Z`);
   let quotes = 0;
   for (let i = 0; i < 48; i++) {
     const owner = team[i % team.length]!;
@@ -164,7 +173,9 @@ export async function seedDemoData(
     );
 
     const sentAt = new Date(createdAt.getTime() + DAY);
-    const expiresAt = new Date(day(sentAt).getTime() + validityDays * DAY);
+    const expiresAt = new Date(
+      new Date(`${bogotaDay(sentAt)}T00:00:00.000Z`).getTime() + validityDays * DAY,
+    );
     const ageDays = (now.getTime() - sentAt.getTime()) / DAY;
     const roll = rand();
     let status: QuoteStatus;
@@ -220,7 +231,21 @@ export async function seedDemoData(
           },
         },
       });
-      if (!sent) return;
+      if (!sent) {
+        if (status === 'VOIDED') {
+          await tx.quoteEvent.create({
+            data: {
+              quoteId: quote.id,
+              type: 'STATE_CHANGED',
+              actorId: owner.id,
+              note: VOID_REASON,
+              data: { from: 'DRAFT', to: 'VOIDED' },
+              createdAt: new Date(Math.min(now.getTime(), createdAt.getTime() + DAY)),
+            },
+          });
+        }
+        return;
+      }
       const version = await tx.quoteVersion.create({
         data: {
           quoteId: quote.id,
@@ -250,7 +275,7 @@ export async function seedDemoData(
           quoteId: quote.id,
           type: 'STATE_CHANGED',
           actorId: status === 'EXPIRED' ? null : owner.id,
-          note: status === 'VOIDED' ? 'Demostración' : null,
+          note: status === 'VOIDED' ? VOID_REASON : null,
           data: { from: 'SENT', to: status },
           createdAt: new Date(Math.min(now.getTime(), sentAt.getTime() + 4 * DAY)),
         });
@@ -258,8 +283,12 @@ export async function seedDemoData(
       await tx.quoteEvent.createMany({ data: events });
       const contacts = Math.floor(rand() * 3);
       for (let c = 0; c < contacts; c++) {
+        // Entre el envío y ahora: una interacción nunca precede al envío de su cotización.
         const occurredAt = new Date(
-          Math.min(now.getTime() - DAY, sentAt.getTime() + (c + 1) * 2 * DAY),
+          Math.max(
+            sentAt.getTime(),
+            Math.min(now.getTime() - DAY, sentAt.getTime() + (c + 1) * 2 * DAY),
+          ),
         );
         await tx.interaction.create({
           data: {
