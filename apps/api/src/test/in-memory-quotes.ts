@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { toSearchKey, type QuoteChanges } from '@zentia/shared';
+import {
+  followUpReferenceDate,
+  isWithoutFollowUp,
+  toSearchKey,
+  type QuoteChanges,
+} from '@zentia/shared';
 import type { Quote, QuoteItem, QuotesInfrastructure } from '../modules/quotes/index.js';
 import type { QuotesTransaction } from '../modules/quotes/index.js';
 import type {
@@ -17,7 +22,12 @@ import type {
 interface Lookups {
   customer: (id: string) => { id: string; name: string; documentId: string; isActive: boolean };
   user: (id: string) => { id: string; name: string; isActive: boolean } | null;
+  /** Última interacción de la cotización o del cliente sin cotización (regla de M6). */
+  lastInteraction?: (quoteId: string) => Date | null;
 }
+
+const bogotaDay = (date: Date) =>
+  new Date(date.getTime() - 5 * 3_600_000).toISOString().slice(0, 10);
 
 type StoredQuote = Omit<Quote, 'customer' | 'owner' | 'createdBy' | 'voidReason'> & {
   customerId: string;
@@ -84,6 +94,14 @@ export class InMemoryQuoteRepository implements QuoteRepository {
       .filter((q) => search.statuses.length === 0 || search.statuses.includes(q.status))
       .filter((q) => !search.ownerId || q.ownerId === search.ownerId)
       .filter((q) => !search.customerId || q.customerId === search.customerId)
+      .filter((q) => {
+        const pending = search.pendingFollowUp;
+        if (!pending) return true;
+        if (q.status !== 'SENT' || !q.sentAt) return false;
+        const last = this.lookups.lastInteraction?.(q.id) ?? null;
+        const reference = followUpReferenceDate(last ? bogotaDay(last) : null, bogotaDay(q.sentAt));
+        return isWithoutFollowUp(reference, pending.today, pending.followUpDays);
+      })
       .filter(
         (q) =>
           (!search.firstSentFrom ||

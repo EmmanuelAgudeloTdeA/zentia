@@ -16,6 +16,8 @@ export interface QuoteListFilters {
   statuses?: readonly QuoteStatus[];
   owner?: PickedFilter | null;
   sentPeriod?: SentPeriod | null;
+  /** Solo Enviadas sin seguimiento (regla de Y días de M6). */
+  followUpPending?: boolean;
 }
 
 interface QuoteFiltersState {
@@ -26,6 +28,7 @@ interface QuoteFiltersState {
   owner: PickedFilter | null;
   ownerInput: string;
   sentPeriod: SentPeriod | null;
+  followUpPending: boolean;
   page: number;
   toggleStatus: (status: QuoteStatus) => void;
   clearStatuses: () => void;
@@ -36,6 +39,7 @@ interface QuoteFiltersState {
   pickOwner: (owner: PickedFilter) => void;
   setPage: (page: number) => void;
   clearSentPeriod: () => void;
+  clearFollowUpPending: () => void;
   /** Reemplaza todos los filtros (p. ej., desde una tarjeta del tablero) para que los conteos coincidan. */
   applyFilters: (filters: QuoteListFilters) => void;
   reset: () => void;
@@ -49,6 +53,7 @@ const INITIAL = {
   owner: null,
   ownerInput: '',
   sentPeriod: null,
+  followUpPending: false,
   page: 1,
 };
 
@@ -73,26 +78,32 @@ export const useQuoteFiltersStore = create<QuoteFiltersState>()((set) => ({
   pickOwner: (owner) => set({ owner, ownerInput: owner.label, page: 1 }),
   setPage: (page) => set({ page }),
   clearSentPeriod: () => set({ sentPeriod: null, page: 1 }),
-  applyFilters: ({ statuses = [], owner = null, sentPeriod = null }) =>
+  clearFollowUpPending: () => set({ followUpPending: false, page: 1 }),
+  applyFilters: ({ statuses = [], owner = null, sentPeriod = null, followUpPending = false }) =>
     set({
       ...INITIAL,
       statuses: [...statuses],
       owner,
       ownerInput: owner?.label ?? '',
       sentPeriod: sentPeriod?.from || sentPeriod?.to ? sentPeriod : null,
+      followUpPending,
     }),
   reset: () => set(INITIAL),
 }));
 
 export function hasQuoteFilters(
-  state: Pick<QuoteFiltersState, 'statuses' | 'q' | 'customer' | 'owner' | 'sentPeriod'>,
+  state: Pick<
+    QuoteFiltersState,
+    'statuses' | 'q' | 'customer' | 'owner' | 'sentPeriod' | 'followUpPending'
+  >,
 ) {
   return (
     state.statuses.length > 0 ||
     state.q.trim() !== '' ||
     state.customer !== null ||
     state.owner !== null ||
-    state.sentPeriod !== null
+    state.sentPeriod !== null ||
+    state.followUpPending
   );
 }
 

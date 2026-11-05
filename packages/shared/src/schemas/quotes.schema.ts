@@ -91,6 +91,8 @@ export const listQuotesQuerySchema = z
     /** Cohorte por `firstSentAt` en días de America/Bogota, ambos extremos incluidos (como el tablero). */
     sentFrom: z.iso.date().optional(),
     sentTo: z.iso.date().optional(),
+    /** `pending`: Enviadas que cumplen la regla de Y días de M6 (mismas que cuenta el tablero). */
+    followUp: z.enum(['pending']).optional(),
     ...paginationQueryShape,
   })
   .refine((query) => !query.sentFrom || !query.sentTo || query.sentFrom <= query.sentTo, {

@@ -114,4 +114,24 @@ describe('RunFollowUpAlertsUseCase', () => {
     expect(await useCase.execute()).toBe(1);
     expect(await useCase.execute()).toBe(0);
   });
+
+  it('alerts the new owner after a reassignment even if the previous one read the alert', async () => {
+    const clock = { now: () => new Date(), today: () => '2026-11-03' };
+    const { followUp, dependencies } = deps(clock, settingsWith(1, 2));
+    followUp.candidates.push(candidate);
+    const useCase = new RunFollowUpAlertsUseCase(dependencies);
+    expect(await useCase.execute()).toBe(1);
+    const [first] = followUp.notifications;
+    if (!first) throw new Error('missing notification');
+    await followUp.infrastructure.notifications.markRead(first.id, 'manager-1', new Date());
+    await followUp.infrastructure.notifications.transferUnread(null, 'q1', 'seller-2');
+    followUp.candidates[0] = { ...candidate, ownerId: 'seller-2' };
+
+    expect(await useCase.execute()).toBe(1);
+    expect(await useCase.execute()).toBe(0);
+    expect(followUp.notifications.map((n) => [n.userId, n.readAt !== null])).toEqual([
+      ['manager-1', true],
+      ['seller-2', false],
+    ]);
+  });
 });

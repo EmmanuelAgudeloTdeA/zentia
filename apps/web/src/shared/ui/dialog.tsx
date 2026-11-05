@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { CloseIcon } from './icons';
 
 export type DialogSize = 'sm' | 'md' | 'lg';
@@ -68,7 +69,8 @@ export function Dialog({
     };
   }, [dismissible]);
 
-  return (
+  // En un portal: un ancestro con `isolate` (el encabezado) no debe dejar contenido por encima.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
       <div
         className="absolute inset-0 bg-neutral-900/50"
@@ -112,6 +114,7 @@ export function Dialog({
           </div>
         ) : null}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

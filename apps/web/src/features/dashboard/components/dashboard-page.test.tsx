@@ -165,6 +165,29 @@ describe('DashboardPage', () => {
     });
   });
 
+  it.each([
+    [es.dashboard.kpi.approvedAmount, ['APPROVED'], true, false],
+    [es.dashboard.kpi.quotedAmount, ['SENT', 'APPROVED', 'REJECTED', 'EXPIRED'], true, false],
+    [es.dashboard.kpi.pendingFollowUp, ['SENT'], false, true],
+  ])(
+    'opens "%s" in the list with the filters behind its number',
+    async (label, statuses, withPeriod, pending) => {
+      signIn('MANAGER');
+      useDashboardFiltersStore.getState().pickOwner({ id: SELLER.id, label: SELLER.name });
+      vi.spyOn(dashboardService, 'summary').mockResolvedValue(summary());
+      const router = renderPage();
+
+      fireEvent.click(await screen.findByRole('button', { name: new RegExp(label) }));
+      await waitFor(() => expect(router.state.location.pathname).toBe(QUOTES_PATH));
+      expect(useQuoteFiltersStore.getState()).toMatchObject({
+        statuses,
+        owner: { id: SELLER.id, label: SELLER.name },
+        sentPeriod: withPeriod ? { from: '2026-11-01', to: '2026-11-30' } : null,
+        followUpPending: pending,
+      });
+    },
+  );
+
   it('filters by a seller and returns to all sellers with the "Todos" option', async () => {
     signIn('ADMIN');
     vi.spyOn(usersService, 'options').mockResolvedValue([SELLER]);

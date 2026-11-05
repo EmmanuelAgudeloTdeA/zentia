@@ -210,6 +210,29 @@ describe.skipIf(!databaseUrl)('Prisma follow-up (integration)', () => {
     expect(await repo.countUnread(target.id)).toBe(1);
   });
 
+  it('deduplicates per recipient and moves alerts back and forth without conflicts', async () => {
+    const repo = new PrismaNotificationRepository(prisma);
+    const target = await prisma.user.create({
+      data: { email: 'c@empresa.co', name: 'Caro', passwordHash: 'h', role: 'SELLER' },
+    });
+    const alert = (userId: string) => ({
+      userId,
+      quoteId,
+      type: 'QUOTE_EXPIRING' as const,
+      referenceDate: '2026-11-06',
+      params: {},
+    });
+    expect(await repo.insertMany([alert(ownerId)])).toBe(1);
+    expect(await repo.insertMany([alert(ownerId)])).toBe(0);
+    await repo.markAllRead(ownerId, new Date());
+    expect(await repo.insertMany([alert(target.id)])).toBe(1);
+
+    // A → B → A: B's unread copy goes back to A, which already has the (read) alert of the cycle.
+    await prisma.$transaction((tx) => repo.transferUnread(tx, quoteId, ownerId));
+    expect(await repo.countUnread(target.id)).toBe(0);
+    expect(await prisma.notification.count({ where: { quoteId } })).toBe(1);
+  });
+
   it('lets only one concurrent job hold the lock', async () => {
     const lock = new PostgresJobLock(prisma);
     const slow = () => new Promise<number>((resolve) => setTimeout(() => resolve(1), 300));

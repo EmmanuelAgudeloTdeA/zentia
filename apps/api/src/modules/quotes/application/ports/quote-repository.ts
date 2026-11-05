@@ -82,6 +82,8 @@ export interface QuoteSearch {
   /** Cohorte por `firstSentAt` en `[firstSentFrom, firstSentBefore)`. */
   firstSentFrom?: Date | undefined;
   firstSentBefore?: Date | undefined;
+  /** Solo Enviadas "sin seguimiento" (M6) a la fecha `today` con Y = `followUpDays`. */
+  pendingFollowUp?: { today: string; followUpDays: number } | undefined;
   skip: number;
   take: number;
 }

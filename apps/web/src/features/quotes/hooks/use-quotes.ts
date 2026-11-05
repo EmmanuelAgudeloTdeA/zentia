@@ -16,6 +16,7 @@ export function useQuotes() {
   const ownerId = useQuoteFiltersStore((state) => state.owner?.id);
   const sentFrom = useQuoteFiltersStore((state) => state.sentPeriod?.from);
   const sentTo = useQuoteFiltersStore((state) => state.sentPeriod?.to);
+  const followUpPending = useQuoteFiltersStore((state) => state.followUpPending);
   const page = useQuoteFiltersStore((state) => state.page);
   const search = useDebouncedValue(q.trim(), 250);
   const [state, setState] = useState<QuotesState>({ status: 'loading' });
@@ -34,6 +35,7 @@ export function useQuotes() {
           ownerId,
           sentFrom,
           sentTo,
+          followUp: followUpPending ? 'pending' : undefined,
           page,
           pageSize: DEFAULT_PAGE_SIZE,
         },
@@ -44,7 +46,7 @@ export function useQuotes() {
         if (!controller.signal.aborted) setState({ status: 'error', error });
       });
     return () => controller.abort();
-  }, [statusKey, search, customerId, ownerId, sentFrom, sentTo, page, version]);
+  }, [statusKey, search, customerId, ownerId, sentFrom, sentTo, followUpPending, page, version]);
 
   const reload = useCallback(() => {
     setState({ status: 'loading' });

@@ -63,6 +63,9 @@ function greetingKey(now: Date): string {
   return hour < 12 ? 'morning' : hour < 19 ? 'afternoon' : 'evening';
 }
 
+/** "Monto cotizado" suma la cohorte sin anuladas (los borradores no tienen primer envío). */
+const QUOTED_STATUSES: readonly QuoteStatus[] = ['SENT', 'APPROVED', 'REJECTED', 'EXPIRED'];
+
 export function DashboardPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -107,11 +110,16 @@ export function DashboardPage() {
   }, [ready, period.from, period.to, ownerId, version]);
 
   // Las cohortes abren la lista con el mismo período y vendedor para que los conteos coincidan.
-  const openQuotes = (status: QuoteStatus, sentPeriod: SentPeriod | null) => {
+  const openQuotes = (
+    statuses: readonly QuoteStatus[],
+    sentPeriod: SentPeriod | null,
+    followUpPending = false,
+  ) => {
     openQuotesWithFilters({
-      statuses: [status],
+      statuses,
       owner: seesAll ? filters.owner : null,
       sentPeriod,
+      followUpPending,
     });
     navigate(QUOTES_PATH);
   };
@@ -125,6 +133,7 @@ export function DashboardPage() {
       })
     : null;
   const pending = data?.current.pendingFollowUp ?? 0;
+  const cohort = data ? { from: data.period.from, to: data.period.to } : null;
 
   return (
     <>
@@ -222,7 +231,7 @@ export function DashboardPage() {
                 value={data.current.active}
                 icon={<SendIcon size={18} />}
                 tag={t('dashboard.currentStateHint')}
-                onClick={() => openQuotes('SENT', null)}
+                onClick={() => openQuotes(['SENT'], null)}
               />
               <KpiCard
                 label={t('dashboard.kpi.pendingFollowUp')}
@@ -230,6 +239,7 @@ export function DashboardPage() {
                 icon={<ClockAlertIcon size={18} />}
                 hint={t('dashboard.kpi.pendingHint', { days: data.current.followUpDays })}
                 tag={t('dashboard.currentStateHint')}
+                onClick={() => openQuotes(['SENT'], null, true)}
               />
               <KpiCard
                 label={t('dashboard.kpi.conversionRate')}
@@ -254,6 +264,7 @@ export function DashboardPage() {
                   amount: formatCop(data.period.quotedAmount),
                 })}
                 tag={periodTag}
+                onClick={() => openQuotes(['APPROVED'], cohort)}
               />
             </div>
 
@@ -264,7 +275,7 @@ export function DashboardPage() {
                   label={<QuoteStatusBadge status={status} size="sm" />}
                   value={data.period[status.toLowerCase() as 'approved' | 'rejected' | 'expired']}
                   tag={periodTag}
-                  onClick={() => openQuotes(status, { from: data.period.from, to: data.period.to })}
+                  onClick={() => openQuotes([status], cohort)}
                 />
               ))}
               <KpiCard
@@ -272,6 +283,7 @@ export function DashboardPage() {
                 value={formatCop(data.period.quotedAmount)}
                 hint={t('dashboard.kpi.quotedHint')}
                 tag={periodTag}
+                onClick={() => openQuotes(QUOTED_STATUSES, cohort)}
               />
             </div>
 

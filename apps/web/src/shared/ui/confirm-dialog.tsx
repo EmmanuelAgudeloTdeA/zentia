@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { Button, type ButtonVariant } from './button';
 
 interface ConfirmDialogProps {
@@ -53,7 +54,8 @@ export function ConfirmDialog({
     };
   }, [onCancel]);
 
-  return (
+  // En un portal: un ancestro con `isolate` (el encabezado) no debe dejar contenido por encima.
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
       <div className="absolute inset-0 bg-neutral-900/50" aria-hidden="true" onClick={onCancel} />
       <div
@@ -82,6 +84,7 @@ export function ConfirmDialog({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

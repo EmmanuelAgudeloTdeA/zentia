@@ -288,7 +288,7 @@ model Notification {
   readAt        DateTime?
   createdAt     DateTime         @default(now())
 
-  @@unique([quoteId, type, referenceDate])
+  @@unique([quoteId, type, referenceDate, userId])
   @@index([userId, readAt])
 }
 

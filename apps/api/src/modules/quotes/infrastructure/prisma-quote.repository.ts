@@ -94,12 +94,34 @@ export class PrismaQuoteRepository implements QuoteRepository {
     return rows.length > 0;
   }
 
+  /** Regla de M6 en SQL, igual que el tablero: solo lee `Interaction` (dueño: seguimiento). */
+  private async pendingFollowUpIds(today: string, followUpDays: number): Promise<string[]> {
+    const bogotaDate = (column: Prisma.Sql) =>
+      Prisma.sql`((${column}) AT TIME ZONE 'UTC' AT TIME ZONE 'America/Bogota')::date`;
+    const lastInteraction = Prisma.sql`(
+      SELECT max(i."occurredAt") FROM "Interaction" i
+      WHERE i."quoteId" = q."id" OR (i."customerId" = q."customerId" AND i."quoteId" IS NULL))`;
+    const rows = await this.db.$queryRaw<{ id: string }[]>`
+      SELECT q."id" FROM "Quote" q
+      WHERE q."status" = 'SENT'
+        AND GREATEST(${bogotaDate(lastInteraction)}, ${bogotaDate(Prisma.sql`q."sentAt"`)}) + ${followUpDays}::int
+          <= ${today}::date`;
+    return rows.map((row) => row.id);
+  }
+
   async list(search: QuoteSearch): Promise<{ items: QuoteSummary[]; total: number }> {
+    const pendingIds = search.pendingFollowUp
+      ? await this.pendingFollowUpIds(
+          search.pendingFollowUp.today,
+          search.pendingFollowUp.followUpDays,
+        )
+      : null;
     const or: Prisma.QuoteWhereInput[] = [];
     if (search.number !== undefined) or.push({ number: search.number });
     if (search.customerKey) or.push({ customer: { nameKey: { contains: search.customerKey } } });
     const where: Prisma.QuoteWhereInput = {
       ...(search.statuses.length > 0 ? { status: { in: [...search.statuses] } } : {}),
+      ...(pendingIds ? { id: { in: pendingIds } } : {}),
       ...(search.ownerId ? { ownerId: search.ownerId } : {}),
       ...(search.customerId ? { customerId: search.customerId } : {}),
       ...(search.firstSentFrom || search.firstSentBefore

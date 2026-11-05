@@ -574,6 +574,35 @@ describe('audit (M4)', () => {
   });
 });
 
+describe('pending follow-up filter', () => {
+  it('sends followUp=pending with a removable chip', async () => {
+    useQuoteFiltersStore.getState().reset();
+    const list = vi
+      .spyOn(quotesService, 'list')
+      .mockResolvedValue({ items: [], total: 0, page: 1, pageSize: 20 });
+    openQuotesWithFilters({ statuses: ['SENT'], followUpPending: true });
+    renderAt('/quotes');
+
+    const chip = await screen.findByRole('button', {
+      name: 'Quitar filtro: Pendientes de seguimiento',
+    });
+    await waitFor(() =>
+      expect(list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ statuses: ['SENT'], followUp: 'pending' }),
+        expect.anything(),
+      ),
+    );
+    fireEvent.click(chip);
+    await waitFor(() =>
+      expect(list).toHaveBeenLastCalledWith(
+        expect.objectContaining({ followUp: undefined }),
+        expect.anything(),
+      ),
+    );
+    useQuoteFiltersStore.getState().reset();
+  });
+});
+
 describe('closing probability (M9)', () => {
   const APPROVED_ID = '8e9f0a1b-2c3d-4e5f-8a6b-7c8d9e0f1a2b';
   const probability = {
