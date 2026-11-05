@@ -720,8 +720,14 @@
     "priceHint": "Price before VAT.",
     "snapshotNotice": "Price or rate changes do not affect existing quotes.",
     "category": {
-      "createNew": "Create category “{{value}}”",
-      "filterPlaceholder": "All categories"
+      "filterPlaceholder": "All categories",
+      "placeholder": "Select a category",
+      "search": "Search a category",
+      "create": "Create category",
+      "createTitle": "New category",
+      "createDescription": "It will be selected for this product and saved with it.",
+      "createConfirm": "Create and select",
+      "nameLabel": "Category name"
     },
     "confirm": {
       "deactivateTitle": "Deactivate {{name}}?",

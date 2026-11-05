@@ -79,9 +79,23 @@ describe('ProductsPage', () => {
     fireEvent.change(within(dialog).getByLabelText(new RegExp(`^${es.products.fields.name}`)), {
       target: { value: 'Mouse' },
     });
-    fireEvent.change(within(dialog).getByLabelText(new RegExp(`^${es.products.fields.category}`)), {
-      target: { value: 'Accesorios' },
-    });
+    fireEvent.click(
+      within(dialog).getByRole('combobox', { name: new RegExp(es.products.fields.category) }),
+    );
+    fireEvent.click(await screen.findByRole('button', { name: es.products.category.create }));
+    const created = await screen.findByRole('dialog', { name: es.products.category.createTitle });
+    fireEvent.change(
+      within(created).getByLabelText(new RegExp(`^${es.products.category.nameLabel}`)),
+      {
+        target: { value: 'Accesorios' },
+      },
+    );
+    fireEvent.click(
+      within(created).getByRole('button', { name: es.products.category.createConfirm }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: es.products.category.createTitle })).toBeNull(),
+    );
     const price = within(dialog).getByLabelText(new RegExp(`^${es.products.fields.price}`));
     fireEvent.focus(price);
     fireEvent.change(price, { target: { value: '0045.000,50' } });
@@ -99,7 +113,24 @@ describe('ProductsPage', () => {
     );
   });
 
-  it('suggests categories and offers to create a new one', async () => {
+  it('lists categories without typing and picks one from the selector', async () => {
+    signIn('ADMIN');
+    mockList([]);
+    vi.spyOn(companyService, 'getSettings').mockRejectedValue(new Error('offline'));
+    vi.spyOn(productsService, 'categories').mockResolvedValue(['Redes', 'Tecnología']);
+    renderPage();
+
+    fireEvent.click(await screen.findByRole('button', { name: es.products.new }));
+    const dialog = await screen.findByRole('dialog');
+    const select = within(dialog).getByRole('combobox', {
+      name: new RegExp(es.products.fields.category),
+    });
+    fireEvent.click(select);
+    fireEvent.click(await screen.findByRole('option', { name: 'Tecnología' }));
+    expect(select.textContent).toBe('Tecnología');
+  });
+
+  it('creates a category in a modal and selects it, reusing an equivalent one', async () => {
     signIn('ADMIN');
     mockList([]);
     vi.spyOn(companyService, 'getSettings').mockRejectedValue(new Error('offline'));
@@ -107,14 +138,54 @@ describe('ProductsPage', () => {
     renderPage();
 
     fireEvent.click(await screen.findByRole('button', { name: es.products.new }));
-    const dialog = await screen.findByRole('dialog');
-    const combobox = within(dialog).getByLabelText(new RegExp(`^${es.products.fields.category}`));
-    fireEvent.change(combobox, { target: { value: 'tec' } });
+    const dialog = await screen.findByRole('dialog', { name: es.products.new });
+    const select = within(dialog).getByRole('combobox', {
+      name: new RegExp(es.products.fields.category),
+    });
+    fireEvent.click(select);
+    await screen.findAllByRole('option');
+    fireEvent.change(screen.getByRole('searchbox', { name: es.products.category.search }), {
+      target: { value: 'TECNOLOGIA' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: es.products.category.create }));
 
-    expect(await within(dialog).findByRole('option', { name: 'Tecnología' })).toBeTruthy();
-    expect(within(dialog).getByRole('option', { name: 'Crear categoría «tec»' })).toBeTruthy();
-    fireEvent.click(within(dialog).getByRole('option', { name: 'Tecnología' }));
-    expect((combobox as HTMLInputElement).value).toBe('Tecnología');
+    const created = await screen.findByRole('dialog', { name: es.products.category.createTitle });
+    const name = within(created).getByLabelText(
+      new RegExp(`^${es.products.category.nameLabel}`),
+    ) as HTMLInputElement;
+    expect(name.value).toBe('TECNOLOGIA');
+    fireEvent.keyDown(name, { key: 'Enter' });
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: es.products.category.createTitle })).toBeNull(),
+    );
+    expect(select.textContent).toBe('Tecnología');
+
+    fireEvent.click(select);
+    fireEvent.click(await screen.findByRole('button', { name: es.products.category.create }));
+    const second = await screen.findByRole('dialog', { name: es.products.category.createTitle });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: es.products.category.createTitle })).toBeNull();
+    expect(screen.getByRole('dialog', { name: es.products.new })).toBeTruthy();
+    expect(second.isConnected).toBe(false);
+  });
+
+  it('filters by category with an explicit "all categories" option', async () => {
+    signIn('ADMIN');
+    const list = mockList([]);
+    vi.spyOn(productsService, 'categories').mockResolvedValue(['Redes']);
+    renderPage();
+
+    const filter = await screen.findByRole('combobox', {
+      name: new RegExp(es.products.fields.category),
+    });
+    fireEvent.click(filter);
+    fireEvent.click(await screen.findByRole('option', { name: 'Redes' }));
+    await waitFor(() => expect(list.mock.calls.at(-1)?.[0]).toMatchObject({ category: 'Redes' }));
+    fireEvent.click(filter);
+    fireEvent.click(
+      await screen.findByRole('option', { name: es.products.category.filterPlaceholder }),
+    );
+    await waitFor(() => expect(list.mock.calls.at(-1)?.[0].category).toBeUndefined());
   });
 
   it('hides every status chip from a SELLER', async () => {

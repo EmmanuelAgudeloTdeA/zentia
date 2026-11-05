@@ -40,9 +40,9 @@ interface SearchSelectProps<T> {
   maxOptions?: number;
   error?: string | undefined;
   hint?: ReactNode;
-  required?: boolean;
-  disabled?: boolean;
-  className?: string;
+  required?: boolean | undefined;
+  disabled?: boolean | undefined;
+  className?: string | undefined;
 }
 
 type Status = 'loading' | 'ready' | 'error';

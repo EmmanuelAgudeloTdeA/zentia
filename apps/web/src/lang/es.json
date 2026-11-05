@@ -720,8 +720,14 @@
     "priceHint": "Precio antes de IVA.",
     "snapshotNotice": "Los cambios de precio o tarifa no afectan las cotizaciones existentes.",
     "category": {
-      "createNew": "Crear categoría «{{value}}»",
-      "filterPlaceholder": "Todas las categorías"
+      "filterPlaceholder": "Todas las categorías",
+      "placeholder": "Selecciona una categoría",
+      "search": "Busca una categoría",
+      "create": "Crear categoría",
+      "createTitle": "Nueva categoría",
+      "createDescription": "Quedará seleccionada para este producto y se guardará con él.",
+      "createConfirm": "Crear y seleccionar",
+      "nameLabel": "Nombre de la categoría"
     },
     "confirm": {
       "deactivateTitle": "¿Desactivar {{name}}?",
