@@ -17,12 +17,17 @@ export function parseMailto(url: string): MailDraft {
   };
 }
 
+/** `%20` en vez de `+`: Outlook web no convierte `+` en espacio (Gmail sí). */
+function query(params: Record<string, string>): string {
+  return Object.entries(params)
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&');
+}
+
 /** Redactor web con el correo listo: no depende de tener una aplicación de correo instalada. */
 export function webmailUrl(provider: Webmail, { to, subject, body }: MailDraft): string {
   if (provider === 'GMAIL') {
-    const params = new URLSearchParams({ view: 'cm', fs: '1', to, su: subject, body });
-    return `https://mail.google.com/mail/?${params.toString()}`;
+    return `https://mail.google.com/mail/?${query({ view: 'cm', fs: '1', to, su: subject, body })}`;
   }
-  const params = new URLSearchParams({ to, subject, body });
-  return `https://outlook.office.com/mail/deeplink/compose?${params.toString()}`;
+  return `https://outlook.office.com/mail/deeplink/compose?${query({ to, subject, body })}`;
 }
