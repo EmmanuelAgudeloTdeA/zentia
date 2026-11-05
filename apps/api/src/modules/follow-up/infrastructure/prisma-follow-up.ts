@@ -180,6 +180,15 @@ export class PrismaNotificationRepository implements NotificationRepository {
   ): Promise<void> {
     // Es el Prisma.TransactionClient de la reasignación (M4): el traspaso se revierte con ella.
     const client = transactionClient as Prisma.TransactionClient;
+    // Si el destino ya tiene la alerta de ese ciclo (p. ej., A → B → A), la copia no leída sobra.
+    await client.$executeRaw`
+      DELETE FROM "Notification" n
+      WHERE n."quoteId" = ${quoteId}::uuid AND n."readAt" IS NULL AND n."userId" <> ${toUserId}::uuid
+        AND EXISTS (
+          SELECT 1 FROM "Notification" t
+          WHERE t."quoteId" = n."quoteId" AND t."type" = n."type"
+            AND t."referenceDate" = n."referenceDate" AND t."userId" = ${toUserId}::uuid
+        )`;
     await client.notification.updateMany({
       where: { quoteId, readAt: null },
       data: { userId: toUserId },

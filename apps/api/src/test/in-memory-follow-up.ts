@@ -93,7 +93,8 @@ export function createInMemoryFollowUp(
           (n) =>
             n.quoteId === item.quoteId &&
             n.type === item.type &&
-            n.referenceDate === item.referenceDate,
+            n.referenceDate === item.referenceDate &&
+            n.userId === item.userId,
         );
         if (duplicate) continue;
         notifications.push({ ...item, id: randomUUID(), readAt: null, createdAt: new Date() });
@@ -134,6 +135,20 @@ export function createInMemoryFollowUp(
       for (const n of notifications) if (n.userId === userId && !n.readAt) n.readAt = at;
     },
     async transferUnread(_client, quoteId, toUserId) {
+      const owned = (n: StoredNotification) =>
+        notifications.some(
+          (t) =>
+            t.userId === toUserId &&
+            t.quoteId === n.quoteId &&
+            t.type === n.type &&
+            t.referenceDate === n.referenceDate,
+        );
+      for (let i = notifications.length - 1; i >= 0; i--) {
+        const n = notifications[i];
+        if (n && n.quoteId === quoteId && !n.readAt && n.userId !== toUserId && owned(n)) {
+          notifications.splice(i, 1);
+        }
+      }
       for (const n of notifications) if (n.quoteId === quoteId && !n.readAt) n.userId = toUserId;
     },
   };
